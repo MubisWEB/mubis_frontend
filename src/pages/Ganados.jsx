@@ -30,7 +30,7 @@ export default function Ganados() {
         </div>
       </nav>
       <div className="px-5 pt-6 pb-4">
-        <div className="flex items-center justify-center gap-2 text-foreground"><Trophy className="w-6 h-6 text-secondary" /><h1 className="text-xl font-bold font-serif">Ganados este mes</h1></div>
+        <div className="flex items-center justify-center gap-2 text-foreground"><Trophy className="w-6 h-6 text-secondary" /><h1 className="text-xl font-bold font-sans">Ganados este mes</h1></div>
         <div className="flex justify-center gap-6 mt-4">
           <div className="text-center"><p className="text-2xl font-bold text-secondary">{wonAuctions.length}</p><p className="text-muted-foreground text-xs">Ganadas</p></div>
           <div className="text-center"><p className="text-2xl font-bold text-secondary">${(wonAuctions.reduce((a, b) => a + b.amount, 0) / 1000000).toFixed(0)}M</p><p className="text-muted-foreground text-xs">Invertido</p></div>
@@ -41,7 +41,7 @@ export default function Ganados() {
         {wonAuctions.length === 0 ? (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
             <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4"><Trophy className="w-10 h-10 text-secondary/40" /></div>
-            <h3 className="text-xl font-bold text-foreground mb-2 font-serif">Aún no has ganado subastas</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2 font-sans">Aún no has ganado subastas</h3>
             <p className="text-muted-foreground">Participa en las subastas activas<br />para ganar vehículos</p>
           </motion.div>
         ) : (
@@ -56,7 +56,7 @@ export default function Ganados() {
                   </div>
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-3">
-                      <div><h3 className="text-lg font-bold text-foreground font-serif">{auction.brand} {auction.model}</h3><p className="text-muted-foreground text-sm">{auction.year} · {auction.mileage?.toLocaleString('es-CO')} km</p></div>
+                      <div><h3 className="text-lg font-bold text-foreground font-sans">{auction.brand} {auction.model}</h3><p className="text-muted-foreground text-sm">{auction.year} · {auction.mileage?.toLocaleString('es-CO')} km</p></div>
                       <div className="text-right"><p className="text-xs text-muted-foreground">Tu oferta ganadora</p><p className="text-xl font-bold text-primary">{formatPrice(auction.amount)}</p></div>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4"><MapPin className="w-4 h-4" /><span>{auction.city}</span><span className="text-border">•</span><span>{auction.seller.name}</span></div>

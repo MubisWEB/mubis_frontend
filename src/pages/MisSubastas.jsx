@@ -76,12 +76,12 @@ export default function MisSubastas() {
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="md" />
+          <MubisLogo size="lg" />
         </div>
       </nav>
 
       <div className="px-4 pt-4 pb-3">
-        <h1 className="text-2xl font-bold text-foreground mb-2 text-center font-serif">Mis Subastas</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2 text-center font-sans">Mis Subastas</h1>
         <p className="text-muted-foreground text-center text-sm mb-4">Carros en subasta activa</p>
 
         <div className="grid grid-cols-3 gap-3 mb-4">
@@ -123,7 +123,7 @@ export default function MisSubastas() {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <DollarSign className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-bold text-foreground mb-2 font-serif">No tienes subastas activas</h3>
+            <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes subastas activas</h3>
             <p className="text-muted-foreground text-sm mb-4">Publica tu primer carro y empieza a recibir ofertas</p>
             <Button onClick={() => navigate(createPageUrl('VenderCarro'))} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full">
               Publicar mi carro

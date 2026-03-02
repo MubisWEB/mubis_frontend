@@ -35,7 +35,7 @@ export default function AdminDealers() {
           <MubisLogo size="md" variant="light" />
           <div className="w-10"></div>
         </div>
-        <h1 className="text-2xl font-bold text-white text-center mb-2 font-serif">Dealers Registrados</h1>
+        <h1 className="text-2xl font-bold text-white text-center mb-2 font-sans">Dealers Registrados</h1>
         <p className="text-white/60 text-center text-sm">{displayDealers.length} dealers en total</p>
       </div>
 

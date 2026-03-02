@@ -59,7 +59,7 @@ export default function movimientosPage() {
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="md" />
+          <MubisLogo size="lg" />
         </div>
       </nav>
 
@@ -77,7 +77,7 @@ export default function movimientosPage() {
 
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="mt-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xl font-bold text-foreground font-serif">Movimientos</p>
+            <p className="text-xl font-bold text-foreground font-sans">Movimientos</p>
             <p className="text-xs text-muted-foreground">Últimos {Math.min(visibleCount, filteredHistory.length)}</p>
           </div>
           <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">

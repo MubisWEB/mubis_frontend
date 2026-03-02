@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ['Playfair Display', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Playfair Display', 'Georgia', 'sans'],
+        sans: ['Inter', 'system-ui', 'sans-sans'],
         mono: ['JetBrains Mono', 'SF Mono', 'Consolas', 'monospace'],
       },
       colors: {

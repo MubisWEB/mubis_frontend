@@ -38,7 +38,7 @@ export default function AdminDashboard() {
       <TopBar />
       <div className="bg-gradient-brand px-4 pt-6 pb-6">
         <div className="text-center mb-4"><MubisLogo size="xl" variant="light" /></div>
-        <h1 className="text-2xl font-bold text-white text-center mb-2 font-serif">Panel Admin</h1>
+        <h1 className="text-2xl font-bold text-white text-center mb-2 font-sans">Panel Admin</h1>
         <p className="text-white/60 text-center text-sm">Gestión de dealers y subastas</p>
       </div>
 
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
         </div>
 
         <Card className="p-4 mb-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-serif">Acciones Rápidas</h2>
+          <h2 className="font-bold text-foreground mb-3 font-sans">Acciones Rápidas</h2>
           <div className="space-y-2">
             <Button onClick={() => navigate(createPageUrl('AdminDealers'))} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 justify-between rounded-full"><span>Ver Todos los Dealers</span><Users className="w-4 h-4" /></Button>
             <Button onClick={() => navigate(createPageUrl('AdminSolicitudes'))} variant="outline" className="w-full justify-between rounded-full"><span>Solicitudes Pendientes</span><Badge className="bg-accent text-accent-foreground">{displayStats.pending_requests}</Badge></Button>
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
 
         <Card className="p-4 mb-4 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-foreground font-serif">Solicitudes Recientes</h2>
+            <h2 className="font-bold text-foreground font-sans">Solicitudes Recientes</h2>
             <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl('AdminSolicitudes'))} className="text-secondary text-xs">Ver todas</Button>
           </div>
           <div className="space-y-2">
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-serif">Actividad Reciente</h2>
+          <h2 className="font-bold text-foreground mb-3 font-sans">Actividad Reciente</h2>
           <div className="space-y-2">
             {displayRecentActivity.map((activity, i) => (
               <div key={i} className="flex items-center justify-between text-sm py-2 border-b border-border last:border-0">

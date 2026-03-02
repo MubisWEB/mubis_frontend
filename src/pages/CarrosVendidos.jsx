@@ -32,7 +32,7 @@ export default function CarrosVendidos() {
         </div>
       </nav>
       <div className="px-5 pt-6 pb-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2 font-serif">Carros Vendidos</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2 font-sans">Carros Vendidos</h1>
         <p className="text-muted-foreground text-sm mb-4">Historial de ventas exitosas</p>
         <div className="flex justify-center gap-6">
           <div className="text-center"><p className="text-2xl font-bold text-secondary">{cars.length}</p><p className="text-muted-foreground text-xs">Vendidos</p></div>

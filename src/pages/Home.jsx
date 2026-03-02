@@ -39,7 +39,7 @@ export default function Home() {
 
       <div className="px-5 pt-6 pb-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-center">
-          <h1 className="text-3xl text-foreground mb-2 leading-tight font-serif font-bold tracking-tight">Vende tu carro<br />en 48 horas*</h1>
+          <h1 className="text-3xl text-foreground mb-2 leading-tight font-sans font-bold tracking-tight">Vende tu carro<br />en 48 horas*</h1>
           <p className="text-muted-foreground text-base mb-6 font-normal tracking-wide">Concesionarios Compiten, Tú Ganas</p>
           <div className="max-w-sm mx-auto">
             <div className="flex gap-2 bg-muted/50 rounded-2xl p-2 border border-border">
@@ -84,7 +84,7 @@ export default function Home() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="mt-6">
-          <h2 className="text-lg text-foreground mb-3 font-serif font-bold tracking-tight">¿Por qué Mubis?</h2>
+          <h2 className="text-lg text-foreground mb-3 font-sans font-bold tracking-tight">¿Por qué Mubis?</h2>
           <div className="space-y-2">
             {[
               { icon: Shield, text: 'Sin intermediarios, vende directo', color: 'text-secondary bg-secondary/10' },

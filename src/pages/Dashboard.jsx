@@ -79,7 +79,7 @@ export default function Dashboard() {
       </nav>
       <div className="px-4 pt-4">
         <div className="text-center mb-4">
-          <h1 className="text-xl font-bold text-foreground font-serif">Dashboard</h1>
+          <h1 className="text-xl font-bold text-foreground font-sans">Dashboard</h1>
           <p className="text-muted-foreground text-xs">Panel de Control</p>
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 gap-3 mb-4">
@@ -106,7 +106,7 @@ export default function Dashboard() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-foreground text-sm flex items-center gap-2 font-serif"><Bell className="w-4 h-4 text-secondary" />Notificaciones</h2>
+            <h2 className="font-bold text-foreground text-sm flex items-center gap-2 font-sans"><Bell className="w-4 h-4 text-secondary" />Notificaciones</h2>
             <Button variant="ghost" size="sm" className="text-xs text-secondary h-7">Ver todas</Button>
           </div>
           <div className="space-y-2">
@@ -126,7 +126,7 @@ export default function Dashboard() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-foreground text-sm flex items-center gap-2 font-serif"><Car className="w-4 h-4 text-secondary" />Vehículos Activos</h2>
+            <h2 className="font-bold text-foreground text-sm flex items-center gap-2 font-sans"><Car className="w-4 h-4 text-secondary" />Vehículos Activos</h2>
             <Button variant="ghost" size="sm" className="text-xs text-secondary h-7">Ver todos</Button>
           </div>
           <div className="space-y-2">
@@ -148,7 +148,7 @@ export default function Dashboard() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-foreground text-sm flex items-center gap-2 font-serif"><CheckCircle className="w-4 h-4 text-primary" />Ventas Recientes</h2>
+            <h2 className="font-bold text-foreground text-sm flex items-center gap-2 font-sans"><CheckCircle className="w-4 h-4 text-primary" />Ventas Recientes</h2>
           </div>
           <div className="space-y-2">
             {data.ventasRecientes.map((venta) => (
@@ -176,7 +176,7 @@ export default function Dashboard() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-4">
           <Card className="p-4 border border-border shadow-sm">
-            <div className="flex items-center gap-2 mb-3"><BarChart3 className="w-4 h-4 text-secondary" /><h3 className="font-bold text-foreground text-sm font-serif">Tendencia de Ingresos</h3></div>
+            <div className="flex items-center gap-2 mb-3"><BarChart3 className="w-4 h-4 text-secondary" /><h3 className="font-bold text-foreground text-sm font-sans">Tendencia de Ingresos</h3></div>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={data.tendenciaVentas}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

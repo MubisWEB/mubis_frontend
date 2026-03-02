@@ -62,7 +62,7 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
           <div className="flex justify-center mb-2">
             <MubisLogo size="sm" />
           </div>
-          <SheetTitle className="text-xl font-bold font-serif text-foreground">Filtros</SheetTitle>
+          <SheetTitle className="text-xl font-bold font-sans text-foreground">Filtros</SheetTitle>
         </SheetHeader>
         
         <div className="space-y-5 px-1 overflow-y-auto max-h-[calc(80vh-200px)]">

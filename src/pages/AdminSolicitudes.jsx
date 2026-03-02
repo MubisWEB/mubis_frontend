@@ -35,13 +35,13 @@ export default function AdminSolicitudes() {
           <MubisLogo size="md" variant="light" />
           <div className="w-10"></div>
         </div>
-        <h1 className="text-2xl font-bold text-white text-center mb-2 font-serif">Solicitudes Pendientes</h1>
+        <h1 className="text-2xl font-bold text-white text-center mb-2 font-sans">Solicitudes Pendientes</h1>
         <p className="text-white/60 text-center text-sm">{requests.length} solicitudes por revisar</p>
       </div>
 
       <div className="px-4 -mt-4">
         {requests.length === 0 ? (
-          <Card className="p-8 text-center border border-border shadow-sm"><CheckCircle className="w-12 h-12 text-primary mx-auto mb-3" /><h3 className="font-bold text-foreground mb-2 font-serif">Todo al día</h3><p className="text-sm text-muted-foreground">No hay solicitudes pendientes por revisar</p></Card>
+          <Card className="p-8 text-center border border-border shadow-sm"><CheckCircle className="w-12 h-12 text-primary mx-auto mb-3" /><h3 className="font-bold text-foreground mb-2 font-sans">Todo al día</h3><p className="text-sm text-muted-foreground">No hay solicitudes pendientes por revisar</p></Card>
         ) : (
           <div className="space-y-3">
             {requests.map(request => (

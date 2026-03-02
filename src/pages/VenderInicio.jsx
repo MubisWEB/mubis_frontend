@@ -30,7 +30,7 @@ export default function VenderInicio() {
         </div>
       </nav>
       <div className="px-5 pt-6 pb-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2 font-serif">Mis Vehículos</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2 font-sans">Mis Vehículos</h1>
         <p className="text-muted-foreground text-sm">Administra tus publicaciones</p>
       </div>
 
@@ -44,7 +44,7 @@ export default function VenderInicio() {
         {vehicles.length === 0 ? (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
             <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4"><Car className="w-10 h-10 text-secondary/40" /></div>
-            <h3 className="text-xl font-bold text-foreground mb-2 font-serif">No tienes vehículos registrados</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2 font-sans">No tienes vehículos registrados</h3>
             <p className="text-muted-foreground">Comienza publicando tu primer vehículo</p>
           </motion.div>
         ) : (

@@ -56,7 +56,7 @@ export default function Cuenta() {
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="md" />
+          <MubisLogo size="lg" />
         </div>
       </nav>
       <div className="bg-card px-5 pt-6 pb-5 border-b border-border">
@@ -66,7 +66,7 @@ export default function Cuenta() {
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <p className="text-lg font-bold text-foreground font-serif">{user?.full_name || 'Usuario'}</p>
+              <p className="text-lg font-bold text-foreground font-sans">{user?.full_name || 'Usuario'}</p>
               {user?.verified && <Shield className="w-4 h-4 text-secondary" />}
             </div>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
@@ -75,7 +75,7 @@ export default function Cuenta() {
             ) : userRole === 'admin' ? (
               <Badge className="mt-1 bg-destructive/10 text-destructive font-medium text-xs">Administrador</Badge>
             ) : (
-              <Badge className="mt-1 bg-primary/10 text-primary font-medium text-xs">Vendedor Verificado</Badge>
+              <Badge className="mt-1 bg-primary/10 text-primary font-medium text-xs">Compraventero Verificado</Badge>
             )}
           </div>
         </motion.div>

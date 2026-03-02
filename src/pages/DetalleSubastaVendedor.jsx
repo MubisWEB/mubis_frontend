@@ -78,7 +78,7 @@ export default function DetalleSubastaVendedor() {
 
         <div className="bg-card px-4 py-4 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <div><h1 className="text-xl font-bold text-foreground font-serif">{auction.brand} {auction.model}</h1><p className="text-muted-foreground text-sm">{auction.year} · {auction.plate}</p></div>
+            <div><h1 className="text-xl font-bold text-foreground font-sans">{auction.brand} {auction.model}</h1><p className="text-muted-foreground text-sm">{auction.year} · {auction.plate}</p></div>
             <div className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-full bg-secondary/10 text-secondary"><Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span></div>
           </div>
           <div className="grid grid-cols-3 gap-3 mt-3">
@@ -91,7 +91,7 @@ export default function DetalleSubastaVendedor() {
 
       <div className="px-4 py-4 space-y-4">
         <Card className="p-4 border border-border shadow-sm space-y-3">
-          <div className="flex items-center justify-between"><h2 className="font-bold text-foreground font-serif">Ganancia estimada</h2><TrendingUp className="w-5 h-5 text-primary" /></div>
+          <div className="flex items-center justify-between"><h2 className="font-bold text-foreground font-sans">Ganancia estimada</h2><TrendingUp className="w-5 h-5 text-primary" /></div>
           <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - auction.starting_price)}</p>
           <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price)}</p>
           {auction.peritaje?.reserve_price && (
@@ -109,7 +109,7 @@ export default function DetalleSubastaVendedor() {
         </Card>
 
         <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-serif">Especificaciones</h2>
+          <h2 className="font-bold text-foreground mb-3 font-sans">Especificaciones</h2>
           <div className="grid grid-cols-2 gap-3">
             {specs.map((spec, i) => (<div key={i} className="flex items-center gap-2"><div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center"><spec.icon className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-xs text-muted-foreground">{spec.label}</p><p className="text-sm font-medium text-foreground">{spec.value}</p></div></div>))}
           </div>
@@ -117,7 +117,7 @@ export default function DetalleSubastaVendedor() {
 
         {auction.peritaje && (
           <Card className="p-4 border border-border space-y-3">
-            <div className="flex items-center justify-between mb-2"><h3 className="font-bold text-foreground font-serif">Peritaje Mubis</h3><div className="flex items-center gap-2"><Shield className="w-4 h-4 text-secondary" /><span className="text-xs text-muted-foreground">Realizado por {auction.peritaje.realizado_por}</span></div></div>
+            <div className="flex items-center justify-between mb-2"><h3 className="font-bold text-foreground font-sans">Peritaje Mubis</h3><div className="flex items-center gap-2"><Shield className="w-4 h-4 text-secondary" /><span className="text-xs text-muted-foreground">Realizado por {auction.peritaje.realizado_por}</span></div></div>
             <div className="flex items-center justify-center py-4 bg-primary/5 rounded-xl"><div className="text-center"><div className="text-4xl font-bold text-primary">{auction.peritaje.score}</div><div className="text-xs text-primary font-medium">Puntuación General</div></div></div>
             <div className="space-y-2">
               {auction.peritaje.items.map((item, idx) => (<div key={idx} className="flex items-start justify-between py-2 border-b border-border last:border-0"><div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-primary flex-shrink-0" /><div><span className="text-sm font-medium text-foreground">{item.name}</span><p className="text-xs text-muted-foreground">{item.detail}</p></div></div></div>))}
@@ -130,14 +130,14 @@ export default function DetalleSubastaVendedor() {
         )}
 
         <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-serif">Principales Oferentes</h2>
+          <h2 className="font-bold text-foreground mb-3 font-sans">Principales Oferentes</h2>
           <div className="space-y-2">
             {auction.top_bidders.map((bidder, i) => (<div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0"><div><p className="font-medium text-foreground text-sm">{bidder.name}</p><p className="text-xs text-muted-foreground">{bidder.time}</p></div><p className="font-bold text-primary">{formatPrice(bidder.amount)}</p></div>))}
           </div>
         </Card>
 
         <Card className="p-4 border border-border shadow-sm bg-secondary/5">
-          <h3 className="font-bold text-foreground mb-2 text-sm font-serif">Dealer Líder: {auction.last_bidder}</h3>
+          <h3 className="font-bold text-foreground mb-2 text-sm font-sans">Dealer Líder: {auction.last_bidder}</h3>
           <p className="text-xs text-muted-foreground mb-3">Puedes contactarlo cuando finalice la subasta</p>
           <div className="flex gap-2">
             <Button className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 h-10 rounded-full"><Phone className="w-4 h-4 mr-2" />Llamar</Button>

@@ -126,7 +126,7 @@ export default function Comprar() {
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="md" />
+          <MubisLogo size="lg" />
         </div>
       </nav>
       {/* Header */}
@@ -195,7 +195,7 @@ export default function Comprar() {
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <p className="text-lg font-bold text-foreground font-serif">{sortBy === 'my_bids' ? 'Mis pujas' : 'Subastas'}</p>
+          <p className="text-lg font-bold text-foreground font-sans">{sortBy === 'my_bids' ? 'Mis pujas' : 'Subastas'}</p>
           <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
         </div>
 

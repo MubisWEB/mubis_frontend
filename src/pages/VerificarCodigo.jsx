@@ -91,7 +91,7 @@ export default function VerificarCodigo() {
             </div>
 
             <div className="text-center mb-6">
-              <h1 className="font-serif text-2xl font-bold text-foreground mb-2">
+              <h1 className="font-sans text-2xl font-bold text-foreground mb-2">
                 Verifica tu correo
               </h1>
               <p className="text-muted-foreground text-sm">

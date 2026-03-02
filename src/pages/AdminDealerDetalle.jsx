@@ -36,7 +36,7 @@ export default function AdminDealerDetalle() {
           <MubisLogo size="md" />
           <div className="w-10"></div>
         </div>
-        <h1 className="text-2xl font-bold text-white text-center mb-2 font-serif">{dealer.name}</h1>
+        <h1 className="text-2xl font-bold text-white text-center mb-2 font-sans">{dealer.name}</h1>
         <div className="flex items-center justify-center gap-2">
           {dealer.verified && <Badge className="bg-primary/20 text-white border-primary/30"><Shield className="w-3 h-3 mr-1" />Verificado</Badge>}
         </div>
@@ -50,7 +50,7 @@ export default function AdminDealerDetalle() {
         </div>
 
         <Card className="p-4 mb-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-serif">Información de Contacto</h2>
+          <h2 className="font-bold text-foreground mb-3 font-sans">Información de Contacto</h2>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm"><Mail className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{dealer.email}</span></div>
             <div className="flex items-center gap-2 text-sm"><Phone className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{dealer.phone}</span></div>
@@ -60,7 +60,7 @@ export default function AdminDealerDetalle() {
         </Card>
 
         <Card className="p-4 mb-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-serif">Documentos Verificados</h2>
+          <h2 className="font-bold text-foreground mb-3 font-sans">Documentos Verificados</h2>
           <div className="space-y-2">
             {[['NIT / Cédula', dealer.documents.nit_verified], ['RUT', dealer.documents.rut_verified], ['Cámara de Comercio', dealer.documents.chamber_commerce_verified]].map(([name, verified]) => (
               <div key={name} className="flex items-center justify-between">
@@ -76,7 +76,7 @@ export default function AdminDealerDetalle() {
         </Card>
 
         <Card className="p-4 border border-border shadow-sm">
-          <div className="flex items-center gap-2 mb-3"><Trophy className="w-5 h-5 text-secondary" /><h2 className="font-bold text-foreground font-serif">Subastas Ganadas</h2></div>
+          <div className="flex items-center gap-2 mb-3"><Trophy className="w-5 h-5 text-secondary" /><h2 className="font-bold text-foreground font-sans">Subastas Ganadas</h2></div>
           <div className="space-y-3">
             {wonAuctions.map(auction => (
               <div key={auction.id} className="flex gap-3 pb-3 border-b border-border last:border-0">
