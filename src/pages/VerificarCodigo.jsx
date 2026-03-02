@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail as MailIcon, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import TopBar from '@/components/TopBar';
@@ -72,7 +72,7 @@ export default function VerificarCodigo() {
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="md" />
+          <Link to="/"><MubisLogo size="md" /></Link>
         </div>
       </nav>
 

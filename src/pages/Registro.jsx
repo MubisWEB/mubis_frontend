@@ -58,7 +58,7 @@ export default function Registro() {
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="md" />
+          <Link to="/"><MubisLogo size="md" /></Link>
         </div>
       </nav>
 
