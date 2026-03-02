@@ -105,7 +105,7 @@ export default function DetalleSubastaVendedor() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-muted pb-24">
       {/* Header con imagen */}
       <div className="relative">
         <div className="relative h-64 bg-gray-200 overflow-hidden">

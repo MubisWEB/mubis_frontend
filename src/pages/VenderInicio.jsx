@@ -42,13 +42,13 @@ export default function VenderInicio() {
   const [vehicles] = useState(isTestUser ? demoVehicles : []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
-      <div className="bg-gradient-to-b from-violet-700 to-violet-600 px-5 pt-8 pb-6 rounded-b-3xl">
+    <div className="min-h-screen bg-muted pb-24">
+      <div className="bg-gradient-brand px-5 pt-8 pb-6 rounded-b-3xl">
         <div className="text-center mb-4">
           <MubisLogo size="xl" variant="light" />
         </div>
         <h1 className="text-2xl font-bold text-white text-center mb-2">Mis Vehículos</h1>
-        <p className="text-violet-200 text-center text-sm">Administra tus publicaciones</p>
+        <p className="text-white/60 text-center text-sm">Administra tus publicaciones</p>
       </div>
 
       <div className="px-4 py-5 -mt-4">

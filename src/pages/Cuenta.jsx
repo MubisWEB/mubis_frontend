@@ -76,8 +76,8 @@ export default function Cuenta() {
 
   // ✅ Cards: solo 2
   const statsCards = useMemo(() => ([
-    { icon: Gavel, value: stats.myActiveAuctions || 0, label: 'Mis subastas activas', color: 'bg-violet-100 text-violet-700' },
-    { icon: Trophy, value: stats.myWonAuctions || 0, label: 'Mis subastas ganadas', color: 'bg-emerald-100 text-emerald-700' },
+    { icon: Gavel, value: stats.myActiveAuctions || 0, label: 'Mis subastas activas', color: 'bg-secondary/10 text-secondary' },
+    { icon: Trophy, value: stats.myWonAuctions || 0, label: 'Mis subastas ganadas', color: 'bg-primary/10 text-primary' },
   ]), [stats]);
 
   // ✅ Menú limpio:
@@ -103,9 +103,9 @@ export default function Cuenta() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-muted pb-24">
       {/* Header */}
-      <div className="bg-white px-5 pt-8 pb-5 border-b border-gray-100">
+      <div className="bg-card px-5 pt-8 pb-5 border-b border-border">
         <div className="text-center mb-6">
           <MubisLogo size="xl" />
         </div>
@@ -116,14 +116,14 @@ export default function Cuenta() {
           className="flex items-center gap-4"
         >
           <Avatar className="w-16 h-16">
-            <AvatarFallback className="bg-violet-600 text-white text-xl font-bold">
+            <AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">
               {getInitials(user?.full_name)}
             </AvatarFallback>
           </Avatar>
 
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <p className="text-lg font-bold text-gray-900">
+              <p className="text-lg font-bold text-foreground">
                 {user?.full_name || 'Usuario'}
               </p>
               {user?.verified && (
@@ -131,18 +131,18 @@ export default function Cuenta() {
               )}
             </div>
 
-            <p className="text-gray-500 text-sm">{user?.email}</p>
+            <p className="text-muted-foreground text-sm">{user?.email}</p>
 
             {userRole === 'dealer' ? (
-              <Badge className="mt-1 bg-violet-100 text-violet-700 font-medium text-xs">
+              <Badge className="mt-1 bg-secondary/10 text-secondary font-medium text-xs">
                 Dealer Verificado
               </Badge>
             ) : userRole === 'admin' ? (
-              <Badge className="mt-1 bg-red-100 text-red-700 font-medium text-xs">
+              <Badge className="mt-1 bg-destructive/10 text-destructive font-medium text-xs">
                 Administrador
               </Badge>
             ) : (
-              <Badge className="mt-1 bg-green-100 text-green-700 font-medium text-xs">
+              <Badge className="mt-1 bg-primary/10 text-primary font-medium text-xs">
                 Vendedor Verificado
               </Badge>
             )}
@@ -165,8 +165,8 @@ export default function Cuenta() {
                 <div className={`w-10 h-10 ${stat.color} rounded-xl flex items-center justify-center mb-2`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-xs text-gray-500 font-medium">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
               </Card>
             );
           })}
@@ -185,22 +185,22 @@ export default function Cuenta() {
                 <button
                   key={i}
                   onClick={() => item.page && navigate(createPageUrl(item.page))}
-                  className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
-                      <Icon className="w-4 h-4 text-gray-600" />
+                    <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <span className="font-medium text-gray-700 text-sm">{item.label}</span>
+                    <span className="font-medium text-foreground/80 text-sm">{item.label}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {item.badge && (
-                      <Badge className="bg-violet-100 text-violet-700 text-xs px-2">
+                      <Badge className="bg-secondary/10 text-secondary text-xs px-2">
                         {item.badge}
                       </Badge>
                     )}
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </button>
               );
@@ -217,7 +217,7 @@ export default function Cuenta() {
         >
           <Button
             variant="outline"
-            className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:bg-red-50 font-medium"
+            className="w-full h-11 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/5 font-medium"
             onClick={handleLogout}
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -225,7 +225,7 @@ export default function Cuenta() {
           </Button>
         </motion.div>
 
-        <p className="text-center text-gray-400 text-xs mt-6">
+        <p className="text-center text-muted-foreground text-xs mt-6">
           Mubis v1.0.0 · Colombia 🇨🇴
         </p>
       </div>

@@ -69,7 +69,7 @@ export default function DetalleSubasta() {
 
   if (!vehicle) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-muted flex items-center justify-center">
         <p>Cargando...</p>
       </div>
     );
@@ -289,7 +289,7 @@ export default function DetalleSubasta() {
   const peritaje = peritajesPorVehiculo[vehicle.id] || defaultPeritaje;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32">
+    <div className="min-h-screen bg-muted pb-32">
       {/* Header con imagen */}
       <div className="relative">
         {/* Galería de imágenes */}
