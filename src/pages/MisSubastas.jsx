@@ -140,16 +140,12 @@ export default function MisSubastas() {
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes subastas activas</h3>
             <p className="text-muted-foreground text-sm mb-4">Publica tu primer carro y empieza a recibir ofertas</p>
-            <Button onClick={() => setDialogOpen(true)}
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-              <Plus className="w-4 h-4" /> Publicar carro
-            </Button>
           </div>
         ) : (
           <div className="space-y-3">
             {activeAuctions.map((auction) => (
               <Card key={auction.id} className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl"
-                onClick={() => navigate(`${createPageUrl('DetalleSubastaVendedor')}?id=${auction.id}`)}>
+                onClick={() => navigate(`/DetallePublicarCarro?id=${auction.id}`)}>
                 <div className="flex p-3 gap-3">
                   <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted">
                     <img src={auction.photos?.[0]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
