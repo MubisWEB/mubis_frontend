@@ -44,8 +44,8 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
       <SheetTrigger asChild>
         <Button 
           variant="outline" 
-          className={`border-primary/30 rounded-full font-medium h-10 px-4 text-sm ${
-            hasFilters ? 'bg-primary/10 text-primary border-primary/40' : 'text-primary hover:bg-primary/5'
+          className={`rounded-full font-medium h-10 px-4 text-sm border-0 ${
+            hasFilters ? 'bg-primary text-foreground' : 'bg-primary text-foreground hover:bg-primary/90'
           }`}
         >
           <Filter className="w-4 h-4 mr-1" />
