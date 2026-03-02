@@ -40,37 +40,37 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Back button */}
-      <div className="absolute top-4 left-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/")}
-          className="rounded-full text-foreground hover:bg-black/5"
+    <div className="min-h-screen bg-muted flex flex-col">
+      {/* Header con gradiente de marca */}
+      <div className="bg-gradient-brand text-white px-4 pt-4 pb-16 relative">
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+            className="rounded-full text-white/80 hover:text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -18 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
         >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+          <MubisLogo size="xl" variant="light" />
+        </motion.div>
       </div>
 
-      {/* Header con logo */}
-      <motion.div
-        initial={{ opacity: 0, y: -18 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="pt-16 pb-8 text-center"
-      >
-        <MubisLogo size="xl" />
-      </motion.div>
-
       {/* Contenido principal */}
-      <div className="flex-1 flex items-start justify-center px-6 pt-4">
+      <div className="flex-1 flex items-start justify-center px-6 -mt-8">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
           className="w-full max-w-xl"
         >
-          <Card className="p-8 bg-white border border-border shadow-sm rounded-2xl">
+          <Card className="p-8 bg-card border border-border shadow-sm rounded-2xl">
             {/* Títulos */}
             <div className="text-center mb-8">
               <h1 className="font-serif text-2xl font-bold text-foreground mb-2">
