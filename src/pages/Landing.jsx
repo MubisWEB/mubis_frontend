@@ -1,28 +1,20 @@
-import Header from "@/components/landing/Header";
 import HeroSection from "@/components/landing/HeroSection";
-import LaunchBanner from "@/components/landing/LaunchBanner";
 import HowItWorks from "@/components/landing/HowItWorks";
-import Testimonials from "@/components/landing/Testimonials";
 import Footer from "@/components/landing/Footer";
-import AccessRequestSection from "@/components/landing/AccessRequestSection";
-import BenefitsSection from "@/components/landing/BenefitsSection";
-import PressSection from "@/components/landing/PressSection";
-import StatsSection from "@/components/landing/StatsSection";
-
+import TopBar from "@/components/TopBar";
+import MainNav from "@/components/MainNav";
+import HeroSection from "@/components/HeroSection";
+import HowItWorks from "@/components/HowItWorks";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <Header />
-      <main>
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopBar />
+      <MainNav />
+      <main className="flex-1">
         <HeroSection />
-        <LaunchBanner />
         <HowItWorks />
-        <Testimonials />
-        <BenefitsSection/>
-        <PressSection />
-        <StatsSection />
-        <AccessRequestSection/>
       </main>
       <Footer />
     </div>
