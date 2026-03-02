@@ -80,8 +80,8 @@ export default function AdminDealerDetalle() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-gradient-to-b from-violet-900 to-violet-800 px-4 pt-8 pb-6">
+    <div className="min-h-screen bg-muted pb-24">
+      <div className="bg-gradient-brand px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-4">
           <Button
             variant="ghost"

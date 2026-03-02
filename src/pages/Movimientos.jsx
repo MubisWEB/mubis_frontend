@@ -95,7 +95,7 @@ export default function movimientosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-muted pb-24">
       {/* Header */}
       <div className="bg-gradient-brand rounded-b-3xl">
         <div className="px-4 pt-8 pb-6">

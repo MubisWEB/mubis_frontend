@@ -46,7 +46,7 @@ export default function BottomNav({ currentPage }) {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-50">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -58,8 +58,8 @@ export default function BottomNav({ currentPage }) {
               onClick={() => navigate(createPageUrl(item.page))}
               className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
                 active 
-                  ? 'text-violet-600' 
-                  : 'text-gray-500 hover:text-violet-600'
+                  ? 'text-secondary' 
+                  : 'text-muted-foreground hover:text-secondary'
               }`}
             >
               <Icon className={`w-6 h-6 ${active ? 'stroke-[2.5]' : 'stroke-2'}`} />

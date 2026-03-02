@@ -74,7 +74,7 @@ const demoData = {
   ],
 };
 
-const COLORS = ['#7c3aed', '#10b981', '#f59e0b', '#3b82f6'];
+const COLORS = ['hsl(265, 90%, 55%)', 'hsl(142, 71%, 45%)', '#f59e0b', '#3b82f6'];
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -119,7 +119,7 @@ export default function Dashboard() {
       icon: Car, 
       value: data.vehiculosActivos, 
       label: 'Activos', 
-      color: 'bg-violet-600',
+      color: 'bg-secondary',
       change: '+3',
       positive: true
     },
@@ -135,7 +135,7 @@ export default function Dashboard() {
       icon: Trophy, 
       value: data.vehiculosVendidos, 
       label: 'Vendidos', 
-      color: 'bg-green-600',
+      color: 'bg-primary',
       change: '+5',
       positive: true
     },
@@ -150,9 +150,9 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-muted pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-br from-violet-700 via-violet-600 to-violet-800 px-4 pt-6 pb-6">
+      <div className="bg-gradient-brand px-4 pt-6 pb-6">
         <div className="flex items-center justify-between mb-4">
           <Button
             variant="ghost"
@@ -162,18 +162,19 @@ export default function Dashboard() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div className="flex-1 text-center">
-            <h1 className="text-xl font-bold text-white">Dashboard</h1>
-            <p className="text-violet-200 text-xs">Panel de Control</p>
-          </div>
+          <MubisLogo size="md" variant="light" />
           <Button
             variant="ghost"
             size="icon"
             className="rounded-full text-white hover:bg-white/20 relative"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full"></span>
           </Button>
+        </div>
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-white">Dashboard</h1>
+          <p className="text-white/70 text-xs">Panel de Control</p>
         </div>
       </div>
 
@@ -196,12 +197,12 @@ export default function Dashboard() {
                   <div className={`w-10 h-10 ${stat.color} rounded-xl flex items-center justify-center`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <Badge className={`${stat.positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} text-xs px-1.5 py-0`}>
+                  <Badge className={`${stat.positive ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'} text-xs px-1.5 py-0`}>
                     {stat.change}
                   </Badge>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
               </Card>
             );
           })}
@@ -216,18 +217,18 @@ export default function Dashboard() {
         >
           <Card className="p-3 border-0 shadow-sm text-center">
             <Eye className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-            <p className="text-lg font-bold text-gray-900">{data.vistasTotales}</p>
-            <p className="text-[10px] text-gray-500">Vistas</p>
+            <p className="text-lg font-bold text-foreground">{data.vistasTotales}</p>
+            <p className="text-[10px] text-muted-foreground">Vistas</p>
           </Card>
           <Card className="p-3 border-0 shadow-sm text-center">
-            <Users className="w-5 h-5 text-violet-600 mx-auto mb-1" />
-            <p className="text-lg font-bold text-gray-900">{data.tasaConversion}%</p>
-            <p className="text-[10px] text-gray-500">Conversión</p>
+            <Users className="w-5 h-5 text-secondary mx-auto mb-1" />
+            <p className="text-lg font-bold text-foreground">{data.tasaConversion}%</p>
+            <p className="text-[10px] text-muted-foreground">Conversión</p>
           </Card>
           <Card className="p-3 border-0 shadow-sm text-center">
             <Zap className="w-5 h-5 text-amber-600 mx-auto mb-1" />
-            <p className="text-lg font-bold text-gray-900">{data.crecimientoMensual}%</p>
-            <p className="text-[10px] text-gray-500">Crecimiento</p>
+            <p className="text-lg font-bold text-foreground">{data.crecimientoMensual}%</p>
+            <p className="text-[10px] text-muted-foreground">Crecimiento</p>
           </Card>
         </motion.div>
 
@@ -239,24 +240,24 @@ export default function Dashboard() {
           className="mb-4"
         >
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-              <Bell className="w-4 h-4 text-violet-600" />
+            <h2 className="font-bold text-foreground text-sm flex items-center gap-2">
+              <Bell className="w-4 h-4 text-secondary" />
               Notificaciones
             </h2>
-            <Button variant="ghost" size="sm" className="text-xs text-violet-600 h-7">
+            <Button variant="ghost" size="sm" className="text-xs text-secondary h-7">
               Ver todas
             </Button>
           </div>
           <div className="space-y-2">
             {data.notificaciones.slice(0, 3).map((notif, i) => (
-              <Card key={notif.id} className={`p-3 border-0 shadow-sm ${notif.urgente ? 'bg-red-50 border-l-4 border-l-red-500' : ''}`}>
+              <Card key={notif.id} className={`p-3 border-0 shadow-sm ${notif.urgente ? 'bg-destructive/5 border-l-4 border-l-destructive' : ''}`}>
                 <div className="flex items-start gap-2">
                   <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                    notif.urgente ? 'bg-red-500 animate-pulse' : 'bg-gray-400'
+                    notif.urgente ? 'bg-destructive animate-pulse' : 'bg-muted-foreground'
                   }`}></div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 font-medium leading-tight">{notif.mensaje}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{notif.tiempo}</p>
+                    <p className="text-sm text-foreground font-medium leading-tight">{notif.mensaje}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{notif.tiempo}</p>
                   </div>
                 </div>
               </Card>
@@ -272,11 +273,11 @@ export default function Dashboard() {
           className="mb-4"
         >
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-              <Car className="w-4 h-4 text-violet-600" />
+            <h2 className="font-bold text-foreground text-sm flex items-center gap-2">
+              <Car className="w-4 h-4 text-secondary" />
               Vehículos Activos
             </h2>
-            <Button variant="ghost" size="sm" className="text-xs text-violet-600 h-7">
+            <Button variant="ghost" size="sm" className="text-xs text-secondary h-7">
               Ver todos
             </Button>
           </div>
@@ -284,23 +285,23 @@ export default function Dashboard() {
             {data.listaVehiculosActivos.map((vehiculo) => (
               <Card key={vehiculo.id} className="p-3 border-0 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold text-gray-900 text-sm">{vehiculo.nombre}</p>
-                  <Badge className="bg-violet-100 text-violet-700 text-xs">
+                  <p className="font-semibold text-foreground text-sm">{vehiculo.nombre}</p>
+                  <Badge className="bg-secondary/10 text-secondary text-xs">
                     {vehiculo.tiempoRestante}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
-                    <p className="text-gray-500">Pujas</p>
-                    <p className="font-bold text-gray-900">{vehiculo.pujas}</p>
+                    <p className="text-muted-foreground">Pujas</p>
+                    <p className="font-bold text-foreground">{vehiculo.pujas}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Mayor</p>
-                    <p className="font-bold text-green-600">{formatCurrency(vehiculo.mayorPuja)}</p>
+                    <p className="text-muted-foreground">Mayor</p>
+                    <p className="font-bold text-primary">{formatCurrency(vehiculo.mayorPuja)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Vistas</p>
-                    <p className="font-bold text-gray-900">{vehiculo.vistas}</p>
+                    <p className="text-muted-foreground">Vistas</p>
+                    <p className="font-bold text-foreground">{vehiculo.vistas}</p>
                   </div>
                 </div>
               </Card>
@@ -316,8 +317,8 @@ export default function Dashboard() {
           className="mb-4"
         >
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+            <h2 className="font-bold text-foreground text-sm flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-primary" />
               Ventas Recientes
             </h2>
           </div>
@@ -326,18 +327,18 @@ export default function Dashboard() {
               <Card key={venta.id} className="p-3 border-0 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900 text-sm">{venta.vehiculo}</p>
+                    <p className="font-semibold text-foreground text-sm">{venta.vehiculo}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="text-xs text-gray-500">{venta.comprador}</p>
-                      <span className="text-gray-300">•</span>
-                      <p className="text-xs text-gray-500">{formatDate(venta.fecha)}</p>
+                      <p className="text-xs text-muted-foreground">{venta.comprador}</p>
+                      <span className="text-border">•</span>
+                      <p className="text-xs text-muted-foreground">{formatDate(venta.fecha)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-green-600 text-sm">{formatCurrency(venta.precio)}</p>
+                    <p className="font-bold text-primary text-sm">{formatCurrency(venta.precio)}</p>
                     <Badge className={`mt-1 text-xs ${
                       venta.estado === 'completado' 
-                        ? 'bg-green-100 text-green-700' 
+                        ? 'bg-primary/10 text-primary' 
                         : 'bg-blue-100 text-blue-700'
                     }`}>
                       {venta.estado === 'completado' ? 'Pagado' : 'En proceso'}
@@ -358,19 +359,19 @@ export default function Dashboard() {
         >
           <Card className="p-4 border-0 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
-              <BarChart3 className="w-4 h-4 text-violet-600" />
-              <h3 className="font-bold text-gray-900 text-sm">Tendencia de Ingresos</h3>
+              <BarChart3 className="w-4 h-4 text-secondary" />
+              <h3 className="font-bold text-foreground text-sm">Tendencia de Ingresos</h3>
             </div>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={data.tendenciaVentas}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="mes" stroke="#6b7280" style={{ fontSize: '11px' }} />
-                <YAxis stroke="#6b7280" style={{ fontSize: '11px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '11px' }} />
+                <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '11px' }} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                   formatter={(value) => `$${value}M`}
                 />
-                <Line type="monotone" dataKey="ingresos" stroke="#7c3aed" strokeWidth={2} dot={{ fill: '#7c3aed', r: 4 }} />
+                <Line type="monotone" dataKey="ingresos" stroke="hsl(265, 90%, 55%)" strokeWidth={2} dot={{ fill: 'hsl(265, 90%, 55%)', r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </Card>
@@ -383,12 +384,11 @@ export default function Dashboard() {
           transition={{ delay: 0.35 }}
           className="grid grid-cols-2 gap-3 mb-4"
         >
-          {/* Ventas por mes */}
           <Card className="p-3 border-0 shadow-sm">
-            <h3 className="font-bold text-gray-900 text-xs mb-2">Ventas Mensuales</h3>
+            <h3 className="font-bold text-foreground text-xs mb-2">Ventas Mensuales</h3>
             <ResponsiveContainer width="100%" height={120}>
               <BarChart data={data.tendenciaVentas}>
-                <Bar dataKey="ventas" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="ventas" fill="hsl(265, 90%, 55%)" radius={[4, 4, 0, 0]} />
                 <Tooltip 
                   contentStyle={{ fontSize: '11px' }}
                   formatter={(value) => `${value} ventas`}
@@ -397,9 +397,8 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </Card>
 
-          {/* Distribución por tipo */}
           <Card className="p-3 border-0 shadow-sm">
-            <h3 className="font-bold text-gray-900 text-xs mb-2">Por Categoría</h3>
+            <h3 className="font-bold text-foreground text-xs mb-2">Por Categoría</h3>
             <ResponsiveContainer width="100%" height={120}>
               <PieChart>
                 <Pie
@@ -436,8 +435,8 @@ export default function Dashboard() {
               {data.distribucionVentas.map((item, i) => (
                 <div key={item.tipo} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS[i] }}></div>
-                  <span className="text-xs text-gray-600">{item.tipo}</span>
-                  <span className="text-xs font-bold text-gray-900 ml-auto">{item.valor}%</span>
+                  <span className="text-xs text-muted-foreground">{item.tipo}</span>
+                  <span className="text-xs font-bold text-foreground ml-auto">{item.valor}%</span>
                 </div>
               ))}
             </div>

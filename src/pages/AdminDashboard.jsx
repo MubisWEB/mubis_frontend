@@ -84,13 +84,13 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-gradient-to-b from-violet-900 to-violet-800 px-4 pt-8 pb-6">
+    <div className="min-h-screen bg-muted pb-24">
+      <div className="bg-gradient-brand px-4 pt-8 pb-6">
         <div className="text-center mb-4">
           <MubisLogo size="xl" variant="light" />
         </div>
         <h1 className="text-2xl font-bold text-white text-center mb-2">Panel Admin</h1>
-        <p className="text-violet-200 text-center text-sm">Gestión de dealers y subastas</p>
+        <p className="text-white/60 text-center text-sm">Gestión de dealers y subastas</p>
       </div>
 
       <div className="px-4 pt-4">

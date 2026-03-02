@@ -108,22 +108,22 @@ export default function CarrosVendidos() {
   const totalRevenue = cars.reduce((sum, car) => sum + car.final_price, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-gradient-to-b from-green-700 to-green-600 px-5 pt-8 pb-6 rounded-b-3xl">
+    <div className="min-h-screen bg-muted pb-24">
+      <div className="bg-gradient-brand px-5 pt-8 pb-6 rounded-b-3xl">
         <div className="text-center mb-4">
           <MubisLogo size="xl" variant="light" />
         </div>
         <h1 className="text-2xl font-bold text-white text-center mb-2">Carros Vendidos</h1>
-        <p className="text-green-200 text-center text-sm mb-4">Historial de ventas exitosas</p>
+        <p className="text-white/60 text-center text-sm mb-4">Historial de ventas exitosas</p>
 
         <div className="flex justify-center gap-6">
           <div className="text-center">
             <p className="text-2xl font-bold text-white">{cars.length}</p>
-            <p className="text-green-200 text-xs">Vendidos</p>
+            <p className="text-white/60 text-xs">Vendidos</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-white">{formatPrice(totalRevenue)}</p>
-            <p className="text-green-200 text-xs">Total Recibido</p>
+            <p className="text-white/60 text-xs">Total Recibido</p>
           </div>
         </div>
       </div>

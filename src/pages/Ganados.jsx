@@ -77,9 +77,9 @@ export default function Ganados() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-muted pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-b from-violet-700 to-violet-600 px-5 pt-8 pb-6 rounded-b-3xl">
+      <div className="bg-gradient-brand px-5 pt-8 pb-6 rounded-b-3xl">
         <div className="text-center mb-4">
           <MubisLogo size="xl" variant="light" />
         </div>
@@ -92,13 +92,13 @@ export default function Ganados() {
         <div className="flex justify-center gap-6 mt-4">
           <div className="text-center">
             <p className="text-2xl font-bold text-white">{wonAuctions.length}</p>
-            <p className="text-violet-200 text-xs">Ganadas</p>
+            <p className="text-white/60 text-xs">Ganadas</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-white">
               ${(wonAuctions.reduce((a, b) => a + b.amount, 0) / 1000000).toFixed(0)}M
             </p>
-            <p className="text-violet-200 text-xs">Invertido</p>
+            <p className="text-white/60 text-xs">Invertido</p>
           </div>
         </div>
       </div>

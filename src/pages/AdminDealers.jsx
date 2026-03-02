@@ -82,8 +82,8 @@ export default function AdminDealers() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-gradient-to-b from-violet-900 to-violet-800 px-4 pt-8 pb-6">
+    <div className="min-h-screen bg-muted pb-24">
+      <div className="bg-gradient-brand px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-4">
           <Button
             variant="ghost"
@@ -97,7 +97,7 @@ export default function AdminDealers() {
           <div className="w-10"></div>
         </div>
         <h1 className="text-2xl font-bold text-white text-center mb-2">Dealers Registrados</h1>
-        <p className="text-violet-200 text-center text-sm">{displayDealers.length} dealers en total</p>
+        <p className="text-white/60 text-center text-sm">{displayDealers.length} dealers en total</p>
       </div>
 
       <div className="px-4 -mt-4">
