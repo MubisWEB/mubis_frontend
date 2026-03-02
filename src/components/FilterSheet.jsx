@@ -45,7 +45,7 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
         <Button 
           variant="outline" 
           className={`rounded-full font-medium h-10 px-4 text-sm border-0 ${
-            hasFilters ? 'bg-primary text-foreground' : 'bg-primary text-foreground hover:bg-primary/90'
+            hasFilters ? 'bg-secondary text-secondary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
           }`}
         >
           <Filter className="w-4 h-4 mr-1" />

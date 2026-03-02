@@ -22,7 +22,7 @@ export default function MubisLogo({ size = 'md', variant = 'dark' }) {
     >
       <span>mub</span>
       <span className="relative inline-block">
-        i
+        <span className="invisible">i</span>
         <span 
           className={`absolute ${sizeConfig.dot} top-[0.08em] left-1/2 -translate-x-1/2 rounded-full`}
           style={{ backgroundColor: '#39FF14' }}
