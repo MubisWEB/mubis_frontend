@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle, ArrowLeft, Mail } from 'lucide-react';
+import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/TopBar';
 import MubisLogo from '@/components/MubisLogo';
@@ -59,12 +59,6 @@ export default function RegistroConfirmacion() {
         </motion.div>
       </main>
 
-      <footer className="bg-footer text-footer-foreground">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm">
-          <Mail className="w-4 h-4 text-secondary" />
-          <span>contacto@mubis.com</span>
-        </div>
-      </footer>
     </div>
   );
 }
