@@ -1,103 +1,85 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 
+
 @layer base {
   :root {
-    /* Brand Colors - Premium Gradient Palette */
-    --brand-indigo: 240 60% 35%;
-    --brand-violet: 270 65% 50%;
-    --brand-magenta: 310 70% 55%;
-    --brand-dark: 240 15% 10%;
-    --brand-slate: 240 10% 40%;
-    --brand-light: 260 30% 98%;
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
 
-    /* Semantic Colors */
-    --background: 260 30% 99%;
-    --foreground: 240 15% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 240 15% 10%;
+    --card-foreground: 220 20% 10%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 240 15% 10%;
-    --primary: 270 65% 50%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 260 20% 96%;
-    --secondary-foreground: 240 15% 10%;
-    --muted: 260 20% 96%;
-    --muted-foreground: 240 10% 45%;
-    --accent: 102 100% 45%;
-    --accent-foreground: 240 15% 10%;
+
+    --secondary: 265 90% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 265 90% 55%;
+    --accent-foreground: 0 0% 100%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 260 15% 90%;
-    --input: 260 15% 90%;
-    --ring: 270 65% 50%;
-    
-    /* Chart colors */
-    --chart-1: 270 65% 50%;
-    --chart-2: 310 70% 55%;
-    --chart-3: 102 100% 45%;
-    --chart-4: 240 60% 35%;
-    --chart-5: 340 75% 55%;
-    
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 71% 45%;
+
     --radius: 0.75rem;
-    
-    /* Sidebar */
-    --sidebar-background: 260 30% 98%;
-    --sidebar-foreground: 240 10% 30%;
-    --sidebar-primary: 270 65% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 20% 95%;
-    --sidebar-accent-foreground: 240 10% 30%;
-    --sidebar-border: 260 15% 90%;
-    --sidebar-ring: 270 65% 50%;
+
+    --footer-bg: 240 10% 10%;
+    --footer-foreground: 240 5% 85%;
+    --footer-heading: 0 0% 100%;
+
+    --badge-success-bg: 142 71% 92%;
+    --badge-success-fg: 142 71% 30%;
+
+    --gradient-purple: linear-gradient(135deg, hsl(265, 90%, 55%), hsl(280, 85%, 45%));
+    --gradient-hero-accent: linear-gradient(135deg, hsl(265, 90%, 55%), hsl(142, 71%, 45%));
   }
 
   .dark {
-    --background: 240 15% 8%;
-    --foreground: 0 0% 98%;
-    --card: 240 15% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 15% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 270 65% 60%;
+    --background: 240 10% 10%;
+    --foreground: 0 0% 95%;
+    --card: 240 10% 14%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 10% 14%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 10% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 10% 15%;
+    --secondary: 265 90% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 10% 18%;
     --muted-foreground: 240 5% 65%;
-    --accent: 102 100% 45%;
-    --accent-foreground: 240 15% 10%;
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 18%;
-    --input: 240 10% 18%;
-    --ring: 270 65% 60%;
-    
-    --sidebar-background: 240 15% 8%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 270 65% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 15%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 240 10% 18%;
-    --sidebar-ring: 270 65% 60%;
+    --accent: 265 90% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 142 71% 45%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', Georgia, serif;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
   }
 }
 
