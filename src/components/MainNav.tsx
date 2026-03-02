@@ -29,9 +29,8 @@ const MainNav = () => {
             Bogotá
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
-          <a href="#" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
-            <Check className="w-4 h-4" />
-            Aplicar como Dealer
+          <a href="/login" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
+            Log in
           </a>
         </div>
         <button
@@ -52,8 +51,8 @@ const MainNav = () => {
             <button className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground">
               <MapPin className="w-4 h-4" /> Bogotá
             </button>
-            <a href="#" className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-              <Check className="w-4 h-4" /> Aplicar como Dealer
+            <a href="/login" className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+              Log in
             </a>
           </div>
         </div>
