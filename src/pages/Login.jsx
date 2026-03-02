@@ -7,8 +7,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
-import MainNav from "@/components/MainNav";
-import Footer from "@/components/Footer";
+import { Mail } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -42,7 +41,11 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopBar />
-      <MainNav />
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+          <span className="text-2xl font-black tracking-tight text-foreground">mubis</span>
+        </div>
+      </nav>
 
       {/* Contenido principal */}
       <main className="flex-1 flex items-center justify-center px-4 py-12 sm:py-20">
@@ -110,7 +113,7 @@ export default function Login() {
               <div className="text-right">
                 <button
                   type="button"
-                  className="text-sm text-primary hover:underline font-medium"
+                  className="text-sm text-secondary hover:underline font-medium"
                 >
                   ¿Olvidaste tu contraseña?
                 </button>
@@ -119,7 +122,7 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 font-semibold rounded-full shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="w-full h-12 font-semibold rounded-full shadow-sm bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
               >
                 {loading ? (
                   <>
@@ -144,7 +147,7 @@ export default function Login() {
               ¿No tienes cuenta?{" "}
               <Link
                 to="/registro"
-                className="font-semibold text-primary hover:underline"
+                className="font-semibold text-secondary hover:underline"
               >
                 Solicita acceso aquí
               </Link>
@@ -153,7 +156,12 @@ export default function Login() {
         </motion.div>
       </main>
 
-      <Footer />
+      <footer className="bg-footer text-footer-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm">
+          <Mail className="w-4 h-4 text-secondary" />
+          <span>contacto@mubis.com</span>
+        </div>
+      </footer>
     </div>
   );
 }
