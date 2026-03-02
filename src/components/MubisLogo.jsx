@@ -21,8 +21,8 @@ export default function MubisLogo({ size = 'md', variant = 'dark' }) {
       style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
     >
       <span>mub</span>
-      <span className="relative inline-block">
-        <span className="invisible">i</span>
+      <span className="relative inline-block" style={{ fontVariantLigatures: 'none' }}>
+        <span style={{ fontSize: '0.75em', position: 'relative', top: '0.15em' }}>ı</span>
         <span 
           className={`absolute ${sizeConfig.dot} top-[0.08em] left-1/2 -translate-x-1/2 rounded-full`}
           style={{ backgroundColor: '#39FF14' }}
