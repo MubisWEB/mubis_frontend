@@ -3,39 +3,55 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, Eye, TrendingUp, Phone, MessageCircle, Calendar, Gauge, Settings2, Fuel, Palette, MapPin, ChevronLeft, ChevronRight, Camera, CheckCircle, FileCheck, Shield, AlertCircle, Timer } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+import { ArrowLeft, Clock, Users, Eye, TrendingUp, Phone, MessageCircle, Calendar, Gauge, Settings2, Fuel, Palette, MapPin, ChevronLeft, ChevronRight, Camera, CheckCircle, FileCheck, Shield, AlertCircle, Timer, XCircle } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MubisLogo from '@/components/MubisLogo';
 import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
+import { toast } from 'sonner';
+
+const STORAGE_KEY = 'mubis_my_auctions';
+
+function loadAuction(id) {
+  try {
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    return all.find(a => a.id === id) || null;
+  } catch { return null; }
+}
+
+function updateAuctionInStorage(id, updates) {
+  try {
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const updated = all.map(a => a.id === id ? { ...a, ...updates } : a);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    return updated.find(a => a.id === id);
+  } catch { return null; }
+}
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const auctionId = urlParams.get('id');
-  
-  const [auction] = useState({
-    id: '1', brand: 'Mazda', model: '3', year: 2022, plate: 'ABC123',
-    photos: ['https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6931f0ed55d5d84622e39c62/8bac02287_IMG_3552.jpeg', 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6931f0ed55d5d84622e39c62/0455a9335_IMG_3553.jpeg'],
-    current_bid: 62000000, starting_price: 55000000, bids_count: 24, views: 156,
-    transmission: 'Automática', fuel_type: 'Gasolina', color: 'Gris', mileage: 15000, city: 'Bogotá',
-    status: 'active', ends_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), last_bidder: 'Autonal',
-    top_bidders: [{ name: 'Autonal', amount: 62000000, time: 'Hace 5 min' }, { name: 'Los Coches', amount: 61500000, time: 'Hace 15 min' }, { name: 'Sanautos', amount: 61000000, time: 'Hace 30 min' }],
-    peritaje: {
-      realizado_por: 'Autonal', score: 92, reserve_price: 65000000, auto_extended_count: 1,
-      items: [
-        { name: 'Motor', status: 'good', detail: 'Compresión perfecta, sin manchas' }, { name: 'Transmisión', status: 'good', detail: 'Automática suave, aceite nuevo' },
-        { name: 'Suspensión', status: 'good', detail: 'Amortiguadores originales OK' }, { name: 'Frenos', status: 'good', detail: 'Discos y pastillas al 90%' },
-        { name: 'Carrocería', status: 'good', detail: 'Pintura original impecable' }, { name: 'Interior', status: 'good', detail: 'Tapicería como nueva' },
-        { name: 'Electricidad', status: 'good', detail: 'Sistema completo funcional' }, { name: 'Llantas', status: 'good', detail: 'Michelin nuevas, 95% vida' }
-      ],
-      documentos: [{ name: 'SOAT', status: 'Vigente hasta Nov 2025' }, { name: 'Técnico-mecánica', status: 'Vigente hasta Abr 2025' }, { name: 'Impuestos', status: 'Al día' }, { name: 'Multas', status: 'Sin multas pendientes' }]
-    }
-  });
+  const [searchParams] = useSearchParams();
+  const auctionId = searchParams.get('id');
 
+  const [auction, setAuction] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    if (!auctionId) return;
+    const data = loadAuction(auctionId);
+    if (data) setAuction(data);
+  }, [auctionId]);
+
+  // Refresh from storage periodically (to capture simulated bids)
+  useEffect(() => {
+    if (!auctionId) return;
+    const interval = setInterval(() => {
+      const data = loadAuction(auctionId);
+      if (data) setAuction(data);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [auctionId]);
 
   useEffect(() => {
     const calculateTime = () => {
@@ -51,63 +67,96 @@ export default function DetalleSubastaVendedor() {
     return () => clearInterval(interval);
   }, [auction]);
 
+  const handleCloseAuction = () => {
+    if (!auction) return;
+    const updated = updateAuctionInStorage(auction.id, { status: 'closed', ends_at: new Date().toISOString() });
+    if (updated) {
+      setAuction(updated);
+      toast.success('Subasta cerrada', { description: `${auction.brand} ${auction.model} · ${formatPrice(auction.current_bid)}` });
+    }
+  };
+
+  if (!auction) {
+    return (
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">No se encontró la subasta</p>
+          <Button onClick={() => navigate('/MisSubastas')} variant="outline">Volver a Mis Subastas</Button>
+        </div>
+      </div>
+    );
+  }
+
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
+  const isActive = auction.status === 'active' && new Date(auction.ends_at) > new Date();
 
   const specs = [
-    { icon: Calendar, label: 'Año', value: auction.year }, { icon: Gauge, label: 'Kilometraje', value: `${auction.mileage?.toLocaleString('es-CO')} km` },
-    { icon: Settings2, label: 'Transmisión', value: auction.transmission }, { icon: Fuel, label: 'Combustible', value: auction.fuel_type },
-    { icon: Palette, label: 'Color', value: auction.color }, { icon: MapPin, label: 'Ciudad', value: auction.city },
+    { icon: Calendar, label: 'Año', value: auction.year },
+    { icon: Gauge, label: 'Kilometraje', value: `${Number(auction.mileage || 0).toLocaleString('es-CO')} km` },
+    { icon: Settings2, label: 'Transmisión', value: auction.transmission },
+    { icon: Fuel, label: 'Combustible', value: auction.fuel_type },
+    { icon: Palette, label: 'Color', value: auction.color },
+    { icon: MapPin, label: 'Ciudad', value: auction.city },
   ];
+
+  const photos = auction.photos || [];
 
   return (
     <div className="min-h-screen bg-muted pb-24">
       <TopBar />
       <div className="relative">
         <div className="relative h-64 bg-muted overflow-hidden">
-          <motion.img key={currentImageIndex} src={auction.photos[currentImageIndex]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
-          {auction.photos.length > 1 && (
+          {photos.length > 0 ? (
+            <motion.img key={currentImageIndex} src={photos[currentImageIndex]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted"><p className="text-muted-foreground">Sin fotos</p></div>
+          )}
+          {photos.length > 1 && (
             <>
-              <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? auction.photos.length - 1 : prev - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronLeft className="w-5 h-5" /></button>
-              <button onClick={() => setCurrentImageIndex(prev => prev === auction.photos.length - 1 ? 0 : prev + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronRight className="w-5 h-5" /></button>
+              <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? photos.length - 1 : prev - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronLeft className="w-5 h-5" /></button>
+              <button onClick={() => setCurrentImageIndex(prev => prev === photos.length - 1 ? 0 : prev + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronRight className="w-5 h-5" /></button>
             </>
           )}
-          <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><Camera className="w-3 h-3" />{currentImageIndex + 1}/{auction.photos.length}</div>
-          <button onClick={() => navigate(createPageUrl('MisSubastas'))} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white"><ArrowLeft className="w-5 h-5" /></button>
-          <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground">Activa</Badge>
+          {photos.length > 0 && (
+            <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><Camera className="w-3 h-3" />{currentImageIndex + 1}/{photos.length}</div>
+          )}
+          <button onClick={() => navigate('/MisSubastas')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white"><ArrowLeft className="w-5 h-5" /></button>
+          <Badge className={`absolute top-4 right-4 ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'}`}>
+            {isActive ? 'Activa' : 'Cerrada'}
+          </Badge>
         </div>
 
         <div className="bg-card px-4 py-4 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <div><h1 className="text-xl font-bold text-foreground font-sans">{auction.brand} {auction.model}</h1><p className="text-muted-foreground text-sm">{auction.year} · {auction.plate}</p></div>
+            <div><h1 className="text-xl font-bold text-foreground font-sans">{auction.brand} {auction.model}</h1><p className="text-muted-foreground text-sm">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p></div>
             <div className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-full bg-secondary/10 text-secondary"><Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span></div>
           </div>
           <div className="grid grid-cols-3 gap-3 mt-3">
             <div className="text-center p-3 bg-primary/5 rounded-xl"><p className="text-2xl font-bold text-primary">{formatPrice(auction.current_bid)}</p><p className="text-primary text-xs">Puja actual</p></div>
             <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.bids_count}</p><p className="text-secondary text-xs">Pujas</p></div>
-            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.views}</p><p className="text-secondary text-xs">Vistas</p></div>
+            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.views || 0}</p><p className="text-secondary text-xs">Vistas</p></div>
           </div>
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
+        {/* Ganancia estimada */}
         <Card className="p-4 border border-border shadow-sm space-y-3">
           <div className="flex items-center justify-between"><h2 className="font-bold text-foreground font-sans">Ganancia estimada</h2><TrendingUp className="w-5 h-5 text-primary" /></div>
-          <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - auction.starting_price)}</p>
-          <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price)}</p>
-          {auction.peritaje?.reserve_price && (
-            <div className={`p-3 rounded-xl ${auction.current_bid >= auction.peritaje.reserve_price ? 'bg-primary/5 border border-primary/10' : 'bg-accent border border-accent'}`}>
+          <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - (auction.starting_price || 0))}</p>
+          <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price || 0)}</p>
+          {auction.reserve_price && (
+            <div className={`p-3 rounded-xl ${auction.current_bid >= auction.reserve_price ? 'bg-primary/5 border border-primary/10' : 'bg-accent border border-accent'}`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2"><AlertCircle className={`w-4 h-4 ${auction.current_bid >= auction.peritaje.reserve_price ? 'text-primary' : 'text-accent-foreground'}`} /><span className={`text-sm font-semibold ${auction.current_bid >= auction.peritaje.reserve_price ? 'text-primary' : 'text-accent-foreground'}`}>Precio de Reserva</span></div>
-                <span className="text-sm font-bold text-foreground">{formatPrice(auction.peritaje.reserve_price)}</span>
+                <div className="flex items-center gap-2"><AlertCircle className={`w-4 h-4 ${auction.current_bid >= auction.reserve_price ? 'text-primary' : 'text-accent-foreground'}`} /><span className={`text-sm font-semibold ${auction.current_bid >= auction.reserve_price ? 'text-primary' : 'text-accent-foreground'}`}>Precio de Reserva</span></div>
+                <span className="text-sm font-bold text-foreground">{formatPrice(auction.reserve_price)}</span>
               </div>
-              <p className="text-xs mt-1 text-muted-foreground">{auction.current_bid >= auction.peritaje.reserve_price ? '✓ La oferta actual supera tu precio de reserva' : 'La oferta debe alcanzar este monto para aceptar la venta'}</p>
+              <p className="text-xs mt-1 text-muted-foreground">{auction.current_bid >= auction.reserve_price ? '✓ La oferta actual supera tu precio de reserva' : 'La oferta debe alcanzar este monto para aceptar la venta'}</p>
             </div>
-          )}
-          {auction.peritaje?.auto_extended_count > 0 && (
-            <div className="bg-secondary/5 border border-secondary/10 p-3 rounded-xl"><div className="flex items-center gap-2"><Timer className="w-4 h-4 text-secondary" /><span className="text-sm font-semibold text-secondary">Subasta extendida {auction.peritaje.auto_extended_count}x</span></div><p className="text-xs mt-1 text-muted-foreground">Se agregaron +{auction.peritaje.auto_extended_count * 5} minutos por actividad en últimos 2 minutos</p></div>
           )}
         </Card>
 
+        {/* Especificaciones */}
         <Card className="p-4 border border-border shadow-sm">
           <h2 className="font-bold text-foreground mb-3 font-sans">Especificaciones</h2>
           <div className="grid grid-cols-2 gap-3">
@@ -115,35 +164,70 @@ export default function DetalleSubastaVendedor() {
           </div>
         </Card>
 
-        {auction.peritaje && (
-          <Card className="p-4 border border-border space-y-3">
-            <div className="flex items-center justify-between mb-2"><h3 className="font-bold text-foreground font-sans">Peritaje Mubis</h3><div className="flex items-center gap-2"><Shield className="w-4 h-4 text-secondary" /><span className="text-xs text-muted-foreground">Realizado por {auction.peritaje.realizado_por}</span></div></div>
-            <div className="flex items-center justify-center py-4 bg-primary/5 rounded-xl"><div className="text-center"><div className="text-4xl font-bold text-primary">{auction.peritaje.score}</div><div className="text-xs text-primary font-medium">Puntuación General</div></div></div>
-            <div className="space-y-2">
-              {auction.peritaje.items.map((item, idx) => (<div key={idx} className="flex items-start justify-between py-2 border-b border-border last:border-0"><div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-primary flex-shrink-0" /><div><span className="text-sm font-medium text-foreground">{item.name}</span><p className="text-xs text-muted-foreground">{item.detail}</p></div></div></div>))}
-            </div>
-            <div className="pt-3 border-t border-border">
-              <h4 className="font-semibold text-foreground text-sm mb-2 flex items-center gap-2"><FileCheck className="w-4 h-4 text-secondary" />Documentación</h4>
-              <div className="space-y-1.5">{auction.peritaje.documentos.map((doc, idx) => (<div key={idx} className="flex items-center justify-between text-xs"><span className="text-foreground">{doc.name}</span><span className="text-primary font-medium">{doc.status}</span></div>))}</div>
+        {/* Descripción */}
+        {auction.description && (
+          <Card className="p-4 border border-border shadow-sm">
+            <h2 className="font-bold text-foreground mb-2 font-sans">Descripción</h2>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{auction.description}</p>
+          </Card>
+        )}
+
+        {/* Documentación */}
+        {auction.documentacion && (
+          <Card className="p-4 border border-border shadow-sm">
+            <h4 className="font-semibold text-foreground text-sm mb-2 flex items-center gap-2"><FileCheck className="w-4 h-4 text-secondary" />Documentación</h4>
+            <div className="space-y-1.5">
+              {auction.documentacion.soat_status && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground">SOAT</span>
+                  <span className="text-primary font-medium">{auction.documentacion.soat_status === 'vigente' ? `Vigente hasta ${auction.documentacion.soat_fecha || ''}` : 'No vigente'}</span>
+                </div>
+              )}
+              {auction.documentacion.tm_status && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground">Técnico-mecánica</span>
+                  <span className="text-primary font-medium">{auction.documentacion.tm_status === 'vigente' ? `Vigente hasta ${auction.documentacion.tm_fecha || ''}` : 'No vigente'}</span>
+                </div>
+              )}
+              {auction.documentacion.impuestos && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground">Impuestos</span>
+                  <span className="text-primary font-medium">{auction.documentacion.impuestos}{auction.documentacion.impuestos_detalle ? ` · ${auction.documentacion.impuestos_detalle}` : ''}</span>
+                </div>
+              )}
+              {auction.documentacion.multas && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground">Multas</span>
+                  <span className="text-muted-foreground font-medium">{auction.documentacion.multas}{auction.documentacion.multas_detalle ? ` · ${auction.documentacion.multas_detalle}` : ''}</span>
+                </div>
+              )}
             </div>
           </Card>
         )}
 
-        <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans">Principales Oferentes</h2>
-          <div className="space-y-2">
-            {auction.top_bidders.map((bidder, i) => (<div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0"><div><p className="font-medium text-foreground text-sm">{bidder.name}</p><p className="text-xs text-muted-foreground">{bidder.time}</p></div><p className="font-bold text-primary">{formatPrice(bidder.amount)}</p></div>))}
-          </div>
-        </Card>
+        {/* Peritaje */}
+        {auction.peritaje_by && (
+          <Card className="p-4 border border-border shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-secondary" />
+              <span className="text-sm font-semibold text-foreground">Peritaje por {auction.peritaje_by}</span>
+            </div>
+          </Card>
+        )}
 
-        <Card className="p-4 border border-border shadow-sm bg-secondary/5">
-          <h3 className="font-bold text-foreground mb-2 text-sm font-sans">Dealer Líder: {auction.last_bidder}</h3>
-          <p className="text-xs text-muted-foreground mb-3">Puedes contactarlo cuando finalice la subasta</p>
-          <div className="flex gap-2">
-            <Button className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 h-10 rounded-full"><Phone className="w-4 h-4 mr-2" />Llamar</Button>
-            <Button variant="outline" className="flex-1 border-secondary/20 text-secondary hover:bg-secondary/5 h-10 rounded-full"><MessageCircle className="w-4 h-4 mr-2" />WhatsApp</Button>
-          </div>
-        </Card>
+        {/* Cerrar subasta */}
+        {isActive && (
+          <Button onClick={handleCloseAuction} variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-2">
+            <XCircle className="w-4 h-4" /> Cerrar subasta
+          </Button>
+        )}
+
+        {!isActive && (
+          <Card className="p-4 border border-border shadow-sm bg-muted/50 text-center">
+            <p className="text-sm font-semibold text-muted-foreground">Esta subasta ha sido cerrada</p>
+            <p className="text-xs text-muted-foreground mt-1">Puja final: {formatPrice(auction.current_bid)}</p>
+          </Card>
+        )}
       </div>
       <BottomNav currentPage="MisSubastas" />
     </div>
