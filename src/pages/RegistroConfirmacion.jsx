@@ -1,81 +1,69 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowLeft } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+import { Card } from "@/components/ui/card";
+import { CheckCircle, ArrowLeft, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import TopBar from '@/components/TopBar';
 
 export default function RegistroConfirmacion() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-brand flex flex-col">
-      {/* Header con logo */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="pt-16 pb-8 text-center"
-      >
-        <MubisLogo size="xl" variant="light" />
-      </motion.div>
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopBar />
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+          <span className="text-2xl font-black tracking-tight text-foreground">mubis</span>
+        </div>
+      </nav>
 
-      {/* Contenido principal */}
-      <div className="flex-1 flex items-center justify-center px-6">
+      <main className="flex-1 flex items-center justify-center px-4 py-12 sm:py-20">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="w-full max-w-md text-center"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="w-full max-w-md"
         >
-          {/* Icono de éxito */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            className="w-24 h-24 mx-auto mb-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#39FF14' }}
-          >
-            <CheckCircle className="w-12 h-12 text-brand-dark" />
-          </motion.div>
+          <Card className="p-8 bg-card border border-border shadow-sm rounded-2xl text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+              className="w-20 h-20 mx-auto mb-6 rounded-full bg-secondary/10 flex items-center justify-center"
+            >
+              <CheckCircle className="w-10 h-10 text-secondary" />
+            </motion.div>
 
-          {/* Mensaje */}
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-4">
-            ¡Gracias por tu solicitud!
-          </h1>
-          
-          <p className="text-white/80 text-lg mb-8 leading-relaxed">
-            Nuestro equipo la revisará y te contactaremos cuando sea aprobada.
-          </p>
+            <h1 className="font-serif text-2xl font-bold text-foreground mb-3">
+              ¡Gracias por tu solicitud!
+            </h1>
+            
+            <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+              Nuestro equipo la revisará y te contactaremos cuando sea aprobada.
+            </p>
 
-          <p className="text-white/60 text-sm mb-10">
-            Esto suele tomar entre 24-48 horas hábiles. Te enviaremos un correo con los próximos pasos.
-          </p>
+            <p className="text-muted-foreground/60 text-xs mb-8">
+              Esto suele tomar entre 24-48 horas hábiles. Te enviaremos un correo con los próximos pasos.
+            </p>
 
-          {/* Botón volver */}
-          <Button
-            onClick={() => navigate('/')}
-            size="lg"
-            className="rounded-full px-8 py-6 text-lg font-semibold shadow-xl group"
-            style={{ 
-              backgroundColor: '#39FF14',
-              color: '#1a1a2e'
-            }}
-          >
-            <ArrowLeft className="mr-2 w-5 h-5 transition-transform group-hover:-translate-x-1" />
-            Volver al inicio
-          </Button>
+            <Button
+              onClick={() => navigate('/')}
+              className="w-full h-12 font-semibold rounded-full shadow-sm bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
+            >
+              <ArrowLeft className="mr-2 w-5 h-5" />
+              Volver al inicio
+            </Button>
+          </Card>
         </motion.div>
-      </div>
+      </main>
 
-      {/* Footer */}
-      <div className="py-8 text-center">
-        <p className="text-white/40 text-sm">
-          ¿Tienes preguntas? Escríbenos a{' '}
-          <a href="mailto:soporte@mubis.co" className="text-white/60 hover:text-white underline">
-            soporte@mubis.co
-          </a>
-        </p>
-      </div>
+      <footer className="bg-footer text-footer-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm">
+          <Mail className="w-4 h-4 text-secondary" />
+          <span>contacto@mubis.com</span>
+        </div>
+      </footer>
     </div>
   );
 }
