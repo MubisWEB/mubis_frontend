@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, SlidersHorizontal, Flame, Bell, Gavel, ArrowUpRight } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';
@@ -130,31 +130,29 @@ export default function Comprar() {
         </div>
       </nav>
       {/* Header */}
-      <div className="bg-gradient-brand px-4 pt-6 pb-4">
-        <div className="text-center mb-4">
-          <MubisLogo size="xl" variant="light" />
-        </div>
-
-        <div className="flex justify-center gap-3 mb-4">
-          <Badge variant="outline" className="px-3 py-1 backdrop-blur-sm" style={{ backgroundColor: 'rgba(57, 255, 20, 0.10)', color: '#39FF14', borderColor: 'rgba(57, 255, 20, 0.25)' }}>
-            <span className="w-2 h-2 rounded-full mr-2 animate-pulse" style={{ backgroundColor: '#39FF14' }} />
-            {onlineDealers} dealers en línea
-          </Badge>
-          <Badge variant="outline" className="bg-white/10 text-white/85 border-white/20 px-3 py-1 backdrop-blur-sm">
-            <Flame className="w-3 h-3 mr-1" />
-            {vehicles.length} subastas activas
-          </Badge>
+      <div className="bg-background px-4 pt-4 pb-3">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="px-2.5 py-1 text-xs border-secondary/20 bg-secondary/5 text-secondary">
+              <span className="w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse bg-green-400" />
+              {onlineDealers} dealers
+            </Badge>
+            <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
+              <Flame className="w-3 h-3 mr-1 text-secondary" />
+              {vehicles.length} activas
+            </Badge>
+          </div>
         </div>
 
         <div className="relative mb-3">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
-          <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-0 bg-white/10 backdrop-blur-lg text-white placeholder:text-white/50 text-sm" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
 
         <div className="flex gap-2">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="flex-1 rounded-2xl border-0 bg-white/10 backdrop-blur-lg text-white font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1" />
+            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
+              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" />
               <SelectValue placeholder="Ordenar" />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +169,7 @@ export default function Comprar() {
       </div>
 
       {/* Content */}
-      <div className="bg-card rounded-t-[2rem] px-4 pt-4 pb-4">
+      <div className="px-4 pt-2 pb-4">
         <div className="mb-4 pt-1">
           <AnimatePresence mode="wait">
             {topActivity && (
