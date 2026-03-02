@@ -44,14 +44,14 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
       <SheetTrigger asChild>
         <Button 
           variant="outline" 
-          className={`border-violet-200 rounded-full font-medium h-10 px-4 text-sm ${
-            hasFilters ? 'bg-violet-100 text-violet-700 border-violet-300' : 'text-violet-700 hover:bg-violet-50'
+          className={`border-secondary/30 rounded-full font-medium h-10 px-4 text-sm ${
+            hasFilters ? 'bg-secondary/10 text-secondary border-secondary/40' : 'text-secondary hover:bg-secondary/5'
           }`}
         >
           <Filter className="w-4 h-4 mr-1" />
           Filtrar
           {hasFilters && (
-            <span className="ml-1 w-5 h-5 bg-violet-600 text-white rounded-full text-xs flex items-center justify-center">
+            <span className="ml-1 w-5 h-5 bg-secondary text-secondary-foreground rounded-full text-xs flex items-center justify-center">
               {Object.values(filters).filter(v => v).length}
             </span>
           )}
@@ -62,17 +62,17 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
           <div className="flex justify-center mb-2">
             <MubisLogo size="sm" />
           </div>
-          <SheetTitle className="text-xl font-bold text-gray-900">Filtros</SheetTitle>
+          <SheetTitle className="text-xl font-bold font-serif text-foreground">Filtros</SheetTitle>
         </SheetHeader>
         
         <div className="space-y-5 px-1 overflow-y-auto max-h-[calc(80vh-200px)]">
           <div>
-            <Label className="text-gray-700 font-semibold text-sm mb-2 block">Marca</Label>
+            <Label className="text-foreground font-semibold text-sm mb-2 block">Marca</Label>
             <Select
               value={localFilters.brand}
               onValueChange={(v) => setLocalFilters({ ...localFilters, brand: v })}
             >
-              <SelectTrigger className="rounded-xl border-gray-200 h-11">
+              <SelectTrigger className="rounded-xl border-border h-11">
                 <SelectValue placeholder="Todas las marcas" />
               </SelectTrigger>
               <SelectContent>
@@ -84,61 +84,61 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
           </div>
 
           <div>
-            <Label className="text-gray-700 font-semibold text-sm mb-2 block">Año del modelo</Label>
+            <Label className="text-foreground font-semibold text-sm mb-2 block">Año del modelo</Label>
             <div className="grid grid-cols-2 gap-3">
               <Input
                 type="number"
                 placeholder="Desde"
                 value={localFilters.yearFrom}
                 onChange={(e) => setLocalFilters({ ...localFilters, yearFrom: e.target.value })}
-                className="rounded-xl border-gray-200 h-11"
+                className="rounded-xl border-border h-11"
               />
               <Input
                 type="number"
                 placeholder="Hasta"
                 value={localFilters.yearTo}
                 onChange={(e) => setLocalFilters({ ...localFilters, yearTo: e.target.value })}
-                className="rounded-xl border-gray-200 h-11"
+                className="rounded-xl border-border h-11"
               />
             </div>
           </div>
 
           <div>
-            <Label className="text-gray-700 font-semibold text-sm mb-2 block">Precio (millones COP)</Label>
+            <Label className="text-foreground font-semibold text-sm mb-2 block">Precio (millones COP)</Label>
             <div className="grid grid-cols-2 gap-3">
               <Input
                 type="number"
                 placeholder="Mín"
                 value={localFilters.priceMin}
                 onChange={(e) => setLocalFilters({ ...localFilters, priceMin: e.target.value })}
-                className="rounded-xl border-gray-200 h-11"
+                className="rounded-xl border-border h-11"
               />
               <Input
                 type="number"
                 placeholder="Máx"
                 value={localFilters.priceMax}
                 onChange={(e) => setLocalFilters({ ...localFilters, priceMax: e.target.value })}
-                className="rounded-xl border-gray-200 h-11"
+                className="rounded-xl border-border h-11"
               />
             </div>
           </div>
 
           <div>
-            <Label className="text-gray-700 font-semibold text-sm mb-2 block">Kilometraje máximo</Label>
+            <Label className="text-foreground font-semibold text-sm mb-2 block">Kilometraje máximo</Label>
             <Input
               type="number"
               placeholder="Ej: 50000"
               value={localFilters.mileageMax}
               onChange={(e) => setLocalFilters({ ...localFilters, mileageMax: e.target.value })}
-              className="rounded-xl border-gray-200 h-11"
+              className="rounded-xl border-border h-11"
             />
           </div>
         </div>
 
-        <div className="pt-4 space-y-2 border-t mt-4">
+        <div className="pt-4 space-y-2 border-t border-border mt-4">
           <Button 
             onClick={handleApply}
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold h-12 rounded-xl"
+            className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold h-12 rounded-full"
           >
             Aplicar filtros
           </Button>
@@ -146,7 +146,7 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
             <Button 
               variant="ghost"
               onClick={handleReset}
-              className="w-full text-gray-500 font-medium"
+              className="w-full text-muted-foreground font-medium"
             >
               <X className="w-4 h-4 mr-1" />
               Limpiar filtros
