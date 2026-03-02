@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import TopBar from '@/components/TopBar';
+import MubisLogo from '@/components/MubisLogo';
 import { Mail } from 'lucide-react';
 
 export default function VerificarCodigo() {
@@ -70,8 +71,8 @@ export default function VerificarCodigo() {
     <div className="min-h-screen flex flex-col bg-background">
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
-          <span className="text-2xl font-black tracking-tight text-foreground">mubis</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
         </div>
       </nav>
 

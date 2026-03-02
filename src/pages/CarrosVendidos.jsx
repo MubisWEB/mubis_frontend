@@ -24,15 +24,19 @@ export default function CarrosVendidos() {
   const totalRevenue = cars.reduce((sum, car) => sum + car.final_price, 0);
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <TopBar />
-      <div className="bg-gradient-brand px-5 pt-6 pb-6 rounded-b-3xl">
-        <div className="text-center mb-4"><MubisLogo size="xl" variant="light" /></div>
-        <h1 className="text-2xl font-bold text-white text-center mb-2 font-serif">Carros Vendidos</h1>
-        <p className="text-white/60 text-center text-sm mb-4">Historial de ventas exitosas</p>
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
+        </div>
+      </nav>
+      <div className="px-5 pt-6 pb-4 text-center">
+        <h1 className="text-2xl font-bold text-foreground mb-2 font-serif">Carros Vendidos</h1>
+        <p className="text-muted-foreground text-sm mb-4">Historial de ventas exitosas</p>
         <div className="flex justify-center gap-6">
-          <div className="text-center"><p className="text-2xl font-bold text-white">{cars.length}</p><p className="text-white/60 text-xs">Vendidos</p></div>
-          <div className="text-center"><p className="text-2xl font-bold text-white">{formatPrice(totalRevenue)}</p><p className="text-white/60 text-xs">Total Recibido</p></div>
+          <div className="text-center"><p className="text-2xl font-bold text-secondary">{cars.length}</p><p className="text-muted-foreground text-xs">Vendidos</p></div>
+          <div className="text-center"><p className="text-2xl font-bold text-secondary">{formatPrice(totalRevenue)}</p><p className="text-muted-foreground text-xs">Total Recibido</p></div>
         </div>
       </div>
 

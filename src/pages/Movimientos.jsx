@@ -55,13 +55,13 @@ export default function movimientosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <TopBar />
-      <div className="bg-gradient-brand rounded-b-3xl">
-        <div className="px-4 pt-6 pb-6">
-          <div className="text-center"><MubisLogo size="xl" variant="light" /></div>
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
         </div>
-      </div>
+      </nav>
 
       <div className="px-4 py-4 -mt-2">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-2 gap-3">

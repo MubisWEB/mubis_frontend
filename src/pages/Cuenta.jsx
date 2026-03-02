@@ -52,10 +52,14 @@ export default function Cuenta() {
   };
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <TopBar />
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
+        </div>
+      </nav>
       <div className="bg-card px-5 pt-6 pb-5 border-b border-border">
-        <div className="text-center mb-6"><MubisLogo size="xl" /></div>
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
           <Avatar className="w-16 h-16">
             <AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{getInitials(user?.full_name)}</AvatarFallback>

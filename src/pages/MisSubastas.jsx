@@ -74,30 +74,33 @@ export default function MisSubastas() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <TopBar />
-      <div className="bg-gradient-brand px-4 pt-6 pb-4">
-        <div className="text-center mb-4">
-          <MubisLogo size="xl" variant="light" />
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2 text-center font-serif">Mis Subastas</h1>
-        <p className="text-white/70 text-center text-sm mb-6">Carros en subasta activa</p>
+      </nav>
+
+      <div className="px-4 pt-4 pb-3">
+        <h1 className="text-2xl font-bold text-foreground mb-2 text-center font-serif">Mis Subastas</h1>
+        <p className="text-muted-foreground text-center text-sm mb-4">Carros en subasta activa</p>
 
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="text-center p-3 bg-white/10 backdrop-blur-lg rounded-xl">
-            <p className="text-2xl font-bold text-white">{activeAuctions.length}</p>
-            <p className="text-white/70 text-xs">Activas</p>
+          <div className="text-center p-3 bg-secondary/10 rounded-xl">
+            <p className="text-2xl font-bold text-secondary">{activeAuctions.length}</p>
+            <p className="text-muted-foreground text-xs">Activas</p>
           </div>
-          <div className="text-center p-3 bg-white/10 backdrop-blur-lg rounded-xl">
-            <p className="text-2xl font-bold text-white">{totalBids}</p>
-            <p className="text-white/70 text-xs">Pujas</p>
+          <div className="text-center p-3 bg-secondary/10 rounded-xl">
+            <p className="text-2xl font-bold text-secondary">{totalBids}</p>
+            <p className="text-muted-foreground text-xs">Pujas</p>
           </div>
-          <div className="text-center p-3 bg-white/10 backdrop-blur-lg rounded-xl">
-            <p className="text-2xl font-bold text-white">{totalViews}</p>
-            <p className="text-white/70 text-xs">Vistas</p>
+          <div className="text-center p-3 bg-primary/10 rounded-xl">
+            <p className="text-2xl font-bold text-primary">{totalViews}</p>
+            <p className="text-muted-foreground text-xs">Vistas</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-card rounded-t-[2rem] px-4 pt-4 pb-4">
+      <div className="px-4 pt-2 pb-4">
         <div className="mb-4 pt-2">
           <AnimatePresence mode="wait">
             {liveActivity.length > 0 && (

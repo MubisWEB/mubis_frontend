@@ -7,6 +7,7 @@ import { Loader2, Mail } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
+import MubisLogo from "@/components/MubisLogo";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -56,8 +57,8 @@ export default function Registro() {
     <div className="min-h-screen flex flex-col bg-background">
       <TopBar />
       <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
-          <span className="text-2xl font-black tracking-tight text-foreground">mubis</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
         </div>
       </nav>
 
