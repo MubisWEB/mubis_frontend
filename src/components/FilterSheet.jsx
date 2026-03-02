@@ -44,14 +44,14 @@ export default function FilterSheet({ filters, setFilters, onApply }) {
       <SheetTrigger asChild>
         <Button 
           variant="outline" 
-          className={`border-secondary/30 rounded-full font-medium h-10 px-4 text-sm ${
-            hasFilters ? 'bg-secondary/10 text-secondary border-secondary/40' : 'text-secondary hover:bg-secondary/5'
+          className={`border-primary/30 rounded-full font-medium h-10 px-4 text-sm ${
+            hasFilters ? 'bg-primary/10 text-primary border-primary/40' : 'text-primary hover:bg-primary/5'
           }`}
         >
           <Filter className="w-4 h-4 mr-1" />
           Filtrar
           {hasFilters && (
-            <span className="ml-1 w-5 h-5 bg-secondary text-secondary-foreground rounded-full text-xs flex items-center justify-center">
+            <span className="ml-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
               {Object.values(filters).filter(v => v).length}
             </span>
           )}

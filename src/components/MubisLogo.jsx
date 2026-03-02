@@ -9,7 +9,7 @@ export default function MubisLogo({ size = 'md', variant = 'dark' }) {
   };
 
   const colors = {
-    dark: 'text-primary',
+    dark: 'text-foreground',
     light: 'text-white'
   };
 
