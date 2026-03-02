@@ -1,5 +1,6 @@
 import { MapPin, ChevronDown, Check, Menu, X } from "lucide-react";
 import { useState } from "react";
+import MubisLogo from "@/components/MubisLogo";
 
 const MainNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -10,7 +11,7 @@ const MainNav = () => {
     <nav className="w-full bg-background sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <div className="flex items-center gap-8">
-          <span className="text-2xl font-black tracking-tight text-foreground">mubis</span>
+          <MubisLogo size="md" />
           <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <a

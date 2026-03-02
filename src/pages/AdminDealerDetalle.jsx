@@ -33,7 +33,7 @@ export default function AdminDealerDetalle() {
       <div className="bg-gradient-brand px-4 pt-4 pb-6">
         <div className="flex items-center justify-between mb-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('AdminDealers'))} className="text-white hover:bg-white/10"><ArrowLeft className="w-5 h-5" /></Button>
-          <MubisLogo size="md" variant="light" />
+          <MubisLogo size="md" />
           <div className="w-10"></div>
         </div>
         <h1 className="text-2xl font-bold text-white text-center mb-2 font-serif">{dealer.name}</h1>
