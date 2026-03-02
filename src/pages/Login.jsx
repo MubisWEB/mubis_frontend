@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
-import MubisLogo from "@/components/MubisLogo";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
+import TopBar from "@/components/TopBar";
+import MainNav from "@/components/MainNav";
+import Footer from "@/components/Footer";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,8 +26,6 @@ export default function Login() {
     }
 
     setLoading(true);
-
-    // Simulate login - replace with real auth
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     localStorage.setItem("mubis_authenticated", "true");
@@ -40,35 +40,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-muted flex flex-col">
-      {/* Header con gradiente de marca */}
-      <div className="bg-gradient-brand text-white px-4 pt-4 pb-16 relative">
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-            className="rounded-full text-white/80 hover:text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: -18 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <MubisLogo size="xl" variant="light" />
-        </motion.div>
-      </div>
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopBar />
+      <MainNav />
 
       {/* Contenido principal */}
-      <div className="flex-1 flex items-start justify-center px-6 -mt-8">
+      <main className="flex-1 flex items-center justify-center px-4 py-12 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
-          className="w-full max-w-xl"
+          className="w-full max-w-md"
         >
           <Card className="p-8 bg-card border border-border shadow-sm rounded-2xl">
             {/* Títulos */}
@@ -137,7 +119,7 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 font-semibold rounded-xl shadow-sm bg-primary text-primary-foreground hover:bg-mubis-purple-dark transition-colors"
+                className="w-full h-12 font-semibold rounded-full shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 {loading ? (
                   <>
@@ -162,14 +144,16 @@ export default function Login() {
               ¿No tienes cuenta?{" "}
               <Link
                 to="/registro"
-                className="font-semibold text-primary hover:text-mubis-purple-dark hover:underline"
+                className="font-semibold text-primary hover:underline"
               >
                 Solicita acceso aquí
               </Link>
             </p>
           </motion.div>
         </motion.div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
