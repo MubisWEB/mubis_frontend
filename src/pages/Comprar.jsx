@@ -20,6 +20,7 @@ import BidModal from '@/components/BidModal';
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
+import { Mail } from "lucide-react";
 
 // ✅ Mock simple y limpio
 const mockDataComprar = [
@@ -121,8 +122,13 @@ export default function Comprar() {
   const topActivity = liveActivity[0];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen flex flex-col bg-background pb-24">
       <TopBar />
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+          <span className="text-2xl font-black tracking-tight text-foreground">mubis</span>
+        </div>
+      </nav>
       {/* Header */}
       <div className="bg-gradient-brand px-4 pt-6 pb-4">
         <div className="text-center mb-4">
@@ -210,6 +216,14 @@ export default function Comprar() {
       </div>
 
       <BidModal vehicle={selectedVehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
+
+      <footer className="bg-footer text-footer-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm">
+          <Mail className="w-4 h-4 text-secondary" />
+          <span>contacto@mubis.com</span>
+        </div>
+      </footer>
+
       <BottomNav currentPage="Comprar" />
     </div>
   );
