@@ -1,36 +1,23 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-export default function MubisLogo({ size = 'md', variant = 'dark' }) {
+export default function MubisLogo({ size = 'md', linkTo = null }) {
   const sizes = {
-    sm: { text: 'text-2xl', dot: 'w-[0.22em] h-[0.22em]' },
-    md: { text: 'text-3xl', dot: 'w-[0.22em] h-[0.22em]' },
-    lg: { text: 'text-4xl', dot: 'w-[0.22em] h-[0.22em]' },
-    xl: { text: 'text-5xl', dot: 'w-[0.22em] h-[0.22em]' }
+    sm: 'text-xl',
+    md: 'text-2xl',
+    lg: 'text-3xl',
+    xl: 'text-4xl',
   };
 
-  const colors = {
-    dark: 'text-foreground',
-    light: 'text-white'
-  };
-
-  const sizeConfig = sizes[size];
-
-  return (
-    <div 
-      className={`${sizeConfig.text} ${colors[variant]} inline-flex items-baseline font-bold`} 
-      style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
-    >
-      <span>mub</span>
-      <span className="relative inline-block">
-        <span className="text-transparent">i</span>
-        <span className="absolute inset-0 flex items-end justify-center text-foreground" style={{ fontFamily: 'inherit' }}>ı</span>
-        <span 
-          className={`absolute ${sizeConfig.dot} top-[0.08em] left-1/2 -translate-x-1/2 rounded-full`}
-          style={{ backgroundColor: '#39FF14' }}
-        />
-      </span>
-      <span>s</span>
-      <span className="text-[0.24em] font-sans font-normal ml-0.5 opacity-60 relative -top-[1.1em]">™</span>
-    </div>
+  const logo = (
+    <span className={`${sizes[size]} font-black tracking-tight text-foreground`}>
+      mubis
+    </span>
   );
+
+  if (linkTo) {
+    return <Link to={linkTo}>{logo}</Link>;
+  }
+
+  return logo;
 }
