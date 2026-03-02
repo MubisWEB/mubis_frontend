@@ -180,7 +180,7 @@ const HeroSection = () => {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a
-                href="#"
+                href="/registro"
                 className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity"
               >
                 Aplicar como Dealer <ArrowRight className="w-4 h-4" />
