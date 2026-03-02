@@ -66,21 +66,22 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <TopBar />
-      <div className="bg-gradient-brand px-4 pt-4 pb-6">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('Cuenta'))} className="rounded-full text-white hover:bg-white/20"><ArrowLeft className="w-5 h-5" /></Button>
-          <MubisLogo size="md" variant="light" />
-          <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-white/20 relative"><Bell className="w-5 h-5" /><span className="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full"></span></Button>
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('Cuenta'))} className="rounded-full text-foreground hover:bg-muted"><ArrowLeft className="w-5 h-5" /></Button>
+            <MubisLogo size="md" />
+            <Button variant="ghost" size="icon" className="rounded-full text-foreground hover:bg-muted relative"><Bell className="w-5 h-5" /><span className="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full"></span></Button>
+          </div>
         </div>
-        <div className="text-center">
-          <h1 className="text-xl font-bold text-white font-serif">Dashboard</h1>
-          <p className="text-white/70 text-xs">Panel de Control</p>
+      </nav>
+      <div className="px-4 pt-4">
+        <div className="text-center mb-4">
+          <h1 className="text-xl font-bold text-foreground font-serif">Dashboard</h1>
+          <p className="text-muted-foreground text-xs">Panel de Control</p>
         </div>
-      </div>
-
-      <div className="px-4 -mt-2">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 gap-3 mb-4">
           {statsCards.map((stat, i) => {
             const Icon = stat.icon;

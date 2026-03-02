@@ -22,14 +22,18 @@ export default function Ganados() {
   const formatDate = (date) => { const days = Math.floor((Date.now() - new Date(date)) / (1000 * 60 * 60 * 24)); if (days === 0) return 'Hoy'; if (days === 1) return 'Ayer'; return `Hace ${days} días`; };
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <TopBar />
-      <div className="bg-gradient-brand px-5 pt-6 pb-6 rounded-b-3xl">
-        <div className="text-center mb-4"><MubisLogo size="xl" variant="light" /></div>
-        <div className="flex items-center justify-center gap-2 text-white"><Trophy className="w-6 h-6" /><h1 className="text-xl font-bold font-serif">Ganados este mes</h1></div>
+      <nav className="w-full bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
+          <MubisLogo size="md" />
+        </div>
+      </nav>
+      <div className="px-5 pt-6 pb-4">
+        <div className="flex items-center justify-center gap-2 text-foreground"><Trophy className="w-6 h-6 text-secondary" /><h1 className="text-xl font-bold font-serif">Ganados este mes</h1></div>
         <div className="flex justify-center gap-6 mt-4">
-          <div className="text-center"><p className="text-2xl font-bold text-white">{wonAuctions.length}</p><p className="text-white/60 text-xs">Ganadas</p></div>
-          <div className="text-center"><p className="text-2xl font-bold text-white">${(wonAuctions.reduce((a, b) => a + b.amount, 0) / 1000000).toFixed(0)}M</p><p className="text-white/60 text-xs">Invertido</p></div>
+          <div className="text-center"><p className="text-2xl font-bold text-secondary">{wonAuctions.length}</p><p className="text-muted-foreground text-xs">Ganadas</p></div>
+          <div className="text-center"><p className="text-2xl font-bold text-secondary">${(wonAuctions.reduce((a, b) => a + b.amount, 0) / 1000000).toFixed(0)}M</p><p className="text-muted-foreground text-xs">Invertido</p></div>
         </div>
       </div>
 
