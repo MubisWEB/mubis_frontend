@@ -1,48 +1,42 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Search, PlusCircle, User, Heart, Wallet } from 'lucide-react';
-import { createPageUrl } from '@/utils';
+import { Search, PlusCircle, User, Heart, Wallet, ClipboardCheck, LayoutDashboard, Users, FileText, DollarSign } from 'lucide-react';
+import { getUserRole } from '@/lib/mockStore';
 
-export default function BottomNav({ currentPage }) {
+const NAV_CONFIGS = {
+  dealer: [
+    { icon: Search, label: 'Comprar', path: '/Comprar' },
+    { icon: Heart, label: 'Vender', path: '/MisSubastas' },
+    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
+    { icon: User, label: 'Cuenta', path: '/Cuenta' },
+  ],
+  recomprador: [
+    { icon: Search, label: 'Comprar', path: '/Comprar' },
+    { icon: Heart, label: 'Ganados', path: '/Ganados' },
+    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
+    { icon: User, label: 'Cuenta', path: '/Cuenta' },
+  ],
+  perito: [
+    { icon: ClipboardCheck, label: 'Pendientes', path: '/PeritajesPendientes' },
+    { icon: User, label: 'Cuenta', path: '/Cuenta' },
+  ],
+  admin: [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/AdminDashboard' },
+    { icon: Users, label: 'Dealers', path: '/AdminDealers' },
+    { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
+    { icon: User, label: 'Cuenta', path: '/Cuenta' },
+  ],
+};
+
+export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const userRole = localStorage.getItem('mubis_user_role');
+  const userRole = getUserRole() || 'dealer';
 
-  const getNavItems = () => {
-    if (userRole === 'seller') {
-      return [
-        { icon: Home, label: 'Inicio', page: 'Home' },
-        { icon: Search, label: 'Subastas', page: 'MisSubastas' },
-        { icon: Wallet, label: 'Wallet', page: 'Wallet' },
-        { icon: User, label: 'Cuenta', page: 'Cuenta' }
-      ];
-    }
-    
-    if (userRole === 'admin') {
-      return [
-        { icon: Home, label: 'Dashboard', page: 'AdminDashboard' },
-        { icon: Search, label: 'Dealers', page: 'AdminDealers' },
-        { icon: PlusCircle, label: 'Solicitudes', page: 'AdminSolicitudes' },
-        { icon: User, label: 'Cuenta', page: 'Cuenta' }
-      ];
-    }
-    
-    // Dealer - tiene acceso a comprar Y vender
-    return [
-      { icon: Search, label: 'Comprar', page: 'Comprar' },
-      { icon: Heart, label: 'Mis Subastas', page: 'MisSubastas' },
-      { icon: Wallet, label: 'Movimientos', page: 'Movimientos' },
-      { icon: User, label: 'Cuenta', page: 'Cuenta' }
-    ];
-  };
+  const navItems = NAV_CONFIGS[userRole] || NAV_CONFIGS.dealer;
 
-  const navItems = getNavItems();
-
-  const isActive = (page) => {
-    if (currentPage) {
-      return currentPage === page;
-    }
-    return location.pathname.includes(page);
+  const isActive = (path) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
   return (
@@ -50,16 +44,13 @@ export default function BottomNav({ currentPage }) {
       <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = isActive(item.page);
-          
+          const active = isActive(item.path);
           return (
             <button
-              key={item.page}
-              onClick={() => navigate(createPageUrl(item.page))}
+              key={item.path}
+              onClick={() => navigate(item.path)}
               className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
-                active 
-                  ? 'text-secondary' 
-                  : 'text-muted-foreground hover:text-secondary'
+                active ? 'text-secondary' : 'text-muted-foreground hover:text-secondary'
               }`}
             >
               <Icon className={`w-6 h-6 ${active ? 'stroke-[2.5]' : 'stroke-2'}`} />

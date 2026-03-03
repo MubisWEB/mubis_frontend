@@ -16,7 +16,7 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
   const [loading, setLoading] = useState(false);
 
   const currentBid = vehicle?.current_bid || vehicle?.starting_price || 0;
-  const minBid = currentBid + 500000;
+  const minBid = currentBid + 100000;
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CO', {
@@ -44,8 +44,8 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
 
   const suggestedBids = [
     minBid,
-    minBid + 1000000,
-    minBid + 2000000
+    minBid + 500000,
+    minBid + 1000000
   ];
 
   const handleAmountChange = (e) => {

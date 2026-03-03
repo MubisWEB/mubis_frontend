@@ -70,7 +70,7 @@ export default function AdminDealers() {
           ))}
         </div>
       </div>
-      <BottomNav currentPage="AdminDashboard" />
+      <BottomNav />
     </div>
   );
 }

@@ -71,7 +71,7 @@ export default function Ganados() {
           </div>
         )}
       </div>
-      <BottomNav currentPage="Ganados" />
+      <BottomNav />
     </div>
   );
 }
