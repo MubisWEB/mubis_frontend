@@ -53,7 +53,7 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
           <Link to={detailUrl} className="flex-1 min-w-0 flex flex-col justify-between">
             <div>
               <h3 className="font-bold text-foreground text-base leading-tight truncate">{vehicle.brand} {vehicle.model}</h3>
-              <p className="text-muted-foreground text-xs">{vehicle.year} · {vehicle.mileage?.toLocaleString('es-CO')} km</p>
+              <p className="text-muted-foreground text-xs">{vehicle.year} · {(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km</p>
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className={`font-bold text-lg ${vehicle.isLeading ? 'text-primary' : 'text-secondary'} w-[75px]`}>{formatPrice(vehicle.current_bid || 0)}</span>

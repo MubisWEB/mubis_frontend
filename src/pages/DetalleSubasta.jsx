@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy } from 'lucide-react';
+import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, AlertCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
 import TopBar from "@/components/TopBar";
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById } from '@/lib/mockStore';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
@@ -26,7 +26,6 @@ export default function DetalleSubasta() {
     if (auction) setVehicle(auction);
   }, [auctionId]);
 
-  // Refresh periodically
   useEffect(() => {
     if (!auctionId) return;
     const interval = setInterval(() => {
@@ -76,17 +75,20 @@ export default function DetalleSubasta() {
   const images = vehicle.photos || [];
   const specs = [
     { icon: Calendar, label: 'Año', value: vehicle.year },
-    { icon: Gauge, label: 'Kilometraje', value: `${Number(vehicle.mileage || 0).toLocaleString('es-CO')} km` },
-    { icon: Settings2, label: 'Transmisión', value: vehicle.transmission || vehicle.traction || 'N/A' },
-    { icon: Fuel, label: 'Combustible', value: vehicle.fuel_type || 'N/A' },
-    { icon: Palette, label: 'Color', value: vehicle.color || 'N/A' },
-    { icon: MapPin, label: 'Ciudad', value: vehicle.city || 'N/A' },
+    { icon: Gauge, label: 'Kilometraje', value: `${Number(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km` },
+    { icon: Settings2, label: 'Transmisión', value: vehicle.transmission || vehicle.traction || '' },
+    { icon: Fuel, label: 'Combustible', value: vehicle.fuel_type || vehicle.combustible || '' },
+    { icon: Palette, label: 'Color', value: vehicle.color || '' },
+    { icon: MapPin, label: 'Ciudad', value: vehicle.city || '' },
   ];
 
-  // Use real peritaje data from the auction
-  const peritaje = vehicle.peritaje || null;
-  const peritajeScore = vehicle.peritaje_global || 0;
+  // Get real inspection data from store
+  const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);
+
+  // Get documentation from vehicle or auction
+  const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
+  const docs = vehicle.documentation || vehData?.documentation || null;
 
   return (
     <div className="min-h-screen bg-muted pb-32">
@@ -144,6 +146,7 @@ export default function DetalleSubasta() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
+        {/* Specs */}
         <Card className="p-4 border border-border shadow-sm rounded-xl">
           <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Settings2 className="w-4 h-4 text-secondary" />Especificaciones</p>
           <div className="grid grid-cols-2 gap-3">
@@ -156,29 +159,31 @@ export default function DetalleSubasta() {
           </div>
         </Card>
 
-        {/* Peritaje from store */}
-        {peritaje && (
+        {/* Peritaje from inspection store */}
+        {inspection && inspection.status === 'COMPLETED' && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-foreground flex items-center gap-2"><FileCheck className="w-4 h-4 text-secondary" />Peritaje Mubis</p>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${peritajeScore >= 80 ? 'bg-primary/10 text-primary' : peritajeScore >= 50 ? 'bg-accent/10 text-accent-foreground' : 'bg-destructive/10 text-destructive'}`}>
-                {peritajeScore}
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${inspection.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : inspection.scoreGlobal >= 50 ? 'bg-accent/10 text-accent-foreground' : 'bg-destructive/10 text-destructive'}`}>
+                {inspection.scoreGlobal}
               </div>
             </div>
-            <div className="space-y-2">
-              {Object.entries(peritaje).map(([key, val]) => (
-                <div key={key} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div className="flex items-center gap-2">
-                    {+val.score >= 70 ? <CheckCircle className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-accent-foreground" />}
-                    <span className="text-sm font-medium text-foreground capitalize">{key}</span>
+            {inspection.scores && (
+              <div className="space-y-2">
+                {Object.entries(inspection.scores).map(([key, val]) => (
+                  <div key={key} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div className="flex items-center gap-2">
+                      {val >= 70 ? <CheckCircle className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-accent-foreground" />}
+                      <span className="text-sm font-medium text-foreground capitalize">{key}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{val}/100</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs text-muted-foreground">{val.score}/100</span>
-                    {val.description && <p className="text-[10px] text-muted-foreground max-w-[140px] truncate">{val.description}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+            {inspection.comments && (
+              <p className="text-xs text-muted-foreground mt-3 italic">"{inspection.comments}"</p>
+            )}
             <div className="mt-4 bg-secondary/5 rounded-lg p-3 flex items-start gap-2">
               <Shield className="w-4 h-4 text-secondary mt-0.5" />
               <p className="text-xs text-muted-foreground">Inspeccionado por un perito certificado de Mubis.</p>
@@ -186,24 +191,40 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {!peritaje && (
-          <Card className="p-4 border border-border shadow-sm rounded-xl text-center">
-            <FileCheck className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Peritaje pendiente de carga</p>
-          </Card>
-        )}
-
         {/* Documentation */}
-        {vehicle.documentation && (
+        {docs && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
-            <p className="font-bold text-foreground mb-3">Documentación</p>
-            <div className="space-y-2 text-xs">
-              {vehicle.documentation.soat_status && (
-                <div className="flex justify-between"><span className="text-foreground">SOAT</span><span className="text-muted-foreground">{vehicle.documentation.soat_status === 'vigente' ? `Vigente · ${vehicle.documentation.soat_fecha || ''}` : 'No vigente'}</span></div>
-              )}
-              {vehicle.documentation.tm_status && (
-                <div className="flex justify-between"><span className="text-foreground">Técnico-mecánica</span><span className="text-muted-foreground">{vehicle.documentation.tm_status === 'vigente' ? `Vigente · ${vehicle.documentation.tm_fecha || ''}` : 'No vigente'}</span></div>
-              )}
+            <p className="font-bold text-foreground mb-3 flex items-center gap-2"><FileText className="w-4 h-4 text-secondary" />Documentación</p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <span className="text-sm text-foreground font-medium">SOAT</span>
+                <div className="text-right">
+                  <Badge className={`text-xs ${docs.soat?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                    {docs.soat?.status === 'vigente' ? 'Vigente' : 'Vencido'}
+                  </Badge>
+                  {docs.soat?.fecha && <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.soat.fecha}</p>}
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <span className="text-sm text-foreground font-medium">Tecnomecánica</span>
+                <div className="text-right">
+                  <Badge className={`text-xs ${docs.tecno?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                    {docs.tecno?.status === 'vigente' ? 'Vigente' : 'Vencida'}
+                  </Badge>
+                  {docs.tecno?.fecha && <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.tecno.fecha}</p>}
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-foreground font-medium">Multas</span>
+                <div className="text-right">
+                  <Badge className={`text-xs ${docs.multas?.tiene === 'no' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                    {docs.multas?.tiene === 'no' ? 'Sin multas' : 'Con multas'}
+                  </Badge>
+                  {docs.multas?.tiene === 'si' && docs.multas?.descripcion && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[180px] text-right">{docs.multas.descripcion}</p>
+                  )}
+                </div>
+              </div>
             </div>
           </Card>
         )}

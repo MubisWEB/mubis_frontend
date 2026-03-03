@@ -55,22 +55,34 @@ const SEED_USERS = [
 ];
 
 const CAR_DATA = [
-  { brand: 'Mazda', model: '3', year: 2023, km: 12000, city: 'Bogotá', placa: 'ABC123', color: 'Rojo', combustible: 'Gasolina' },
-  { brand: 'Toyota', model: 'Corolla', year: 2022, km: 25000, city: 'Bogotá', placa: 'DEF456', color: 'Blanco', combustible: 'Híbrido' },
-  { brand: 'Kia', model: 'Sportage', year: 2023, km: 8000, city: 'Medellín', placa: 'GHI789', color: 'Gris', combustible: 'Gasolina' },
-  { brand: 'Chevrolet', model: 'Tracker', year: 2022, km: 32000, city: 'Medellín', placa: 'JKL012', color: 'Negro', combustible: 'Gasolina' },
-  { brand: 'Renault', model: 'Duster', year: 2021, km: 45000, city: 'Bogotá', placa: 'MNO345', color: 'Plata', combustible: 'Gasolina' },
-  { brand: 'Hyundai', model: 'Tucson', year: 2023, km: 5000, city: 'Cali', placa: 'PQR678', color: 'Azul', combustible: 'Diésel' },
-  { brand: 'Nissan', model: 'Kicks', year: 2022, km: 18000, city: 'Bogotá', placa: 'STU901', color: 'Blanco', combustible: 'Gasolina' },
-  { brand: 'Volkswagen', model: 'Taos', year: 2023, km: 3500, city: 'Medellín', placa: 'VWX234', color: 'Negro', combustible: 'Gasolina' },
-  { brand: 'Suzuki', model: 'Vitara', year: 2021, km: 40000, city: 'Cali', placa: 'YZA567', color: 'Rojo', combustible: 'Gasolina' },
-  { brand: 'Ford', model: 'Escape', year: 2022, km: 22000, city: 'Bogotá', placa: 'BCD890', color: 'Gris', combustible: 'Híbrido' },
-  { brand: 'BMW', model: 'X1', year: 2023, km: 6000, city: 'Bogotá', placa: 'EFG123', color: 'Blanco', combustible: 'Gasolina' },
-  { brand: 'Mercedes-Benz', model: 'GLA', year: 2022, km: 15000, city: 'Medellín', placa: 'HIJ456', color: 'Negro', combustible: 'Gasolina' },
-  { brand: 'Audi', model: 'Q3', year: 2021, km: 35000, city: 'Bogotá', placa: 'KLM789', color: 'Gris', combustible: 'Gasolina' },
-  { brand: 'Toyota', model: 'RAV4', year: 2023, km: 9000, city: 'Cali', placa: 'NOP012', color: 'Verde', combustible: 'Híbrido' },
-  { brand: 'Mazda', model: 'CX-5', year: 2022, km: 28000, city: 'Medellín', placa: 'QRS345', color: 'Rojo', combustible: 'Gasolina' },
+  { brand: 'Mazda', model: '3', year: 2023, km: 12000, city: 'Bogotá', placa: 'ABC123', color: 'Rojo', combustible: 'Gasolina', transmision: '4x2', cilindraje: '2000cc' },
+  { brand: 'Toyota', model: 'Corolla', year: 2022, km: 25000, city: 'Bogotá', placa: 'DEF456', color: 'Blanco', combustible: 'Híbrido', transmision: 'FWD', cilindraje: '1800cc' },
+  { brand: 'Kia', model: 'Sportage', year: 2023, km: 8000, city: 'Medellín', placa: 'GHI789', color: 'Gris', combustible: 'Gasolina', transmision: '4x4', cilindraje: '2000cc' },
+  { brand: 'Chevrolet', model: 'Tracker', year: 2022, km: 32000, city: 'Medellín', placa: 'JKL012', color: 'Negro', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1400cc' },
+  { brand: 'Renault', model: 'Duster', year: 2021, km: 45000, city: 'Bogotá', placa: 'MNO345', color: 'Plata', combustible: 'Gasolina', transmision: '4x2', cilindraje: '1600cc' },
+  { brand: 'Hyundai', model: 'Tucson', year: 2023, km: 5000, city: 'Cali', placa: 'PQR678', color: 'Azul', combustible: 'Diésel', transmision: '4x4', cilindraje: '2000cc' },
+  { brand: 'Nissan', model: 'Kicks', year: 2022, km: 18000, city: 'Bogotá', placa: 'STU901', color: 'Blanco', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1600cc' },
+  { brand: 'Volkswagen', model: 'Taos', year: 2023, km: 3500, city: 'Medellín', placa: 'VWX234', color: 'Negro', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '1400cc' },
+  { brand: 'Suzuki', model: 'Vitara', year: 2021, km: 40000, city: 'Cali', placa: 'YZA567', color: 'Rojo', combustible: 'Gasolina', transmision: '4x4', cilindraje: '1600cc' },
+  { brand: 'Ford', model: 'Escape', year: 2022, km: 22000, city: 'Bogotá', placa: 'BCD890', color: 'Gris', combustible: 'Híbrido', transmision: 'AWD', cilindraje: '2500cc' },
+  { brand: 'BMW', model: 'X1', year: 2023, km: 6000, city: 'Bogotá', placa: 'EFG123', color: 'Blanco', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc' },
+  { brand: 'Mercedes-Benz', model: 'GLA', year: 2022, km: 15000, city: 'Medellín', placa: 'HIJ456', color: 'Negro', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1300cc' },
+  { brand: 'Audi', model: 'Q3', year: 2021, km: 35000, city: 'Bogotá', placa: 'KLM789', color: 'Gris', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc' },
+  { brand: 'Toyota', model: 'RAV4', year: 2023, km: 9000, city: 'Cali', placa: 'NOP012', color: 'Verde', combustible: 'Híbrido', transmision: '4x4', cilindraje: '2500cc' },
+  { brand: 'Mazda', model: 'CX-5', year: 2022, km: 28000, city: 'Medellín', placa: 'QRS345', color: 'Rojo', combustible: 'Gasolina', transmision: '4x2', cilindraje: '2000cc' },
 ];
+
+function generateDocumentation(i) {
+  const soatMonths = [3, 6, 9, 12];
+  const tecnoMonths = [2, 5, 8, 11];
+  const soatDate = new Date(Date.now() + soatMonths[i % 4] * 30 * 86400000);
+  const tecnoDate = new Date(Date.now() + tecnoMonths[i % 4] * 30 * 86400000);
+  return {
+    soat: { status: 'vigente', fecha: soatDate.toISOString().split('T')[0] },
+    tecno: { status: 'vigente', fecha: tecnoDate.toISOString().split('T')[0] },
+    multas: { tiene: i % 5 === 0 ? 'si' : 'no', descripcion: i % 5 === 0 ? 'Fotomulta por exceso de velocidad - $450,000' : '' },
+  };
+}
 
 function buildSeedVehicles() {
   const dealers = ['u-dealer-1', 'u-dealer-2', 'u-dealer-3'];
@@ -82,10 +94,15 @@ function buildSeedVehicles() {
     return {
       id: `v-seed-${i + 1}`,
       ...car,
+      mileage: car.km,
+      transmission: car.transmision,
+      fuel_type: car.combustible,
+      traction: car.transmision,
       dealerId,
       dealerBranch: branches[dealerId],
       dealerCompany: companies[dealerId],
-      photos: [PHOTOS[i % PHOTOS.length]],
+      photos: [PHOTOS[i % PHOTOS.length], PHOTOS[(i + 3) % PHOTOS.length]],
+      documentation: generateDocumentation(i),
       status: i < 12 ? 'READY_FOR_AUCTION' : 'PENDING_INSPECTION',
       createdAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
     };
@@ -140,10 +157,17 @@ function buildSeedAuctions(vehicles) {
       model: v.model,
       year: v.year,
       km: v.km,
+      mileage: v.mileage || v.km,
       city: v.city,
       color: v.color,
       combustible: v.combustible,
+      transmission: v.transmission || v.transmision,
+      traction: v.traction || v.transmision,
+      fuel_type: v.fuel_type || v.combustible,
+      cilindraje: v.cilindraje,
+      placa: v.placa,
       photos: v.photos,
+      documentation: v.documentation,
       starting_price: basePrice,
       current_bid: currentBid,
       bids_count: bidsCount,
@@ -189,10 +213,10 @@ function save(key, data) {
 function ensureSeeded() {
   // Check if we have the new seed format (v2)
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v2') {
+  if (seedVersion !== 'v3') {
     // Clear old data and re-seed
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v2');
+    localStorage.setItem('mubis_seed_version', 'v3');
   }
 
   if (!load(KEYS.users)) {
@@ -295,7 +319,13 @@ export function getAuctionsByDealerId(dealerId) {
   return getAuctions().filter(a => a.dealerId === dealerId);
 }
 export function getActiveAuctions() {
-  return getAuctions().filter(a => a.status === 'active');
+  const inspections = getInspections();
+  return getAuctions().filter(a => {
+    if (a.status !== 'active') return false;
+    // Only show if vehicle has a COMPLETED inspection
+    const insp = inspections.find(i => i.vehicleId === a.vehicleId);
+    return insp && insp.status === 'COMPLETED';
+  });
 }
 
 // ── Bids ──

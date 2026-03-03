@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Eye, DollarSign, Plus, ClipboardCheck } from 'lucide-react';
+import { Clock, Users, Eye, DollarSign, Plus, ClipboardCheck, FileCheck, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
-import { getVehicles, getAuctions, getCurrentUser } from '@/lib/mockStore';
+import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId } from '@/lib/mockStore';
 
 export default function MisSubastas() {
   const navigate = useNavigate();
@@ -38,14 +38,43 @@ export default function MisSubastas() {
     return `${hours}h ${minutes}m`;
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'PENDING_INSPECTION': return <Badge className="bg-accent/10 text-accent-foreground text-xs">Pendiente de peritaje</Badge>;
-      case 'IN_PROGRESS': return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-      case 'INSPECTION_REJECTED': return <Badge className="bg-destructive/10 text-destructive text-xs">Peritaje rechazado</Badge>;
-      case 'READY_FOR_AUCTION': return <Badge className="bg-primary/10 text-primary text-xs">En subasta</Badge>;
-      default: return <Badge className="bg-muted text-muted-foreground text-xs">{status}</Badge>;
+  const getStatusBadge = (vehicle) => {
+    const insp = getInspectionByVehicleId(vehicle.id);
+    if (vehicle.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) {
+      return <Badge className="bg-destructive/10 text-destructive text-xs">Peritaje rechazado</Badge>;
     }
+    if (vehicle.status === 'IN_PROGRESS' || (insp && insp.status === 'IN_PROGRESS')) {
+      return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    }
+    if (vehicle.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) {
+      return <Badge className="bg-accent/10 text-accent-foreground text-xs">Pendiente de peritaje</Badge>;
+    }
+    if (vehicle.status === 'READY_FOR_AUCTION') {
+      return <Badge className="bg-primary/10 text-primary text-xs">En subasta</Badge>;
+    }
+    return <Badge className="bg-muted text-muted-foreground text-xs">{vehicle.status}</Badge>;
+  };
+
+  const getDocsBadge = (vehicle) => {
+    const docs = vehicle.documentation;
+    if (!docs) return <span className="text-[10px] text-muted-foreground">Sin docs</span>;
+    const soatOk = docs.soat?.status === 'vigente';
+    const tecnoOk = docs.tecno?.status === 'vigente';
+    const multasOk = docs.multas?.tiene === 'no';
+    if (soatOk && tecnoOk && multasOk) {
+      return <Badge className="bg-primary/10 text-primary text-[10px]"><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</Badge>;
+    }
+    return <Badge className="bg-accent/10 text-accent-foreground text-[10px]"><AlertTriangle className="w-3 h-3 mr-0.5" />Docs incompletos</Badge>;
+  };
+
+  const getPeritajeBadge = (vehicle) => {
+    const insp = getInspectionByVehicleId(vehicle.id);
+    if (!insp || insp.status !== 'COMPLETED') return null;
+    return (
+      <Badge className={`text-[10px] ${insp.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
+        <FileCheck className="w-3 h-3 mr-0.5" />{insp.scoreGlobal}/100
+      </Badge>
+    );
   };
 
   const activeAuctions = auctions.filter(a => a.status === 'active');
@@ -100,10 +129,8 @@ export default function MisSubastas() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      {getStatusBadge(v.status)}
-                      {v.status === 'INSPECTION_REJECTED' && v.rejectReason && (
-                        <span className="text-[10px] text-destructive max-w-[120px] truncate">{v.rejectReason}</span>
-                      )}
+                      {getStatusBadge(v)}
+                      {getDocsBadge(v)}
                     </div>
                   </div>
                 </Card>
@@ -116,36 +143,42 @@ export default function MisSubastas() {
           <div className="mb-4">
             <p className="text-sm font-semibold text-foreground mb-2">Subastas activas</p>
             <div className="space-y-3">
-              {activeAuctions.map(auction => (
-                <Card key={auction.id} className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl"
-                  onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
-                  <div className="flex p-3 gap-3">
-                    <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted">
-                      {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-1">
-                        <div>
-                          <h3 className="font-bold text-foreground text-sm">{auction.brand} {auction.model}</h3>
-                          <p className="text-muted-foreground text-xs">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p>
-                        </div>
-                        <Badge className="bg-primary/10 text-primary text-xs">Activa</Badge>
+              {activeAuctions.map(auction => {
+                const peritajeBadge = getPeritajeBadge({ id: auction.vehicleId });
+                return (
+                  <Card key={auction.id} className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl"
+                    onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
+                    <div className="flex p-3 gap-3">
+                      <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+                        {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
                       </div>
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">Puja actual:</span>
-                          <p className="font-bold text-primary text-sm">{formatPrice(auction.current_bid)}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-1">
+                          <div>
+                            <h3 className="font-bold text-foreground text-sm">{auction.brand} {auction.model}</h3>
+                            <p className="text-muted-foreground text-xs">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge className="bg-primary/10 text-primary text-xs">Activa</Badge>
+                            {peritajeBadge}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{auction.bids_count || 0}</span>
-                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{auction.views || 0}</span>
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{getTimeLeft(auction.ends_at)}</span>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Puja actual:</span>
+                            <p className="font-bold text-primary text-sm">{formatPrice(auction.current_bid)}</p>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><Users className="w-3 h-3" />{auction.bids_count || 0}</span>
+                            <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{auction.views || 0}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{getTimeLeft(auction.ends_at)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}
@@ -156,7 +189,7 @@ export default function MisSubastas() {
               <DollarSign className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes publicaciones</h3>
-            <p className="text-muted-foreground text-sm">Usa el botón "Publicar" arriba para iniciar</p>
+            <p className="text-muted-foreground text-sm">Usa el botón "Publicar carro" arriba para iniciar</p>
           </div>
         )}
       </div>
