@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from 'lucide-react';
 import MubisLogo from '@/components/MubisLogo';
 import TopBar from "@/components/TopBar";
@@ -18,14 +17,18 @@ export default function Header({ title, subtitle, backTo, children }) {
               <ArrowLeft className="w-4 h-4 text-foreground" />
             </button>
           )}
-          <div className="flex-1 min-w-0">
-            {title && <h1 className="text-lg font-bold text-foreground font-sans truncate">{title}</h1>}
-            {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
+          <div className="flex-1 flex items-center justify-center min-w-0">
+            <MubisLogo size="lg" />
           </div>
-          {!title && <MubisLogo size="lg" />}
-          {children}
+          {children && <div className="flex-shrink-0">{children}</div>}
         </div>
       </nav>
+      {(title || subtitle) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-2">
+          {title && <h1 className="text-xl font-bold text-foreground font-sans">{title}</h1>}
+          {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
+        </div>
+      )}
     </>
   );
 }

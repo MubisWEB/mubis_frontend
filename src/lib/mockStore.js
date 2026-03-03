@@ -18,15 +18,166 @@ export const ADMIN_EMAILS = [
   'superadmin@mubis.com',
 ];
 
+// ── Photo URLs for demo ──
+const PHOTOS = [
+  'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600',
+  'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600',
+  'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600',
+  'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600',
+  'https://images.unsplash.com/photo-1542362567-b07e54358753?w=600',
+  'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600',
+  'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600',
+  'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=600',
+  'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600',
+  'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600',
+  'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600',
+  'https://images.unsplash.com/photo-1525609004556-c46c6c5104b8?w=600',
+];
+
 // ── Seed data ──
 const SEED_USERS = [
   { id: 'u-admin-1', email: 'admin@mubis.com', password: 'admin123', role: 'admin', nombre: 'Admin Mubis', company: 'Mubis', branch: 'Principal', telefono: '3000000000', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
+  // Dealers
   { id: 'u-dealer-1', email: 'dealer@test.com', password: 'dealer123', role: 'dealer', nombre: 'Autonal Colombia', company: 'Autonal', branch: 'Bogotá Norte', telefono: '3001112233', ciudad: 'Bogotá', nit: '900123456-7', verification_status: 'VERIFIED' },
   { id: 'u-dealer-2', email: 'dealer2@test.com', password: 'dealer123', role: 'dealer', nombre: 'Los Coches', company: 'Los Coches', branch: 'Medellín Centro', telefono: '3159998877', ciudad: 'Medellín', nit: '900234567-8', verification_status: 'VERIFIED' },
+  { id: 'u-dealer-3', email: 'dealer3@test.com', password: 'dealer123', role: 'dealer', nombre: 'Motor Uno', company: 'Motor Uno', branch: 'Bogotá Norte', telefono: '3201234000', ciudad: 'Bogotá', nit: '900444555-1', verification_status: 'VERIFIED' },
+  { id: 'u-dealer-4', email: 'dealer4@test.com', password: 'dealer123', role: 'dealer', nombre: 'CarHouse Cali', company: 'CarHouse', branch: 'Cali Sur', telefono: '3164567890', ciudad: 'Cali', nit: '900555666-2', verification_status: 'PENDING' },
+  { id: 'u-dealer-5', email: 'dealer5@test.com', password: 'dealer123', role: 'dealer', nombre: 'Importados Premium', company: 'Importados Premium', branch: 'Barranquilla Centro', telefono: '3178889900', ciudad: 'Barranquilla', nit: '900666777-3', verification_status: 'PENDING' },
+  // Peritos
   { id: 'u-perito-1', email: 'perito@test.com', password: 'perito123', role: 'perito', nombre: 'Carlos Peritaje', company: 'Autonal', branch: 'Bogotá Norte', telefono: '3201234567', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
   { id: 'u-perito-2', email: 'perito2@test.com', password: 'perito123', role: 'perito', nombre: 'María Inspección', company: 'Los Coches', branch: 'Medellín Centro', telefono: '3107654321', ciudad: 'Medellín', nit: '', verification_status: 'VERIFIED' },
+  { id: 'u-perito-3', email: 'perito3@test.com', password: 'perito123', role: 'perito', nombre: 'Jorge Técnico', company: 'CarHouse', branch: 'Cali Sur', telefono: '3189876543', ciudad: 'Cali', nit: '', verification_status: 'PENDING' },
+  // Recompradores
   { id: 'u-recomprador-1', email: 'recomprador@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'CarMax Colombia', company: 'CarMax', branch: 'Cali Sur', telefono: '3114567890', ciudad: 'Cali', nit: '900345678-9', verification_status: 'VERIFIED' },
+  { id: 'u-recomprador-2', email: 'recomprador2@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'AutoCompra SAS', company: 'AutoCompra', branch: 'Bogotá Norte', telefono: '3125556677', ciudad: 'Bogotá', nit: '900456789-0', verification_status: 'VERIFIED' },
+  { id: 'u-recomprador-3', email: 'recomprador3@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'VehíCompra', company: 'VehíCompra', branch: 'Medellín Centro', telefono: '3136667788', ciudad: 'Medellín', nit: '900567890-1', verification_status: 'VERIFIED' },
+  { id: 'u-recomprador-4', email: 'recomprador4@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'TuCarro Express', company: 'TuCarro Express', branch: 'Barranquilla Centro', telefono: '3147778899', ciudad: 'Barranquilla', nit: '900678901-2', verification_status: 'PENDING' },
 ];
+
+const CAR_DATA = [
+  { brand: 'Mazda', model: '3', year: 2023, km: 12000, city: 'Bogotá', placa: 'ABC123', color: 'Rojo', combustible: 'Gasolina' },
+  { brand: 'Toyota', model: 'Corolla', year: 2022, km: 25000, city: 'Bogotá', placa: 'DEF456', color: 'Blanco', combustible: 'Híbrido' },
+  { brand: 'Kia', model: 'Sportage', year: 2023, km: 8000, city: 'Medellín', placa: 'GHI789', color: 'Gris', combustible: 'Gasolina' },
+  { brand: 'Chevrolet', model: 'Tracker', year: 2022, km: 32000, city: 'Medellín', placa: 'JKL012', color: 'Negro', combustible: 'Gasolina' },
+  { brand: 'Renault', model: 'Duster', year: 2021, km: 45000, city: 'Bogotá', placa: 'MNO345', color: 'Plata', combustible: 'Gasolina' },
+  { brand: 'Hyundai', model: 'Tucson', year: 2023, km: 5000, city: 'Cali', placa: 'PQR678', color: 'Azul', combustible: 'Diésel' },
+  { brand: 'Nissan', model: 'Kicks', year: 2022, km: 18000, city: 'Bogotá', placa: 'STU901', color: 'Blanco', combustible: 'Gasolina' },
+  { brand: 'Volkswagen', model: 'Taos', year: 2023, km: 3500, city: 'Medellín', placa: 'VWX234', color: 'Negro', combustible: 'Gasolina' },
+  { brand: 'Suzuki', model: 'Vitara', year: 2021, km: 40000, city: 'Cali', placa: 'YZA567', color: 'Rojo', combustible: 'Gasolina' },
+  { brand: 'Ford', model: 'Escape', year: 2022, km: 22000, city: 'Bogotá', placa: 'BCD890', color: 'Gris', combustible: 'Híbrido' },
+  { brand: 'BMW', model: 'X1', year: 2023, km: 6000, city: 'Bogotá', placa: 'EFG123', color: 'Blanco', combustible: 'Gasolina' },
+  { brand: 'Mercedes-Benz', model: 'GLA', year: 2022, km: 15000, city: 'Medellín', placa: 'HIJ456', color: 'Negro', combustible: 'Gasolina' },
+  { brand: 'Audi', model: 'Q3', year: 2021, km: 35000, city: 'Bogotá', placa: 'KLM789', color: 'Gris', combustible: 'Gasolina' },
+  { brand: 'Toyota', model: 'RAV4', year: 2023, km: 9000, city: 'Cali', placa: 'NOP012', color: 'Verde', combustible: 'Híbrido' },
+  { brand: 'Mazda', model: 'CX-5', year: 2022, km: 28000, city: 'Medellín', placa: 'QRS345', color: 'Rojo', combustible: 'Gasolina' },
+];
+
+function buildSeedVehicles() {
+  const dealers = ['u-dealer-1', 'u-dealer-2', 'u-dealer-3'];
+  const branches = { 'u-dealer-1': 'Bogotá Norte', 'u-dealer-2': 'Medellín Centro', 'u-dealer-3': 'Bogotá Norte' };
+  const companies = { 'u-dealer-1': 'Autonal', 'u-dealer-2': 'Los Coches', 'u-dealer-3': 'Motor Uno' };
+
+  return CAR_DATA.map((car, i) => {
+    const dealerId = dealers[i % dealers.length];
+    return {
+      id: `v-seed-${i + 1}`,
+      ...car,
+      dealerId,
+      dealerBranch: branches[dealerId],
+      dealerCompany: companies[dealerId],
+      photos: [PHOTOS[i % PHOTOS.length]],
+      status: i < 12 ? 'READY_FOR_AUCTION' : 'PENDING_INSPECTION',
+      createdAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
+    };
+  });
+}
+
+function buildSeedInspections(vehicles) {
+  const inspections = [];
+  vehicles.forEach((v, i) => {
+    if (v.status === 'READY_FOR_AUCTION') {
+      const peritoId = v.dealerBranch === 'Bogotá Norte' ? 'u-perito-1' : 'u-perito-2';
+      inspections.push({
+        id: `insp-seed-${i + 1}`,
+        vehicleId: v.id,
+        dealerBranch: v.dealerBranch,
+        dealerCompany: v.dealerCompany,
+        peritoId,
+        lockedByPeritoId: peritoId,
+        status: 'COMPLETED',
+        scoreGlobal: 70 + Math.floor(Math.random() * 25),
+        scores: { motor: 80, transmision: 75, suspension: 82, frenos: 78, carroceria: 85, interior: 90, electrica: 77, llantas: 72 },
+        comments: 'Vehículo en buen estado general. Sin observaciones mayores.',
+        createdAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
+        completedAt: new Date(Date.now() - i * 86400000).toISOString(),
+      });
+    } else if (v.status === 'PENDING_INSPECTION') {
+      inspections.push({
+        id: `insp-seed-${i + 1}`,
+        vehicleId: v.id,
+        dealerBranch: v.dealerBranch,
+        dealerCompany: v.dealerCompany,
+        status: 'PENDING',
+        lockedByPeritoId: null,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
+      });
+    }
+  });
+  return inspections;
+}
+
+function buildSeedAuctions(vehicles) {
+  return vehicles.filter(v => v.status === 'READY_FOR_AUCTION').map((v, i) => {
+    const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
+    const bidsCount = 3 + Math.floor(Math.random() * 15);
+    const currentBid = basePrice + bidsCount * 100000;
+    return {
+      id: `auc-seed-${i + 1}`,
+      vehicleId: v.id,
+      dealerId: v.dealerId,
+      brand: v.brand,
+      model: v.model,
+      year: v.year,
+      km: v.km,
+      city: v.city,
+      color: v.color,
+      combustible: v.combustible,
+      photos: v.photos,
+      starting_price: basePrice,
+      current_bid: currentBid,
+      bids_count: bidsCount,
+      views: 20 + Math.floor(Math.random() * 200),
+      status: i < 10 ? 'active' : 'ended',
+      winnerId: i >= 10 ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
+      ends_at: i < 10
+        ? new Date(Date.now() + (1 + i) * 3600000 * 6).toISOString()
+        : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
+      createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
+    };
+  });
+}
+
+function buildSeedBids(auctions) {
+  const bidders = ['u-recomprador-1', 'u-recomprador-2', 'u-recomprador-3', 'u-dealer-1', 'u-dealer-2'];
+  const bids = [];
+  let bidIdx = 0;
+  auctions.forEach(a => {
+    const count = a.bids_count || 3;
+    for (let j = 0; j < count; j++) {
+      const userId = bidders[(j + auctions.indexOf(a)) % bidders.length];
+      if (userId === a.dealerId) continue; // can't bid own
+      bids.push({
+        id: `bid-seed-${++bidIdx}`,
+        auctionId: a.id,
+        userId,
+        amount: a.starting_price + (j + 1) * 100000,
+        createdAt: new Date(Date.now() - (count - j) * 3600000).toISOString(),
+      });
+    }
+  });
+  return bids;
+}
 
 function load(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
@@ -39,12 +190,23 @@ function ensureSeeded() {
   if (!load(KEYS.users)) {
     save(KEYS.users, SEED_USERS);
   }
-  if (!load(KEYS.vehicles)) save(KEYS.vehicles, []);
-  if (!load(KEYS.inspections)) save(KEYS.inspections, []);
-  if (!load(KEYS.bids)) save(KEYS.bids, []);
-  if (!load(KEYS.auctions)) {
-    const legacy = load('mubis_my_auctions');
-    save(KEYS.auctions, legacy || []);
+  if (!load(KEYS.vehicles)) {
+    const vehicles = buildSeedVehicles();
+    save(KEYS.vehicles, vehicles);
+
+    if (!load(KEYS.inspections)) save(KEYS.inspections, buildSeedInspections(vehicles));
+    if (!load(KEYS.auctions)) {
+      const auctions = buildSeedAuctions(vehicles);
+      save(KEYS.auctions, auctions);
+      if (!load(KEYS.bids)) save(KEYS.bids, buildSeedBids(auctions));
+    }
+  } else {
+    if (!load(KEYS.inspections)) save(KEYS.inspections, []);
+    if (!load(KEYS.bids)) save(KEYS.bids, []);
+    if (!load(KEYS.auctions)) {
+      const legacy = load('mubis_my_auctions');
+      save(KEYS.auctions, legacy || []);
+    }
   }
 }
 
@@ -229,4 +391,10 @@ export function getAdminStats() {
     auctions: { total: auctions.length, active: auctions.filter(a => a.status === 'active').length },
     inspections: { total: inspections.length, pending: inspections.filter(i => i.status === 'PENDING').length, completed: inspections.filter(i => i.status === 'COMPLETED').length },
   };
+}
+
+/** Call this to force re-seed all data (useful for demo reset) */
+export function resetAllData() {
+  Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+  ensureSeeded();
 }
