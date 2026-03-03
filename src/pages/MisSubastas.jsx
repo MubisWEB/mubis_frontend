@@ -53,11 +53,19 @@ export default function MisSubastas() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title="Mis vehículos" subtitle="Publicaciones y subastas activas">
-        <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-          <Plus className="w-4 h-4" /> Publicar
-        </Button>
-      </Header>
+      <Header />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-2">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Publicaciones y subastas activas</p>
+          </div>
+          <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
+            <Plus className="w-4 h-4" /> Publicar carro
+          </Button>
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2">
         <div className="grid grid-cols-3 gap-3 mb-4">
