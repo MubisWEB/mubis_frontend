@@ -146,31 +146,50 @@ export default function DetalleSubastaVendedor() {
           <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - (auction.starting_price || 0))}</p>
           <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price || 0)}</p>
           {auction.reserve_price && (
-            <div className={`p-3 rounded-xl ${auction.current_bid >= auction.reserve_price ? 'bg-primary/5 border border-primary/10' : 'bg-accent border border-accent'}`}>
+            <div
+              className={`p-3 rounded-xl border ${
+                auction.current_bid >= auction.reserve_price
+                  ? "bg-primary/5 border-primary/10"
+                  : "bg-secondary border-secondary/40"
+              }`}
+            >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2"><AlertCircle className={`w-4 h-4 ${auction.current_bid >= auction.reserve_price ? 'text-primary' : 'text-accent-foreground'}`} /><span className={`text-sm font-semibold ${auction.current_bid >= auction.reserve_price ? 'text-primary' : 'text-accent-foreground'}`}>Precio de Reserva</span></div>
-                <span className="text-sm font-bold text-foreground">{formatPrice(auction.reserve_price)}</span>
+                <div className="flex items-center gap-2">
+                  <AlertCircle
+                    className={`w-4 h-4 ${
+                      auction.current_bid >= auction.reserve_price ? "text-primary" : "text-white"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm font-semibold ${
+                      auction.current_bid >= auction.reserve_price ? "text-primary" : "text-white"
+                    }`}
+                  >
+                    Precio de Reserva
+                  </span>
+                </div>
+
+                <span
+                  className={`text-sm font-bold ${
+                    auction.current_bid >= auction.reserve_price ? "text-foreground" : "text-white"
+                  }`}
+                >
+                  {formatPrice(auction.reserve_price)}
+                </span>
               </div>
-              <p className="text-xs mt-1 text-muted-foreground">{auction.current_bid >= auction.reserve_price ? '✓ La oferta actual supera tu precio de reserva' : 'La oferta debe alcanzar este monto para aceptar la venta'}</p>
+
+              <p
+                className={`text-xs mt-1 ${
+                  auction.current_bid >= auction.reserve_price ? "text-muted-foreground" : "text-white/80"
+                }`}
+              >
+                {auction.current_bid >= auction.reserve_price
+                  ? "✓ La oferta actual supera tu precio de reserva"
+                  : "La oferta debe alcanzar este monto para aceptar la venta"}
+              </p>
             </div>
           )}
         </Card>
-
-        {/* Especificaciones */}
-        <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans">Especificaciones</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {specs.map((spec, i) => (<div key={i} className="flex items-center gap-2"><div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center"><spec.icon className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-xs text-muted-foreground">{spec.label}</p><p className="text-sm font-medium text-foreground">{spec.value}</p></div></div>))}
-          </div>
-        </Card>
-
-        {/* Descripción */}
-        {auction.description && (
-          <Card className="p-4 border border-border shadow-sm">
-            <h2 className="font-bold text-foreground mb-2 font-sans">Descripción</h2>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{auction.description}</p>
-          </Card>
-        )}
 
         {/* Documentación */}
         {auction.documentacion && (
