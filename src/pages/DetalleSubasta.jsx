@@ -8,7 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
 import TopBar from "@/components/TopBar";
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses } from '@/lib/mockStore';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
@@ -22,6 +22,7 @@ export default function DetalleSubasta() {
 
   useEffect(() => {
     if (!auctionId) return;
+    reconcileAuctionStatuses();
     const auction = getAuctionById(auctionId);
     if (auction) setVehicle(auction);
   }, [auctionId]);

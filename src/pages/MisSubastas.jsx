@@ -7,7 +7,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
-import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId } from '@/lib/mockStore';
+import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId, reconcileAuctionStatuses } from '@/lib/mockStore';
 
 export default function MisSubastas() {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ export default function MisSubastas() {
   const currentUser = getCurrentUser();
 
   const loadData = useCallback(() => {
+    reconcileAuctionStatuses();
     const myVehicles = getVehicles().filter(v => v.dealerId === currentUser?.id);
     const myAuctions = getAuctions().filter(a => a.dealerId === currentUser?.id);
     setVehicles(myVehicles);

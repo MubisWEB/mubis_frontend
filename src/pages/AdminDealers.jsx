@@ -89,7 +89,7 @@ export default function AdminDealers() {
             {filtered.map(user => {
               const si = statusInfo(user.verification_status);
               return (
-                <Card key={user.id} className="p-4 border border-border shadow-sm">
+                <Card key={user.id} className="p-4 border border-border shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/AdminDealerDetalle/${user.id}`)}>
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <div className="flex items-center gap-2 mb-1">

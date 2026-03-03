@@ -175,7 +175,7 @@ function buildSeedAuctions(vehicles) {
       status: i < 10 ? 'active' : 'ended',
       winnerId: i >= 10 ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
       ends_at: i < 10
-        ? new Date(Date.now() + (1 + i) * 3600000 * 6).toISOString()
+        ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()  // 5min to ~1h from now
         : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
       createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
     };
@@ -213,10 +213,10 @@ function save(key, data) {
 function ensureSeeded() {
   // Check if we have the new seed format (v2)
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v3') {
+  if (seedVersion !== 'v4') {
     // Clear old data and re-seed
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v3');
+    localStorage.setItem('mubis_seed_version', 'v4');
   }
 
   if (!load(KEYS.users)) {
@@ -319,6 +319,7 @@ export function getAuctionsByDealerId(dealerId) {
   return getAuctions().filter(a => a.dealerId === dealerId);
 }
 export function getActiveAuctions() {
+  reconcileAuctionStatuses();
   const inspections = getInspections();
   return getAuctions().filter(a => {
     if (a.status !== 'active') return false;
@@ -326,6 +327,21 @@ export function getActiveAuctions() {
     const insp = inspections.find(i => i.vehicleId === a.vehicleId);
     return insp && insp.status === 'COMPLETED';
   });
+}
+
+/** Reconcile: mark expired active auctions as 'ended' */
+export function reconcileAuctionStatuses() {
+  const auctions = getAuctions();
+  let changed = false;
+  const now = new Date();
+  const updated = auctions.map(a => {
+    if (a.status === 'active' && new Date(a.ends_at) < now) {
+      changed = true;
+      return { ...a, status: 'ended' };
+    }
+    return a;
+  });
+  if (changed) save(KEYS.auctions, updated);
 }
 
 // ── Bids ──

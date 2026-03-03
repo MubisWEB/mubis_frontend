@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Gavel } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { getAuctions } from '@/lib/mockStore';
+import { getAuctions, reconcileAuctionStatuses } from '@/lib/mockStore';
 
 export default function AdminSubastas() {
   const [auctions, setAuctions] = useState([]);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => { setAuctions(getAuctions()); }, []);
+  useEffect(() => { reconcileAuctionStatuses(); setAuctions(getAuctions()); }, []);
 
   const filtered = filter === 'all' ? auctions : auctions.filter(a => a.status === filter);
   const formatPrice = (p) => `$${(p / 1000000).toFixed(1)}M`;
