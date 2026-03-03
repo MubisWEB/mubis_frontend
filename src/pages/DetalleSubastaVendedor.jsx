@@ -248,7 +248,7 @@ export default function DetalleSubastaVendedor() {
           </Card>
         )}
       </div>
-      <BottomNav currentPage="MisSubastas" />
+      <BottomNav />
     </div>
   );
 }

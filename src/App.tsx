@@ -2,30 +2,29 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { RequireAuth, RequireRole } from "@/components/RequireAuth";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
-import AdminDealerDetalle from './pages/AdminDealerDetalle';
-import AdminDealers from './pages/AdminDealers';
-import AdminSolicitudes from './pages/AdminSolicitudes';
-import Autenticacion from './pages/Autenticacion';
-import CarrosVendidos from './pages/CarrosVendidos';
-import DetalleSubasta from './pages/DetalleSubasta';
-import Ganados from './pages/Ganados';
-import Comprar from './pages/Comprar';
-import VerificarCodigo from './pages/VerificarCodigo';
-import Movimientos from './pages/Movimientos';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import RegistroConfirmacion from './pages/RegistroConfirmacion';
-import Dashboard from './pages/Dashboard';
-import Cuenta from './pages/Cuenta';
-import AdminDashboard from './pages/AdminDashboard';
-import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
-import Home from './pages/Home';
+import Comprar from './pages/Comprar';
+import DetalleSubasta from './pages/DetalleSubasta';
 import MisSubastas from './pages/MisSubastas';
-import VenderInicio from './pages/VenderInicio';
-
+import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
+import Movimientos from './pages/Movimientos';
+import Cuenta from './pages/Cuenta';
+import Ganados from './pages/Ganados';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminDealers from './pages/AdminDealers';
+import AdminDealerDetalle from './pages/AdminDealerDetalle';
+import AdminSolicitudes from './pages/AdminSolicitudes';
+import AdminSubastas from './pages/AdminSubastas';
+import AdminMovimientos from './pages/AdminMovimientos';
+import AdminAnaliticas from './pages/AdminAnaliticas';
+import PeritajesPendientes from './pages/PeritajesPendientes';
+import PeritajeDetalle from './pages/PeritajeDetalle';
 
 const queryClient = new QueryClient();
 
@@ -36,40 +35,39 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public pages */}  
+          {/* Public */}
           <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login/>} />
+          <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/registro-confirmacion" element={<RegistroConfirmacion />} />
 
-          {/* App pages */}
-          
-          <Route path="/Comprar" element={<Comprar />} />
-          <Route path="/DetalleSubasta" element={<DetalleSubasta />} />
-          <Route path="/MisSubastas" element={<MisSubastas />} />
-          
+          {/* Comprar: dealer + recomprador */}
+          <Route path="/Comprar" element={<RequireRole roles={['dealer','recomprador']}><Comprar /></RequireRole>} />
+          <Route path="/DetalleSubasta" element={<RequireRole roles={['dealer','recomprador']}><DetalleSubasta /></RequireRole>} />
+          <Route path="/Ganados" element={<RequireRole roles={['dealer','recomprador']}><Ganados /></RequireRole>} />
 
-          {/* Vendedor */}
-          <Route path="/Home" element={<Home />} />
-          <Route path="/DetallePublicarCarro" element={<DetalleSubastaVendedor />} />
-          <Route path="/VenderInicio" element={<VenderInicio />} />
+          {/* Vender: dealer only */}
+          <Route path="/MisSubastas" element={<RequireRole roles={['dealer']}><MisSubastas /></RequireRole>} />
+          <Route path="/DetallePublicarCarro" element={<RequireRole roles={['dealer']}><DetalleSubastaVendedor /></RequireRole>} />
 
+          {/* Movimientos: dealer + recomprador */}
+          <Route path="/Movimientos" element={<RequireRole roles={['dealer','recomprador']}><Movimientos /></RequireRole>} />
 
+          {/* Cuenta: all authenticated */}
+          <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
 
-          <Route path="/Movimientos" element={<Movimientos />} />
-          <Route path="/Cuenta" element={<Cuenta />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
+          {/* Perito */}
+          <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
+          <Route path="/PeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito']}><PeritajeDetalle /></RequireRole>} />
 
           {/* Admin */}
-          <Route path="/AdminDashboard" element={<AdminDashboard />} />
-          <Route path="/AdminDealers" element={<AdminDealers />} />
-          <Route path="/AdminDealerDetalle" element={<AdminDealerDetalle />} />
-          <Route path="/AdminSolicitudes" element={<AdminSolicitudes />} />
-
-          <Route path="/CarrosVendidos" element={<CarrosVendidos />} />
-          <Route path="/Ganados" element={<Ganados />} />
-          <Route path="/Autenticacion" element={<Autenticacion />} />
-          <Route path="/VerificarCodigo" element={<VerificarCodigo />} />
+          <Route path="/AdminDashboard" element={<RequireRole roles={['admin']}><AdminDashboard /></RequireRole>} />
+          <Route path="/AdminDealers" element={<RequireRole roles={['admin']}><AdminDealers /></RequireRole>} />
+          <Route path="/AdminDealerDetalle" element={<RequireRole roles={['admin']}><AdminDealerDetalle /></RequireRole>} />
+          <Route path="/AdminSolicitudes" element={<RequireRole roles={['admin']}><AdminSolicitudes /></RequireRole>} />
+          <Route path="/AdminSubastas" element={<RequireRole roles={['admin']}><AdminSubastas /></RequireRole>} />
+          <Route path="/AdminMovimientos" element={<RequireRole roles={['admin']}><AdminMovimientos /></RequireRole>} />
+          <Route path="/AdminAnaliticas" element={<RequireRole roles={['admin']}><AdminAnaliticas /></RequireRole>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

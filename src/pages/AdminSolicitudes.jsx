@@ -78,7 +78,7 @@ export default function AdminSolicitudes() {
           </div>
         )}
       </div>
-      <BottomNav currentPage="AdminDashboard" />
+      <BottomNav />
     </div>
   );
 }

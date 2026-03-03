@@ -85,7 +85,7 @@ export default function AdminDashboard() {
           </div>
         </Card>
       </div>
-      <BottomNav currentPage="AdminDashboard" />
+      <BottomNav />
     </div>
   );
 }

@@ -115,7 +115,7 @@ export default function movimientosPage() {
           )}
         </motion.div>
       </div>
-      <BottomNav currentPage="Movimientos" />
+      <BottomNav />
     </div>
   );
 }
