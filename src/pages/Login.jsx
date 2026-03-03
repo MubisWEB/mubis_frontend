@@ -38,6 +38,12 @@ export default function Login() {
     setLoading(false);
     toast.success("¡Bienvenido de nuevo!");
 
+    // Check verification for non-admin
+    if (user.role !== 'admin' && user.verification_status !== 'VERIFIED') {
+      setTimeout(() => navigate('/PendienteVerificacion'), 300);
+      return;
+    }
+
     setTimeout(() => {
       navigate(getRedirectForRole(user.role));
     }, 300);

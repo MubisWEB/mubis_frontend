@@ -1,63 +1,40 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, HelpCircle, LogOut, ChevronRight, Shield, Gavel, Trophy, Settings } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+import { User, HelpCircle, LogOut, ChevronRight, Shield, Settings } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
+import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import TopBar from "@/components/TopBar";
 import { getCurrentUser, logoutUser, getUserRole } from '@/lib/mockStore';
 
-const ROLE_LABELS = {
-  dealer: 'Dealer Verificado',
-  recomprador: 'Recomprador Verificado',
-  perito: 'Perito Verificado',
-  admin: 'Administrador',
-};
-
-const ROLE_BADGE_CLASS = {
-  dealer: 'bg-secondary/10 text-secondary',
-  recomprador: 'bg-primary/10 text-primary',
-  perito: 'bg-accent/10 text-accent-foreground',
-  admin: 'bg-destructive/10 text-destructive',
-};
+const ROLE_LABELS = { dealer: 'Dealer', recomprador: 'Recomprador', perito: 'Perito', admin: 'Administrador' };
+const ROLE_BADGE_CLASS = { dealer: 'bg-secondary/10 text-secondary', recomprador: 'bg-primary/10 text-primary', perito: 'bg-accent/10 text-accent-foreground', admin: 'bg-destructive/10 text-destructive' };
 
 export default function Cuenta() {
   const navigate = useNavigate();
   const user = getCurrentUser();
   const role = getUserRole();
-
   const getInitials = (name) => { if (!name) return 'U'; return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); };
 
-  const handleLogout = () => {
-    logoutUser();
-    navigate('/login');
-  };
+  const handleLogout = () => { logoutUser(); navigate('/login'); };
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <TopBar />
-      <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16"><MubisLogo size="lg" /></div>
-      </nav>
+      <Header />
       <div className="bg-card px-5 pt-6 pb-5 border-b border-border">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
-          <Avatar className="w-16 h-16">
-            <AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{getInitials(user?.nombre)}</AvatarFallback>
-          </Avatar>
+          <Avatar className="w-16 h-16"><AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{getInitials(user?.nombre)}</AvatarFallback></Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <p className="text-lg font-bold text-foreground font-sans">{user?.nombre || 'Usuario'}</p>
-              <Shield className="w-4 h-4 text-secondary" />
+              {user?.verification_status === 'VERIFIED' && <Shield className="w-4 h-4 text-primary" />}
             </div>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
             <p className="text-muted-foreground text-xs">{user?.company} · {user?.branch}</p>
-            <Badge className={`mt-1 font-medium text-xs ${ROLE_BADGE_CLASS[role] || ''}`}>
-              {ROLE_LABELS[role] || role}
-            </Badge>
+            <Badge className={`mt-1 font-medium text-xs ${ROLE_BADGE_CLASS[role] || ''}`}>{ROLE_LABELS[role] || role}</Badge>
           </div>
         </motion.div>
       </div>
@@ -65,11 +42,7 @@ export default function Cuenta() {
       <div className="px-4 py-4">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
           <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-            {[
-              { icon: User, label: 'Mi perfil' },
-              { icon: Settings, label: 'Configuración' },
-              { icon: HelpCircle, label: 'Ayuda y soporte' },
-            ].map((item, i) => {
+            {[{ icon: User, label: 'Mi perfil' }, { icon: Settings, label: 'Configuración' }, { icon: HelpCircle, label: 'Ayuda y soporte' }].map((item, i) => {
               const Icon = item.icon;
               return (
                 <button key={i} className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border last:border-0">

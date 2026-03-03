@@ -3,10 +3,9 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardCheck, Car, MapPin, Calendar, Gauge, Building } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+import { ClipboardCheck, MapPin, Calendar, Gauge, Building } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
-import TopBar from "@/components/TopBar";
+import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getInspections, updateInspection, getVehicleById, getCurrentUser } from '@/lib/mockStore';
@@ -24,12 +23,7 @@ export default function PeritajesPendientes() {
 
   const loadInspections = () => {
     const all = getInspections();
-    // Filter: same branch as perito and PENDING status
-    const pending = all.filter(i =>
-      i.status === 'PENDING' &&
-      i.dealerBranch === currentUser?.branch
-    );
-    // Enrich with vehicle data
+    const pending = all.filter(i => i.status === 'PENDING' && i.dealerBranch === currentUser?.branch);
     const enriched = pending.map(i => {
       const vehicle = getVehicleById(i.vehicleId);
       return { ...i, vehicle };
@@ -38,11 +32,7 @@ export default function PeritajesPendientes() {
   };
 
   const handleTakeInspection = (inspection) => {
-    updateInspection(inspection.id, {
-      status: 'IN_PROGRESS',
-      lockedByPeritoId: currentUser?.id,
-      lockedAt: new Date().toISOString(),
-    });
+    updateInspection(inspection.id, { status: 'IN_PROGRESS', lockedByPeritoId: currentUser?.id, lockedAt: new Date().toISOString() });
     toast.success('Peritaje tomado', { description: `${inspection.vehicle.brand} ${inspection.vehicle.model}` });
     navigate(`/PeritajeDetalle/${inspection.vehicleId}`);
   };
@@ -57,24 +47,11 @@ export default function PeritajesPendientes() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <TopBar />
-      <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="lg" />
-        </div>
-      </nav>
+      <Header title="Peritajes pendientes" subtitle={`Sucursal: ${currentUser?.branch || 'N/A'}`}>
+        <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
+      </Header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground font-sans">Peritajes pendientes</h1>
-            <p className="text-muted-foreground text-sm">Sucursal: {currentUser?.branch || 'N/A'}</p>
-          </div>
-          <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4">
         {inspections.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -95,16 +72,13 @@ export default function PeritajesPendientes() {
                     </div>
                     <Badge className="bg-accent/10 text-accent-foreground text-xs">Pendiente</Badge>
                   </div>
-
                   <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{Number(insp.vehicle.mileage || 0).toLocaleString('es-CO')} km</span>
                     <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{insp.vehicle.city || insp.vehicle.ubicacion}</span>
                     <span className="flex items-center gap-1"><Building className="w-3 h-3" />{insp.dealerCompany}</span>
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.requestedAt)}</span>
                   </div>
-
-                  <Button onClick={() => handleTakeInspection(insp)}
-                    className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
+                  <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
                     <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
                   </Button>
                 </Card>
@@ -113,7 +87,6 @@ export default function PeritajesPendientes() {
           </div>
         )}
       </div>
-
       <BottomNav />
     </div>
   );

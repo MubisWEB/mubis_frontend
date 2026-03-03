@@ -4,28 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Flame, Bell, Gavel, ArrowUpRight } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+import { Search, SlidersHorizontal, Flame, Bell, ArrowUpRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';
 import BidModal from '@/components/BidModal';
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import TopBar from "@/components/TopBar";
-import { getActiveAuctions } from '@/lib/mockStore';
-
-const mockDataComprar = [
-  { id: 'm1', brand: 'Mazda', model: 'CX-30', year: 2022, mileage: 15000, city: 'Bogotá', transmission: 'Automática', fuel_type: 'Gasolina', color: 'Gris', photos: ['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1200'], current_bid: 62000000, bids_count: 24, status: 'active', auction_end: new Date(Date.now() + 42 * 60000).toISOString(), isLeading: false },
-  { id: 'm2', brand: 'Toyota', model: 'Hilux', year: 2020, mileage: 42000, city: 'Medellín', transmission: 'Manual', fuel_type: 'Diesel', color: 'Blanco', photos: ['https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=1200'], current_bid: 118000000, bids_count: 35, status: 'active', auction_end: new Date(Date.now() + 95 * 60000).toISOString(), isLeading: false },
-  { id: 'm3', brand: 'Kia', model: 'Sportage', year: 2021, mileage: 18000, city: 'Cali', transmission: 'Automática', fuel_type: 'Gasolina', color: 'Rojo', photos: ['https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1200'], current_bid: 78000000, bids_count: 31, status: 'active', auction_end: new Date(Date.now() + 160 * 60000).toISOString(), isLeading: false },
-  { id: 'm4', brand: 'BMW', model: 'X3', year: 2021, mileage: 22000, city: 'Bogotá', transmission: 'Automática', fuel_type: 'Gasolina', color: 'Negro', photos: ['https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1200'], current_bid: 145000000, bids_count: 42, status: 'active', auction_end: new Date(Date.now() + 15 * 60000).toISOString(), isLeading: false },
-];
+import Header from "@/components/Header";
+import { getActiveAuctions, addBid, updateAuction, getCurrentUser } from '@/lib/mockStore';
 
 const formatMoneyShort = (n) => `$${(n / 1000000).toFixed(0)}M`;
 
 export default function Comprar() {
   const navigate = useNavigate();
+  const currentUser = getCurrentUser();
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('ending_soon');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '', priceMin: '', priceMax: '', mileageMax: '' });
@@ -33,47 +26,29 @@ export default function Comprar() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [bidModalOpen, setBidModalOpen] = useState(false);
   const [liveActivity, setLiveActivity] = useState([]);
-  const [onlineDealers, setOnlineDealers] = useState(127);
-  const [myBids, setMyBids] = useState(() => {
-    const saved = localStorage.getItem('mubis_my_bids');
-    return saved ? JSON.parse(saved) : {};
-  });
 
   useEffect(() => {
-    // Merge mock data with store auctions
-    const storeAuctions = getActiveAuctions().map(a => ({
-      ...a,
-      auction_end: a.ends_at,
-      isLeading: false,
-    }));
-    setVehicles([...storeAuctions, ...mockDataComprar]);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVehicles(prev => {
-        if (!prev.length) return prev;
-        const vehicle = prev[Math.floor(Math.random() * prev.length)];
-        const inc = (Math.floor(Math.random() * 3) + 1) * 100000;
-        const newBid = (vehicle.current_bid || 0) + inc;
-        setLiveActivity(act => ([{ id: Date.now(), dealer: 'Postor anónimo', vehicle: `${vehicle.brand} ${vehicle.model}`, amount: newBid, time: new Date() }, ...act]).slice(0, 5));
-        return prev.map(v => v.id === vehicle.id ? { ...v, current_bid: newBid, bids_count: (v.bids_count || 0) + 1, isLeading: false } : v);
-      });
-    }, 9000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => { setOnlineDealers(prev => Math.max(40, prev + Math.floor(Math.random() * 5) - 2)); }, 25000);
+    const load = () => {
+      const storeAuctions = getActiveAuctions().map(a => ({
+        ...a,
+        auction_end: a.ends_at,
+        isLeading: false,
+      }));
+      setVehicles(storeAuctions);
+    };
+    load();
+    const interval = setInterval(load, 5000);
     return () => clearInterval(interval);
   }, []);
 
   const handleBid = (vehicle) => { setSelectedVehicle(vehicle); setBidModalOpen(true); };
 
   const handleSubmitBid = async (amount) => {
-    if (!selectedVehicle) return;
+    if (!selectedVehicle || !currentUser) return;
+    // Save bid to store
+    addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount, userName: 'Postor anónimo' });
+    updateAuction(selectedVehicle.id, { current_bid: amount, bids_count: (selectedVehicle.bids_count || 0) + 1 });
     setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: amount, bids_count: (v.bids_count || 0) + 1, isLeading: true } : v));
-    setMyBids(prev => { const next = { ...prev, [selectedVehicle.id]: amount }; localStorage.setItem('mubis_my_bids', JSON.stringify(next)); return next; });
     setLiveActivity(act => ([{ id: Date.now(), dealer: 'Tú', vehicle: `${selectedVehicle.brand} ${selectedVehicle.model}`, amount, time: new Date(), isYou: true }, ...act]).slice(0, 5));
     toast.success('Listo. Tu puja quedó registrada.', { description: `Puja: ${formatMoneyShort(amount)} · ${selectedVehicle.brand} ${selectedVehicle.model}` });
   };
@@ -85,27 +60,20 @@ export default function Comprar() {
     if (filters.yearFrom) list = list.filter(v => v.year >= parseInt(filters.yearFrom));
     if (filters.yearTo) list = list.filter(v => v.year <= parseInt(filters.yearTo));
     if (filters.mileageMax) list = list.filter(v => v.mileage <= parseInt(filters.mileageMax));
-    if (sortBy === 'my_bids') list = list.filter(v => myBids[v.id] != null);
-    if (sortBy === 'ending_soon' || sortBy === 'my_bids') list.sort((a, b) => new Date(a.auction_end || a.ends_at) - new Date(b.auction_end || b.ends_at));
+    if (sortBy === 'ending_soon') list.sort((a, b) => new Date(a.auction_end || a.ends_at) - new Date(b.auction_end || b.ends_at));
     else if (sortBy === 'price_low') list.sort((a, b) => (a.current_bid || 0) - (b.current_bid || 0));
     else if (sortBy === 'price_high') list.sort((a, b) => (b.current_bid || 0) - (a.current_bid || 0));
     else if (sortBy === 'most_bids') list.sort((a, b) => (b.bids_count || 0) - (a.bids_count || 0));
     return list;
-  }, [vehicles, search, filters, sortBy, myBids]);
+  }, [vehicles, search, filters, sortBy]);
 
   const topActivity = liveActivity[0];
 
   return (
     <div className="min-h-screen flex flex-col bg-background pb-24">
-      <TopBar />
-      <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16"><MubisLogo size="lg" /></div>
-      </nav>
+      <Header />
       <div className="bg-background px-4 pt-4 pb-3">
         <div className="flex items-center gap-3 mb-3">
-          <Badge variant="outline" className="px-2.5 py-1 text-xs border-secondary/20 bg-secondary/5 text-secondary">
-            <span className="w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse bg-green-400" />{onlineDealers} en línea
-          </Badge>
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
             <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
           </Badge>
@@ -125,7 +93,6 @@ export default function Comprar() {
               <SelectItem value="most_bids">Más populares</SelectItem>
               <SelectItem value="price_low">Precio: menor</SelectItem>
               <SelectItem value="price_high">Precio: mayor</SelectItem>
-              <SelectItem value="my_bids">Mis pujas</SelectItem>
             </SelectContent>
           </Select>
           <FilterSheet filters={filters} setFilters={setFilters} />
@@ -133,38 +100,37 @@ export default function Comprar() {
       </div>
 
       <div className="px-4 pt-2 pb-4">
-        <div className="mb-4 pt-1">
-          <AnimatePresence mode="wait">
-            {topActivity && (
+        {topActivity && (
+          <div className="mb-4">
+            <AnimatePresence mode="wait">
               <motion.div key={topActivity.id} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }} transition={{ duration: 0.2 }}
-                className="flex items-center justify-between gap-3 text-sm cursor-pointer bg-secondary/5 rounded-xl px-4 py-2.5 hover:bg-secondary/10 transition-colors border border-secondary/10"
-                onClick={() => { const v = vehicles.find(x => `${x.brand} ${x.model}` === topActivity.vehicle); if (v) handleBid(v); }}>
+                className="flex items-center justify-between gap-3 text-sm bg-secondary/5 rounded-xl px-4 py-2.5 border border-secondary/10">
                 <div className="flex items-center gap-2 min-w-0">
                   <Bell className="w-4 h-4 text-secondary shrink-0" />
                   <span className={`font-bold ${topActivity.isYou ? 'text-primary' : 'text-secondary'}`}>{topActivity.dealer}</span>
                   <span className="text-muted-foreground">pujó</span>
                   <span className="font-bold text-secondary">{formatMoneyShort(topActivity.amount)}</span>
-                  <span className="text-muted-foreground">en</span>
                   <span className="text-foreground font-bold truncate">{topActivity.vehicle}</span>
                 </div>
-                <div className="shrink-0 flex items-center gap-1 text-secondary font-bold">
-                  <span className="text-xs">Pujar</span><ArrowUpRight className="w-4 h-4" />
-                </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            </AnimatePresence>
+          </div>
+        )}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-lg font-bold text-foreground font-sans">{sortBy === 'my_bids' ? 'Mis pujas' : 'Subastas'}</p>
+          <p className="text-lg font-bold text-foreground font-sans">Subastas</p>
           <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
         </div>
-        <div className="space-y-3">
-          {filteredVehicles.map((vehicle, index) => (<VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} />))}
-        </div>
-        {filteredVehicles.length === 0 && (
-          <div className="py-10 text-center">
-            <p className="text-sm font-semibold text-foreground">No hay resultados</p>
-            <p className="text-xs text-muted-foreground mt-1">Prueba quitando filtros o buscando diferente.</p>
+        {filteredVehicles.length === 0 ? (
+          <div className="py-16 text-center">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">No hay subastas activas</p>
+            <p className="text-xs text-muted-foreground mt-1">Las subastas aparecerán aquí cuando los dealers publiquen vehículos</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredVehicles.map((vehicle, index) => (<VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} />))}
           </div>
         )}
       </div>

@@ -1,19 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import MubisLogo from '@/components/MubisLogo';
+import { DollarSign } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
-import TopBar from "@/components/TopBar";
+import Header from '@/components/Header';
+import { getBids } from '@/lib/mockStore';
 
 export default function AdminMovimientos() {
+  const [bids, setBids] = useState([]);
+
+  useEffect(() => { setBids(getBids()); }, []);
+
+  const formatPrice = (p) => `$${(p / 1000000).toFixed(1)}M`;
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <TopBar />
-      <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16"><MubisLogo size="lg" /></div>
-      </nav>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h1 className="text-2xl font-bold text-foreground mb-4 font-sans">Movimientos</h1>
-        <Card className="p-8 text-center border border-border"><p className="text-muted-foreground">Módulo de movimientos próximamente disponible</p></Card>
+    <div className="min-h-screen bg-muted pb-24">
+      <Header title="Movimientos" subtitle={`${bids.length} transacciones`} backTo="/AdminDashboard" />
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        {bids.length === 0 ? (
+          <div className="text-center py-12"><DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">No hay movimientos registrados</p></div>
+        ) : (
+          <div className="space-y-2">
+            {bids.map(bid => (
+              <Card key={bid.id} className="p-3 border border-border shadow-sm flex justify-between items-center">
+                <div><p className="text-sm font-medium text-foreground">{bid.userName || 'Postor anónimo'}</p><p className="text-xs text-muted-foreground">{new Date(bid.createdAt).toLocaleDateString('es-CO')}</p></div>
+                <span className="font-bold text-foreground">{formatPrice(bid.amount)}</span>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
       <BottomNav />
     </div>
