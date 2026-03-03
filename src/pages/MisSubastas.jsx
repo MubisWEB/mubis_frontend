@@ -148,10 +148,7 @@ export default function MisSubastas() {
               <DollarSign className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes publicaciones</h3>
-            <p className="text-muted-foreground text-sm mb-4">Publica tu primer carro para iniciar el proceso de subasta</p>
-            <Button onClick={() => setDialogOpen(true)} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-              <Plus className="w-4 h-4" /> Publicar carro
-            </Button>
+            <p className="text-muted-foreground text-sm">Usa el botón "Publicar" arriba para iniciar</p>
           </div>
         )}
       </div>
