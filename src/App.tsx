@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import RegistroConfirmacion from './pages/RegistroConfirmacion';
+import PendienteVerificacion from './pages/PendienteVerificacion';
 import Comprar from './pages/Comprar';
 import DetalleSubasta from './pages/DetalleSubasta';
 import MisSubastas from './pages/MisSubastas';
@@ -40,15 +41,16 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/registro-confirmacion" element={<RegistroConfirmacion />} />
+          <Route path="/PendienteVerificacion" element={<PendienteVerificacion />} />
 
           {/* Comprar: dealer + recomprador */}
           <Route path="/Comprar" element={<RequireRole roles={['dealer','recomprador']}><Comprar /></RequireRole>} />
-          <Route path="/DetalleSubasta" element={<RequireRole roles={['dealer','recomprador']}><DetalleSubasta /></RequireRole>} />
+          <Route path="/DetalleSubasta/:auctionId" element={<RequireRole roles={['dealer','recomprador']}><DetalleSubasta /></RequireRole>} />
           <Route path="/Ganados" element={<RequireRole roles={['dealer','recomprador']}><Ganados /></RequireRole>} />
 
           {/* Vender: dealer only */}
           <Route path="/MisSubastas" element={<RequireRole roles={['dealer']}><MisSubastas /></RequireRole>} />
-          <Route path="/DetallePublicarCarro" element={<RequireRole roles={['dealer']}><DetalleSubastaVendedor /></RequireRole>} />
+          <Route path="/DetalleSubastaVendedor/:auctionId" element={<RequireRole roles={['dealer']}><DetalleSubastaVendedor /></RequireRole>} />
 
           {/* Movimientos: dealer + recomprador */}
           <Route path="/Movimientos" element={<RequireRole roles={['dealer','recomprador']}><Movimientos /></RequireRole>} />

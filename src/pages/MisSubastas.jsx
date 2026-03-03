@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Eye, TrendingUp, DollarSign, Bell, AlertCircle, Plus, ClipboardCheck, XCircle } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+import { Clock, Users, Eye, DollarSign, Plus, ClipboardCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
+import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import TopBar from "@/components/TopBar";
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
 import { getVehicles, getAuctions, getCurrentUser } from '@/lib/mockStore';
 
@@ -32,7 +30,6 @@ export default function MisSubastas() {
   }, [loadData]);
 
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
-
   const getTimeLeft = (endDate) => {
     const diff = new Date(endDate) - new Date();
     if (diff <= 0) return 'Finalizada';
@@ -56,24 +53,13 @@ export default function MisSubastas() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <TopBar />
-      <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="lg" />
-        </div>
-      </nav>
+      <Header title="Mis vehículos" subtitle="Publicaciones y subastas activas">
+        <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
+          <Plus className="w-4 h-4" /> Publicar
+        </Button>
+      </Header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground font-sans">Mis vehículos</h1>
-            <p className="text-muted-foreground text-sm">Publicaciones y subastas activas</p>
-          </div>
-          <Button onClick={() => setDialogOpen(true)} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-            <Plus className="w-4 h-4" /> Publicar carro
-          </Button>
-        </div>
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2">
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="text-center p-3 bg-secondary/10 rounded-xl">
             <p className="text-2xl font-bold text-secondary">{activeAuctions.length}</p>
@@ -91,7 +77,6 @@ export default function MisSubastas() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
-        {/* Pending vehicles */}
         {pendingVehicles.length > 0 && (
           <div className="mb-4">
             <p className="text-sm font-semibold text-foreground mb-2">En proceso</p>
@@ -119,14 +104,13 @@ export default function MisSubastas() {
           </div>
         )}
 
-        {/* Active auctions */}
         {activeAuctions.length > 0 && (
           <div className="mb-4">
             <p className="text-sm font-semibold text-foreground mb-2">Subastas activas</p>
             <div className="space-y-3">
               {activeAuctions.map(auction => (
                 <Card key={auction.id} className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl"
-                  onClick={() => navigate(`/DetallePublicarCarro?id=${auction.id}`)}>
+                  onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
                   <div className="flex p-3 gap-3">
                     <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted">
                       {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
@@ -145,7 +129,7 @@ export default function MisSubastas() {
                           <p className="font-bold text-primary text-sm">{formatPrice(auction.current_bid)}</p>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{auction.bids_count}</span>
+                          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{auction.bids_count || 0}</span>
                           <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{auction.views || 0}</span>
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{getTimeLeft(auction.ends_at)}</span>
                         </div>

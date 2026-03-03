@@ -1,19 +1,26 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import MubisLogo from '@/components/MubisLogo';
+import { BarChart3 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
-import TopBar from "@/components/TopBar";
+import Header from '@/components/Header';
+import { getAdminStats } from '@/lib/mockStore';
 
 export default function AdminAnaliticas() {
+  const stats = getAdminStats();
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <TopBar />
-      <nav className="w-full bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16"><MubisLogo size="lg" /></div>
-      </nav>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h1 className="text-2xl font-bold text-foreground mb-4 font-sans">Analíticas</h1>
-        <Card className="p-8 text-center border border-border"><p className="text-muted-foreground">Módulo de analíticas próximamente disponible</p></Card>
+    <div className="min-h-screen bg-muted pb-24">
+      <Header title="Analíticas" subtitle="Métricas en tiempo real" backTo="/AdminDashboard" />
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        <Card className="p-6 border border-border shadow-sm text-center">
+          <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <h3 className="font-bold text-foreground mb-2">Analíticas</h3>
+          <p className="text-sm text-muted-foreground mb-4">Dashboard de analíticas próximamente</p>
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <div className="p-3 bg-muted rounded-xl"><p className="text-xl font-bold text-foreground">{stats.auctions.total}</p><p className="text-xs text-muted-foreground">Subastas totales</p></div>
+            <div className="p-3 bg-muted rounded-xl"><p className="text-xl font-bold text-foreground">{stats.inspections.completed}</p><p className="text-xs text-muted-foreground">Peritajes completados</p></div>
+          </div>
+        </Card>
       </div>
       <BottomNav />
     </div>
