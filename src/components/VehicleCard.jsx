@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Flame, Trophy, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite = false, index = 0 }) {
+export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite = false, index = 0, linkPrefix = '/DetalleSubasta/' }) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
 

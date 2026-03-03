@@ -65,7 +65,7 @@ const App = () => (
           {/* Admin */}
           <Route path="/AdminDashboard" element={<RequireRole roles={['admin']}><AdminDashboard /></RequireRole>} />
           <Route path="/AdminDealers" element={<RequireRole roles={['admin']}><AdminDealers /></RequireRole>} />
-          <Route path="/AdminDealerDetalle" element={<RequireRole roles={['admin']}><AdminDealerDetalle /></RequireRole>} />
+          <Route path="/AdminDealerDetalle/:userId" element={<RequireRole roles={['admin']}><AdminDealerDetalle /></RequireRole>} />
           <Route path="/AdminSolicitudes" element={<RequireRole roles={['admin']}><AdminSolicitudes /></RequireRole>} />
           <Route path="/AdminSubastas" element={<RequireRole roles={['admin']}><AdminSubastas /></RequireRole>} />
           <Route path="/AdminMovimientos" element={<RequireRole roles={['admin']}><AdminMovimientos /></RequireRole>} />
