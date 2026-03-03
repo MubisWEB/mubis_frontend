@@ -187,6 +187,14 @@ function save(key, data) {
 }
 
 function ensureSeeded() {
+  // Check if we have the new seed format (v2)
+  const seedVersion = localStorage.getItem('mubis_seed_version');
+  if (seedVersion !== 'v2') {
+    // Clear old data and re-seed
+    Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('mubis_seed_version', 'v2');
+  }
+
   if (!load(KEYS.users)) {
     save(KEYS.users, SEED_USERS);
   }
@@ -194,19 +202,17 @@ function ensureSeeded() {
     const vehicles = buildSeedVehicles();
     save(KEYS.vehicles, vehicles);
 
-    if (!load(KEYS.inspections)) save(KEYS.inspections, buildSeedInspections(vehicles));
-    if (!load(KEYS.auctions)) {
-      const auctions = buildSeedAuctions(vehicles);
-      save(KEYS.auctions, auctions);
-      if (!load(KEYS.bids)) save(KEYS.bids, buildSeedBids(auctions));
-    }
+    const inspections = buildSeedInspections(vehicles);
+    save(KEYS.inspections, inspections);
+
+    const auctions = buildSeedAuctions(vehicles);
+    save(KEYS.auctions, auctions);
+
+    save(KEYS.bids, buildSeedBids(auctions));
   } else {
     if (!load(KEYS.inspections)) save(KEYS.inspections, []);
     if (!load(KEYS.bids)) save(KEYS.bids, []);
-    if (!load(KEYS.auctions)) {
-      const legacy = load('mubis_my_auctions');
-      save(KEYS.auctions, legacy || []);
-    }
+    if (!load(KEYS.auctions)) save(KEYS.auctions, []);
   }
 }
 
