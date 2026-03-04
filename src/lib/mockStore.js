@@ -296,7 +296,52 @@ export function getInspectionByVehicleId(vehicleId) { return getInspections().fi
 export function updateInspection(id, updates) {
   const list = getInspections().map(i => i.id === id ? { ...i, ...updates } : i);
   save(KEYS.inspections, list);
-  return list.find(i => i.id === id);
+  const updated = list.find(i => i.id === id);
+
+  // Auto-generate notifications on inspection status changes
+  if (updated && updates.status) {
+    const vehicle = getVehicleById(updated.vehicleId);
+    const vLabel = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}` : updated.vehicleId;
+
+    if (updates.status === 'IN_PROGRESS' && updated.peritoId) {
+      addNotification({
+        userId: updated.peritoId,
+        type: 'inspection_taken',
+        title: 'Peritaje tomado',
+        body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.`,
+      });
+    }
+    if (updates.status === 'COMPLETED') {
+      if (updated.peritoId) {
+        addNotification({
+          userId: updated.peritoId,
+          type: 'inspection_completed',
+          title: 'Peritaje finalizado',
+          body: `Finalizaste el peritaje de ${vLabel}.`,
+        });
+      }
+      if (vehicle?.dealerId) {
+        addNotification({
+          userId: vehicle.dealerId,
+          type: 'auction_published',
+          title: 'Vehículo publicado en subasta',
+          body: `${vLabel} ya está en subasta.`,
+        });
+      }
+    }
+    if (updates.status === 'REJECTED') {
+      if (vehicle?.dealerId) {
+        addNotification({
+          userId: vehicle.dealerId,
+          type: 'inspection_rejected',
+          title: 'Peritaje rechazado',
+          body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}`,
+        });
+      }
+    }
+  }
+
+  return updated;
 }
 export function getPendingInspectionsByBranch(branch) {
   return getInspections().filter(i => i.dealerBranch === branch && i.status === 'PENDING');
