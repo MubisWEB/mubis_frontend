@@ -626,5 +626,20 @@ export function addSupportTicket(ticket) {
   return item;
 }
 export function getSupportTicketsByUserId(userId) {
-  return getSupportTickets().filter(t => t.userId === userId);
+  return getSupportTickets().filter(t => t.userId === userId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+export function updateSupportTicket(id, updates) {
+  const list = getSupportTickets().map(t => t.id === id ? { ...t, ...updates } : t);
+  save(KEYS.supportTickets, list);
+  return list.find(t => t.id === id);
+}
+
+// ── Live activity feed (auction-related notifications for all users) ──
+export function getRecentAuctionActivity(limit = 5) {
+  const allNotifs = getNotifications();
+  const activityTypes = ['new_bid', 'bid_placed', 'auction_published'];
+  return allNotifs
+    .filter(n => activityTypes.includes(n.type))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, limit);
 }
