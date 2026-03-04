@@ -17,7 +17,7 @@ import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
 import Movimientos from './pages/Movimientos';
 import Cuenta from './pages/Cuenta';
 import Configuracion from './pages/Configuracion';
-import Notificaciones from './pages/Notificaciones';
+import AyudaSoporte from './pages/AyudaSoporte';
 import Ganados from './pages/Ganados';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDealers from './pages/AdminDealers';
