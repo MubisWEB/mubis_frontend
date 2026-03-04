@@ -296,7 +296,52 @@ export function getInspectionByVehicleId(vehicleId) { return getInspections().fi
 export function updateInspection(id, updates) {
   const list = getInspections().map(i => i.id === id ? { ...i, ...updates } : i);
   save(KEYS.inspections, list);
-  return list.find(i => i.id === id);
+  const updated = list.find(i => i.id === id);
+
+  // Auto-generate notifications on inspection status changes
+  if (updated && updates.status) {
+    const vehicle = getVehicleById(updated.vehicleId);
+    const vLabel = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}` : updated.vehicleId;
+
+    if (updates.status === 'IN_PROGRESS' && updated.peritoId) {
+      addNotification({
+        userId: updated.peritoId,
+        type: 'inspection_taken',
+        title: 'Peritaje tomado',
+        body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.`,
+      });
+    }
+    if (updates.status === 'COMPLETED') {
+      if (updated.peritoId) {
+        addNotification({
+          userId: updated.peritoId,
+          type: 'inspection_completed',
+          title: 'Peritaje finalizado',
+          body: `Finalizaste el peritaje de ${vLabel}.`,
+        });
+      }
+      if (vehicle?.dealerId) {
+        addNotification({
+          userId: vehicle.dealerId,
+          type: 'auction_published',
+          title: 'Vehículo publicado en subasta',
+          body: `${vLabel} ya está en subasta.`,
+        });
+      }
+    }
+    if (updates.status === 'REJECTED') {
+      if (vehicle?.dealerId) {
+        addNotification({
+          userId: vehicle.dealerId,
+          type: 'inspection_rejected',
+          title: 'Peritaje rechazado',
+          body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}`,
+        });
+      }
+    }
+  }
+
+  return updated;
 }
 export function getPendingInspectionsByBranch(branch) {
   return getInspections().filter(i => i.dealerBranch === branch && i.status === 'PENDING');
@@ -353,6 +398,30 @@ export function addBid(bid) {
   const item = { id: `bid-${Date.now()}`, createdAt: new Date().toISOString(), ...bid };
   list.unshift(item);
   save(KEYS.bids, list);
+
+  // Auto-generate notifications for bids
+  const auction = getAuctionById(bid.auctionId);
+  if (auction) {
+    const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
+    const amountStr = `$${(bid.amount / 1000000).toFixed(1)}M`;
+    // Notify dealer who owns the auction
+    if (auction.dealerId && auction.dealerId !== bid.userId) {
+      addNotification({
+        userId: auction.dealerId,
+        type: 'new_bid',
+        title: 'Nueva puja en tu subasta',
+        body: `Puja de ${amountStr} en tu ${vLabel}.`,
+      });
+    }
+    // Notify the bidder
+    addNotification({
+      userId: bid.userId,
+      type: 'bid_placed',
+      title: 'Puja registrada',
+      body: `Pujaste ${amountStr} en ${vLabel}.`,
+    });
+  }
+
   return item;
 }
 export function getBidsByAuctionId(auctionId) { return getBids().filter(b => b.auctionId === auctionId); }
@@ -557,5 +626,20 @@ export function addSupportTicket(ticket) {
   return item;
 }
 export function getSupportTicketsByUserId(userId) {
-  return getSupportTickets().filter(t => t.userId === userId);
+  return getSupportTickets().filter(t => t.userId === userId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+export function updateSupportTicket(id, updates) {
+  const list = getSupportTickets().map(t => t.id === id ? { ...t, ...updates } : t);
+  save(KEYS.supportTickets, list);
+  return list.find(t => t.id === id);
+}
+
+// ── Live activity feed (auction-related notifications for all users) ──
+export function getRecentAuctionActivity(limit = 5) {
+  const allNotifs = getNotifications();
+  const activityTypes = ['new_bid', 'bid_placed', 'auction_published'];
+  return allNotifs
+    .filter(n => activityTypes.includes(n.type))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, limit);
 }

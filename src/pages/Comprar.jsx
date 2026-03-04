@@ -1,18 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Flame, Bell, ArrowUpRight } from 'lucide-react';
+import { Search, SlidersHorizontal, Flame, Radio } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';
 import BidModal from '@/components/BidModal';
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import { getActiveAuctions, addBid, updateAuction, getCurrentUser } from '@/lib/mockStore';
+import { getActiveAuctions, addBid, updateAuction, getCurrentUser, getRecentAuctionActivity } from '@/lib/mockStore';
 
 const formatMoneyShort = (n) => `$${(n / 1000000).toFixed(0)}M`;
 
@@ -25,7 +26,12 @@ export default function Comprar() {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [bidModalOpen, setBidModalOpen] = useState(false);
-  const [liveActivity, setLiveActivity] = useState([]);
+  const [activityItems, setActivityItems] = useState([]);
+  const [activityIdx, setActivityIdx] = useState(0);
+
+  const loadActivity = useCallback(() => {
+    setActivityItems(getRecentAuctionActivity(10));
+  }, []);
 
   useEffect(() => {
     const load = () => {
@@ -35,21 +41,30 @@ export default function Comprar() {
         isLeading: false,
       }));
       setVehicles(storeAuctions);
+      loadActivity();
     };
     load();
     const interval = setInterval(load, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [loadActivity]);
+
+  // Rotate activity banner every 4s
+  useEffect(() => {
+    if (activityItems.length <= 1) return;
+    const timer = setInterval(() => {
+      setActivityIdx(prev => (prev + 1) % activityItems.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [activityItems.length]);
 
   const handleBid = (vehicle) => { setSelectedVehicle(vehicle); setBidModalOpen(true); };
 
   const handleSubmitBid = async (amount) => {
     if (!selectedVehicle || !currentUser) return;
-    // Save bid to store
     addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount, userName: 'Postor anónimo' });
     updateAuction(selectedVehicle.id, { current_bid: amount, bids_count: (selectedVehicle.bids_count || 0) + 1 });
     setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: amount, bids_count: (v.bids_count || 0) + 1, isLeading: true } : v));
-    setLiveActivity(act => ([{ id: Date.now(), dealer: 'Tú', vehicle: `${selectedVehicle.brand} ${selectedVehicle.model}`, amount, time: new Date(), isYou: true }, ...act]).slice(0, 5));
+    loadActivity();
     toast.success('Listo. Tu puja quedó registrada.', { description: `Puja: ${formatMoneyShort(amount)} · ${selectedVehicle.brand} ${selectedVehicle.model}` });
   };
 
@@ -67,12 +82,50 @@ export default function Comprar() {
     return list;
   }, [vehicles, search, filters, sortBy]);
 
-  const topActivity = liveActivity[0];
+  const currentActivity = activityItems[activityIdx];
 
   return (
     <div className="min-h-screen flex flex-col bg-background pb-24">
       <Header />
-      <div className="bg-background px-4 pt-4 pb-3">
+
+      {/* Live Activity Banner */}
+      <div className="px-4 pt-3">
+        <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2.5">
+            <div className="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+              <Radio className="w-3.5 h-3.5 text-secondary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold text-secondary uppercase tracking-wider">Actividad en vivo</p>
+              <AnimatePresence mode="wait">
+                {currentActivity ? (
+                  <motion.p
+                    key={currentActivity.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-sm text-foreground truncate"
+                  >
+                    {currentActivity.body}
+                  </motion.p>
+                ) : (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-muted-foreground">
+                    Sin actividad reciente
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+            {activityItems.length > 1 && (
+              <Badge variant="outline" className="text-[10px] border-border text-muted-foreground flex-shrink-0">
+                {activityIdx + 1}/{activityItems.length}
+              </Badge>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      <div className="bg-background px-4 pt-3 pb-3">
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
             <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
@@ -100,22 +153,6 @@ export default function Comprar() {
       </div>
 
       <div className="px-4 pt-2 pb-4">
-        {topActivity && (
-          <div className="mb-4">
-            <AnimatePresence mode="wait">
-              <motion.div key={topActivity.id} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }} transition={{ duration: 0.2 }}
-                className="flex items-center justify-between gap-3 text-sm bg-secondary/5 rounded-xl px-4 py-2.5 border border-secondary/10">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Bell className="w-4 h-4 text-secondary shrink-0" />
-                  <span className={`font-bold ${topActivity.isYou ? 'text-primary' : 'text-secondary'}`}>{topActivity.dealer}</span>
-                  <span className="text-muted-foreground">pujó</span>
-                  <span className="font-bold text-secondary">{formatMoneyShort(topActivity.amount)}</span>
-                  <span className="text-foreground font-bold truncate">{topActivity.vehicle}</span>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        )}
         <div className="flex items-center justify-between mb-3">
           <p className="text-lg font-bold text-foreground font-sans">Subastas</p>
           <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
