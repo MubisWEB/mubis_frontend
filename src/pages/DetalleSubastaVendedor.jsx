@@ -145,7 +145,13 @@ export default function DetalleSubastaVendedor() {
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-foreground flex items-center gap-2"><FileCheck className="w-4 h-4 text-secondary" />Peritaje Mubis</p>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${inspection.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : inspection.scoreGlobal >= 50 ? 'bg-accent/10 text-accent-foreground' : 'bg-destructive/10 text-destructive'}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                inspection.scoreGlobal >= 80
+                  ? 'bg-primary/10 text-primary'
+                  : inspection.scoreGlobal >= 50
+                    ? 'bg-purple-100 text-purple-800'
+                    : 'bg-destructive/10 text-destructive'
+              }`}>
                 {inspection.scoreGlobal}
               </div>
             </div>

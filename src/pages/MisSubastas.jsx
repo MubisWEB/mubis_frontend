@@ -48,8 +48,12 @@ export default function MisSubastas() {
       return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
     }
     if (vehicle.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) {
-      return <Badge className="bg-accent/10 text-accent-foreground text-xs">Pendiente de peritaje</Badge>;
-    }
+      return (
+        <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">
+          Pendiente de peritaje
+        </Badge>
+      );
+}
     if (vehicle.status === 'READY_FOR_AUCTION') {
       return <Badge className="bg-primary/10 text-primary text-xs">En subasta</Badge>;
     }
@@ -71,9 +75,19 @@ export default function MisSubastas() {
   const getPeritajeBadge = (vehicle) => {
     const insp = getInspectionByVehicleId(vehicle.id);
     if (!insp || insp.status !== 'COMPLETED') return null;
+
+    const isGoodScore = insp.scoreGlobal >= 80;
+
     return (
-      <Badge className={`text-[10px] ${insp.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
-        <FileCheck className="w-3 h-3 mr-0.5" />{insp.scoreGlobal}/100
+      <Badge
+        className={`text-[10px] font-semibold ${
+          isGoodScore
+            ? 'bg-primary/10 text-primary'
+            : 'bg-purple-100 text-purple-800'
+        }`}
+      >
+        <FileCheck className="w-3 h-3 mr-0.5" />
+        {insp.scoreGlobal}/100
       </Badge>
     );
   };
@@ -104,7 +118,7 @@ export default function MisSubastas() {
             <p className="text-muted-foreground text-xs">En subasta</p>
           </div>
           <div className="text-center p-3 bg-accent/10 rounded-xl">
-            <p className="text-2xl font-bold text-accent-foreground">{pendingVehicles.length}</p>
+            <p className="text-2xl font-bold text-secondary">{pendingVehicles.length}</p>
             <p className="text-muted-foreground text-xs">En proceso</p>
           </div>
           <div className="text-center p-3 bg-primary/10 rounded-xl">
