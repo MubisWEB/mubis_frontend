@@ -10,6 +10,7 @@ const KEYS = {
   auctions: 'mubis_store_auctions',
   bids: 'mubis_store_bids',
   notifications: 'mubis_store_notifications',
+  supportTickets: 'mubis_store_support_tickets',
 };
 
 // ── Admin whitelist ──
@@ -540,3 +541,21 @@ function ensureSeedNotifications() {
 
 // Call after main seed
 ensureSeedNotifications();
+
+// ── Notification helpers ──
+export function getUnreadCount(userId) {
+  return getNotificationsByUserId(userId).filter(n => !n.read).length;
+}
+
+// ── Support Tickets ──
+export function getSupportTickets() { return load(KEYS.supportTickets) || []; }
+export function addSupportTicket(ticket) {
+  const list = getSupportTickets();
+  const item = { id: `ticket-${Date.now()}`, status: 'OPEN', createdAt: new Date().toISOString(), ...ticket };
+  list.unshift(item);
+  save(KEYS.supportTickets, list);
+  return item;
+}
+export function getSupportTicketsByUserId(userId) {
+  return getSupportTickets().filter(t => t.userId === userId);
+}

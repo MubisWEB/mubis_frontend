@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,90 +7,88 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { User, Settings, Bell, LogOut, ChevronRight, Shield, Pencil, Lock, Car, Gavel, Eye, ClipboardCheck, Users, TrendingUp } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser, getUserRole, updateUser, getVehicles, getAuctions, getBids, getInspections, getUsers } from '@/lib/mockStore';
+import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
 const ROLE_LABELS = { dealer: 'Dealer', recomprador: 'Recomprador', perito: 'Perito', admin: 'Administrador' };
 const ROLE_BADGE_CLASS = { dealer: 'bg-secondary/10 text-secondary', recomprador: 'bg-primary/10 text-primary', perito: 'bg-secondary/10 text-secondary', admin: 'bg-destructive/10 text-destructive' };
 
-function useMetrics(user, role) {
-  if (!user) return [];
-  const id = user.id;
+const TYPE_ICONS = {
+  auction_published: Car,
+  new_bid: Gavel,
+  bid_surpassed: Gavel,
+  inspection_taken: ClipboardCheck,
+  inspection_completed: ClipboardCheck,
+  user_approved: UserCheck,
+};
 
-  if (role === 'dealer') {
-    const vehicles = getVehicles().filter(v => v.dealerId === id);
-    const auctions = getAuctions().filter(a => a.dealerId === id);
-    return [
-      { label: 'Vehículos creados', value: vehicles.length, icon: Car },
-      { label: 'Subastas activas', value: auctions.filter(a => a.status === 'active').length, icon: Gavel },
-      { label: 'Subastas finalizadas', value: auctions.filter(a => a.status !== 'active').length, icon: TrendingUp },
-    ];
-  }
-  if (role === 'recomprador') {
-    const bids = getBids().filter(b => b.userId === id);
-    const wonAuctions = getAuctions().filter(a => a.winnerId === id);
-    const participatedAuctions = [...new Set(bids.map(b => b.auctionId))];
-    return [
-      { label: 'Pujas realizadas', value: bids.length, icon: Gavel },
-      { label: 'Subastas ganadas', value: wonAuctions.length, icon: TrendingUp },
-      { label: 'Subastas participadas', value: participatedAuctions.length, icon: Eye },
-    ];
-  }
-  if (role === 'perito') {
-    const inspections = getInspections().filter(i => i.peritoId === id || i.lockedByPeritoId === id);
-    return [
-      { label: 'Completados', value: inspections.filter(i => i.status === 'COMPLETED').length, icon: ClipboardCheck },
-      { label: 'Rechazados', value: inspections.filter(i => i.status === 'REJECTED').length, icon: ClipboardCheck },
-      { label: 'En progreso', value: inspections.filter(i => i.status === 'IN_PROGRESS').length, icon: ClipboardCheck },
-    ];
-  }
-  if (role === 'admin') {
-    const users = getUsers().filter(u => u.role !== 'admin');
-    const auctions = getAuctions();
-    const inspections = getInspections();
-    return [
-      { label: 'Usuarios verificados', value: users.filter(u => u.verification_status === 'VERIFIED').length, icon: Users },
-      { label: 'Subastas activas', value: auctions.filter(a => a.status === 'active').length, icon: Gavel },
-      { label: 'Peritajes completados', value: inspections.filter(i => i.status === 'COMPLETED').length, icon: ClipboardCheck },
-    ];
-  }
-  return [];
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Ahora';
+  if (mins < 60) return `Hace ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `Hace ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `Hace ${days}d`;
 }
 
 export default function Cuenta() {
   const navigate = useNavigate();
   const user = getCurrentUser();
   const role = getUserRole();
-  const metrics = useMetrics(user, role);
   const [editOpen, setEditOpen] = useState(false);
-  const [passOpen, setPassOpen] = useState(false);
   const [editName, setEditName] = useState(user?.nombre || '');
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const getInitials = (name) => { if (!name) return 'U'; return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); };
+  useEffect(() => {
+    if (user) {
+      setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
+      setUnreadCount(getUnreadCount(user.id));
+    }
+  }, []);
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
   const handleLogout = () => { logoutUser(); navigate('/login'); };
 
   const handleSaveProfile = () => {
     if (!editName.trim()) { toast.error('El nombre es obligatorio'); return; }
     updateUser(user.id, { nombre: editName.trim(), telefono: editPhone.trim() });
-    // Update localStorage session
     localStorage.setItem('mubis_user_name', editName.trim());
-    toast.success('Perfil actualizado');
+    toast.success('Cambios guardados');
     setEditOpen(false);
   };
 
-  const handleChangePassword = () => {
-    toast.success('Contraseña actualizada (demo)');
-    setPassOpen(false);
+  const handleMarkAllRead = () => {
+    if (user) {
+      markAllNotificationsRead(user.id);
+      setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
+      setUnreadCount(0);
+    }
+  };
+
+  const handleMarkRead = (id) => {
+    markNotificationRead(id);
+    if (user) {
+      setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
+      setUnreadCount(getUnreadCount(user.id));
+    }
   };
 
   const menuItems = [
+    { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); } },
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
-    { icon: Bell, label: 'Notificaciones', action: () => navigate('/Notificaciones') },
+    { icon: HelpCircle, label: 'Ayuda y soporte', action: () => navigate('/AyudaSoporte') },
   ];
 
   return (
@@ -100,12 +98,11 @@ export default function Cuenta() {
       {/* Profile header */}
       <div className="bg-card px-5 pt-6 pb-5 border-b border-border">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
-          <Avatar className="w-16 h-16"><AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{getInitials(user?.nombre)}</AvatarFallback></Avatar>
+          <Avatar className="w-16 h-16">
+            <AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{getInitials(user?.nombre)}</AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-lg font-bold text-foreground font-sans truncate">{user?.nombre || 'Usuario'}</p>
-              <Shield className="w-4 h-4 text-primary flex-shrink-0" />
-            </div>
+            <p className="text-lg font-bold text-foreground font-sans truncate">{user?.nombre || 'Usuario'}</p>
             <p className="text-muted-foreground text-sm truncate">{user?.email}</p>
             <p className="text-muted-foreground text-xs">{user?.company} · {user?.branch}</p>
             {user?.telefono && <p className="text-muted-foreground text-xs">{user.telefono}</p>}
@@ -115,47 +112,60 @@ export default function Cuenta() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Metrics */}
-        {metrics.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-            <div className={`grid gap-3 ${metrics.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              {metrics.map((m, i) => {
-                const Icon = m.icon;
-                return (
-                  <Card key={i} className="p-3 border border-border shadow-sm rounded-xl text-center">
-                    <Icon className="w-5 h-5 text-secondary mx-auto mb-1" />
-                    <p className="text-2xl font-bold text-foreground">{m.value}</p>
-                    <p className="text-muted-foreground text-[11px] leading-tight">{m.label}</p>
-                  </Card>
-                );
-              })}
+        {/* Notifications preview */}
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
+          <div className="flex items-center justify-between mb-2 px-1">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notificaciones</p>
+              {unreadCount > 0 && (
+                <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">{unreadCount}</Badge>
+              )}
             </div>
-          </motion.div>
-        )}
+            {unreadCount > 0 && (
+              <button onClick={handleMarkAllRead} className="flex items-center gap-1 text-xs text-secondary hover:underline">
+                <CheckCheck className="w-3 h-3" />Marcar leídas
+              </button>
+            )}
+          </div>
+          <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
+            ) : (
+              notifications.map((n, i) => {
+                const Icon = TYPE_ICONS[n.type] || Bell;
+                return (
+                  <div
+                    key={n.id}
+                    onClick={() => !n.read && handleMarkRead(n.id)}
+                    className={`flex items-center gap-3 p-3 border-b border-border last:border-0 cursor-pointer transition-colors hover:bg-muted/50 ${!n.read ? 'bg-secondary/5' : ''}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${!n.read ? 'bg-secondary/10' : 'bg-muted'}`}>
+                      <Icon className={`w-3.5 h-3.5 ${!n.read ? 'text-secondary' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm truncate ${!n.read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>{n.title}</p>
+                      <p className="text-[10px] text-muted-foreground/60">{timeAgo(n.createdAt)}</p>
+                    </div>
+                    {!n.read && <div className="w-2 h-2 rounded-full bg-secondary flex-shrink-0" />}
+                  </div>
+                );
+              })
+            )}
+          </Card>
+        </motion.div>
 
-        {/* Actions */}
+        {/* Menu */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
           <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-            <button onClick={() => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); }} className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center"><Pencil className="w-4 h-4 text-muted-foreground" /></div>
-                <span className="font-medium text-foreground/80 text-sm">Editar perfil</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <button onClick={() => setPassOpen(true)} className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center"><Lock className="w-4 h-4 text-muted-foreground" /></div>
-                <span className="font-medium text-foreground/80 text-sm">Cambiar contraseña</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
             {menuItems.map((item, i) => {
               const Icon = item.icon;
               return (
                 <button key={i} onClick={item.action} className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border last:border-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center"><Icon className="w-4 h-4 text-muted-foreground" /></div>
+                    <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-muted-foreground" />
+                    </div>
                     <span className="font-medium text-foreground/80 text-sm">{item.label}</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -177,7 +187,7 @@ export default function Cuenta() {
       {/* Edit Profile Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Editar perfil</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Mi perfil</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Nombre</Label>
@@ -187,35 +197,18 @@ export default function Cuenta() {
               <Label htmlFor="edit-phone">Teléfono</Label>
               <Input id="edit-phone" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="300 000 0000" />
             </div>
+            <div className="space-y-2 opacity-60">
+              <Label>Email</Label>
+              <Input value={user?.email || ''} disabled />
+            </div>
+            <div className="space-y-2 opacity-60">
+              <Label>Empresa / Sucursal</Label>
+              <Input value={`${user?.company || ''} · ${user?.branch || ''}`} disabled />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
             <Button onClick={handleSaveProfile}>Guardar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Change Password Dialog */}
-      <Dialog open={passOpen} onOpenChange={setPassOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Cambiar contraseña</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Contraseña actual</Label>
-              <Input type="password" placeholder="••••••••" />
-            </div>
-            <div className="space-y-2">
-              <Label>Nueva contraseña</Label>
-              <Input type="password" placeholder="••••••••" />
-            </div>
-            <div className="space-y-2">
-              <Label>Confirmar contraseña</Label>
-              <Input type="password" placeholder="••••••••" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPassOpen(false)}>Cancelar</Button>
-            <Button onClick={handleChangePassword}>Actualizar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
