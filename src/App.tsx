@@ -59,6 +59,8 @@ const App = () => (
 
           {/* Cuenta: all authenticated */}
           <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
+          <Route path="/Configuracion" element={<RequireAuth><Configuracion /></RequireAuth>} />
+          <Route path="/Notificaciones" element={<RequireAuth><Notificaciones /></RequireAuth>} />
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
