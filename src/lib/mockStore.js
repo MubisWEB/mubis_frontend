@@ -353,6 +353,30 @@ export function addBid(bid) {
   const item = { id: `bid-${Date.now()}`, createdAt: new Date().toISOString(), ...bid };
   list.unshift(item);
   save(KEYS.bids, list);
+
+  // Auto-generate notifications for bids
+  const auction = getAuctionById(bid.auctionId);
+  if (auction) {
+    const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
+    const amountStr = `$${(bid.amount / 1000000).toFixed(1)}M`;
+    // Notify dealer who owns the auction
+    if (auction.dealerId && auction.dealerId !== bid.userId) {
+      addNotification({
+        userId: auction.dealerId,
+        type: 'new_bid',
+        title: 'Nueva puja en tu subasta',
+        body: `Puja de ${amountStr} en tu ${vLabel}.`,
+      });
+    }
+    // Notify the bidder
+    addNotification({
+      userId: bid.userId,
+      type: 'bid_placed',
+      title: 'Puja registrada',
+      body: `Pujaste ${amountStr} en ${vLabel}.`,
+    });
+  }
+
   return item;
 }
 export function getBidsByAuctionId(auctionId) { return getBids().filter(b => b.auctionId === auctionId); }
