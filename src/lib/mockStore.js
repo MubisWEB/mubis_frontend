@@ -9,6 +9,7 @@ const KEYS = {
   inspections: 'mubis_store_inspections',
   auctions: 'mubis_store_auctions',
   bids: 'mubis_store_bids',
+  notifications: 'mubis_store_notifications',
 };
 
 // ── Admin whitelist ──
@@ -450,3 +451,92 @@ export function resetAllData() {
   Object.values(KEYS).forEach(k => localStorage.removeItem(k));
   ensureSeeded();
 }
+
+// ── Notifications ──
+export function getNotifications() { return load(KEYS.notifications) || []; }
+export function getNotificationsByUserId(userId) {
+  return getNotifications().filter(n => n.userId === userId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+export function addNotification(notification) {
+  const list = getNotifications();
+  const item = { id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, read: false, createdAt: new Date().toISOString(), ...notification };
+  list.unshift(item);
+  save(KEYS.notifications, list);
+  return item;
+}
+export function markNotificationRead(id) {
+  const list = getNotifications().map(n => n.id === id ? { ...n, read: true } : n);
+  save(KEYS.notifications, list);
+}
+export function markAllNotificationsRead(userId) {
+  const list = getNotifications().map(n => n.userId === userId ? { ...n, read: true } : n);
+  save(KEYS.notifications, list);
+}
+
+// ── Seed notifications ──
+function ensureSeedNotifications() {
+  if (load(KEYS.notifications)) return;
+  const auctions = getAuctions();
+  const inspections = getInspections();
+  const notifs = [];
+
+  // For each auction → notify the dealer
+  auctions.forEach((a, i) => {
+    notifs.push({
+      id: `notif-seed-pub-${i}`,
+      userId: a.dealerId,
+      type: 'auction_published',
+      title: 'Vehículo en subasta',
+      body: `Tu ${a.brand} ${a.model} ${a.year} fue publicado en subasta.`,
+      createdAt: a.createdAt,
+      read: i > 2,
+    });
+  });
+
+  // Bid notifications to dealers (sample)
+  const bids = getBids();
+  const seen = new Set();
+  bids.slice(0, 20).forEach((b, i) => {
+    const auction = auctions.find(a => a.id === b.auctionId);
+    if (!auction || seen.has(b.auctionId)) return;
+    seen.add(b.auctionId);
+    notifs.push({
+      id: `notif-seed-bid-${i}`,
+      userId: auction.dealerId,
+      type: 'new_bid',
+      title: 'Nueva puja recibida',
+      body: `Puja de $${(b.amount / 1000000).toFixed(1)}M en tu ${auction.brand} ${auction.model}.`,
+      createdAt: b.createdAt,
+      read: i > 3,
+    });
+  });
+
+  // Inspection completed → notify perito
+  inspections.filter(i => i.status === 'COMPLETED').slice(0, 5).forEach((insp, i) => {
+    notifs.push({
+      id: `notif-seed-insp-${i}`,
+      userId: insp.peritoId,
+      type: 'inspection_completed',
+      title: 'Peritaje completado',
+      body: `Has finalizado el peritaje del vehículo ${insp.vehicleId}. Score: ${insp.scoreGlobal}/100.`,
+      createdAt: insp.completedAt || insp.createdAt,
+      read: i > 1,
+    });
+  });
+
+  // Admin notifications
+  notifs.push({
+    id: 'notif-seed-admin-1',
+    userId: 'u-admin-1',
+    type: 'user_approved',
+    title: 'Nuevo usuario registrado',
+    body: 'CarHouse Cali se registró y está pendiente de verificación.',
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    read: false,
+  });
+
+  save(KEYS.notifications, notifs);
+}
+
+// Call after main seed
+ensureSeedNotifications();

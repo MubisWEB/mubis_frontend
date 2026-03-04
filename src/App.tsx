@@ -16,6 +16,8 @@ import MisSubastas from './pages/MisSubastas';
 import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
 import Movimientos from './pages/Movimientos';
 import Cuenta from './pages/Cuenta';
+import Configuracion from './pages/Configuracion';
+import Notificaciones from './pages/Notificaciones';
 import Ganados from './pages/Ganados';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDealers from './pages/AdminDealers';
@@ -57,6 +59,8 @@ const App = () => (
 
           {/* Cuenta: all authenticated */}
           <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
+          <Route path="/Configuracion" element={<RequireAuth><Configuracion /></RequireAuth>} />
+          <Route path="/Notificaciones" element={<RequireAuth><Notificaciones /></RequireAuth>} />
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
