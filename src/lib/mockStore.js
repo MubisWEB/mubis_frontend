@@ -10,6 +10,7 @@ const KEYS = {
   auctions: 'mubis_store_auctions',
   bids: 'mubis_store_bids',
   notifications: 'mubis_store_notifications',
+  supportTickets: 'mubis_store_support_tickets',
 };
 
 // ── Admin whitelist ──
