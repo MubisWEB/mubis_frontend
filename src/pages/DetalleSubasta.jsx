@@ -354,32 +354,6 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Pronto Pago for won auctions */}
-        {isWonByMe && (
-          <Card className="p-4 border border-primary/20 shadow-sm rounded-xl bg-primary/5">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-secondary" />
-              <p className="font-bold text-foreground">Pronto Pago</p>
-            </div>
-            {existingPP ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Solicitud aprobada</p>
-                  <p className="text-xs text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
-                </div>
-                <Badge className="ml-auto bg-primary/10 text-primary text-xs font-semibold">{existingPP.status}</Badge>
-              </div>
-            ) : (
-              <>
-                <p className="text-xs text-muted-foreground mb-3">Obtén hasta el 10% del valor del vehículo como adelanto de liquidez. Comisión: 5%.</p>
-                <Button onClick={(e) => { e.stopPropagation(); setProntoPagoModalOpen(true); }} variant="outline" className="w-full h-10 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-sm">
-                  <Zap className="w-4 h-4 mr-2" />Solicitar Pronto Pago — Hasta {formatPrice((vehicle.current_bid || 0) * 0.10)}
-                </Button>
-              </>
-            )}
-          </Card>
-        )}
 
         {/* Activity Timeline — only for active auctions */}
         {!isWonByMe && <ActivityTimeline events={auditEvents} />}
