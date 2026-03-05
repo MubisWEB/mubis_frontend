@@ -14,11 +14,15 @@ import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuction
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
+  const [searchParams] = useSearchParams();
+  const fromGanados = searchParams.get('from') === 'ganados';
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const [vehicle, setVehicle] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
+  const [prontoPagoModalOpen, setProntoPagoModalOpen] = useState(false);
+  const [prontoPagoRefresh, setProntoPagoRefresh] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
   const [auditEvents, setAuditEvents] = useState([]);
