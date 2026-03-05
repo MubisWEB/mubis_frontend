@@ -348,8 +348,8 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Activity Timeline */}
-        <ActivityTimeline events={auditEvents} />
+        {/* Activity Timeline — only for active auctions */}
+        {!isWonByMe && <ActivityTimeline events={auditEvents} />}
       </div>
 
       {/* Bottom action bar */}
