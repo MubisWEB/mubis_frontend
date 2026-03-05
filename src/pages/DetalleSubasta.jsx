@@ -84,7 +84,8 @@ export default function DetalleSubasta() {
     if (ms <= 0) return 'Completado';
     const h = Math.floor(ms / (1000 * 60 * 60));
     const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-    return `${h}h ${m}m`;
+    const s = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${h}h ${m}m ${s}s`;
   };
 
   if (!vehicle) {
