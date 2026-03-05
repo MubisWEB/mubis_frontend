@@ -257,7 +257,7 @@ function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
   if (seedVersion !== 'v6') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v5');
+    localStorage.setItem('mubis_seed_version', 'v6');
   }
 
   if (!load(KEYS.users)) {
