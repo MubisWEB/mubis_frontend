@@ -184,6 +184,22 @@ export default function DetalleSubasta() {
                 </div>
               )}
             </div>
+            {/* 48h auto-completion countdown for won auctions */}
+            {isWonByMe && !completionExpired && (
+              <div className="mt-3 bg-secondary/10 rounded-lg p-3 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-secondary" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Cierre automático del trato</p>
+                  <p className="text-xs text-muted-foreground">Mubis completará esta transacción en {formatCountdown48(completionRemaining)}</p>
+                </div>
+              </div>
+            )}
+            {isWonByMe && completionExpired && (
+              <div className="mt-3 bg-primary/10 rounded-lg p-3 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-primary" />
+                <p className="text-xs font-semibold text-foreground">Trato completado por Mubis</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
