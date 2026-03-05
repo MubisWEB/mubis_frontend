@@ -410,11 +410,22 @@ export function reconcileAuctionStatuses() {
   const auctions = getAuctions();
   let changed = false;
   const now = new Date();
+  const allBids = getBids();
   const updated = auctions.map(a => {
     if (a.status === 'active' && new Date(a.ends_at) < now) {
       changed = true;
-      const ended = { ...a, status: 'ended' };
+      // Find highest bidder to assign as winner
+      const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
+      const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
+      const ended = { ...a, status: 'ended', winnerId };
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta finalizada: ${a.brand} ${a.model} ${a.year}`, actorUserId: '', actorRole: 'system' });
+      if (winnerId) {
+        addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'winner_set', message: `Ganador asignado`, actorUserId: winnerId, actorRole: 'recomprador' });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+        if (a.dealerId) {
+          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta finalizada', body: `Tu ${a.brand} ${a.model} ${a.year} fue vendido.` });
+        }
+      }
       return ended;
     }
     return a;
