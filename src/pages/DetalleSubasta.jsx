@@ -88,6 +88,21 @@ export default function DetalleSubasta() {
     return `${h}h ${m}m ${s}s`;
   };
 
+  // 48h auto-completion countdown (must be before early return)
+  const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
+  const endTime = vehicle?.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
+  const isWonByMe = (vehicle?.status === 'ENDED' || vehicle?.status === 'ended') && vehicle?.winnerId === currentUser?.id;
+  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
+  const completionExpired = completionRemaining <= 0;
+
+  useEffect(() => {
+    if (!isWonByMe || !endTime) return;
+    const tick = () => setCompletionRemaining(COMPLETION_WINDOW_MS - (Date.now() - endTime));
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isWonByMe, endTime]);
+
   if (!vehicle) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
@@ -115,24 +130,8 @@ export default function DetalleSubasta() {
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
 
-  // Won auction: show seller contact
-  const isWonByMe = (vehicle.status === 'ENDED' || vehicle.status === 'ended') && vehicle.winnerId === currentUser?.id;
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
   const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
-
-  // 48h auto-completion countdown
-  const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
-  const endTime = vehicle.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
-  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
-  const completionExpired = completionRemaining <= 0;
-
-  useEffect(() => {
-    if (!isWonByMe || !endTime) return;
-    const tick = () => setCompletionRemaining(COMPLETION_WINDOW_MS - (Date.now() - endTime));
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [isWonByMe, endTime]);
 
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
