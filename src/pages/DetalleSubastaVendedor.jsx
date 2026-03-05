@@ -9,7 +9,7 @@ import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import { toast } from 'sonner';
-import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
