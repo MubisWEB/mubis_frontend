@@ -123,8 +123,16 @@ export default function DetalleSubasta() {
   // 48h auto-completion countdown
   const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
   const endTime = vehicle.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
-  const completionRemaining = isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0;
+  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
   const completionExpired = completionRemaining <= 0;
+
+  useEffect(() => {
+    if (!isWonByMe || !endTime) return;
+    const tick = () => setCompletionRemaining(COMPLETION_WINDOW_MS - (Date.now() - endTime));
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isWonByMe, endTime]);
 
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
