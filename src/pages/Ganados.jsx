@@ -3,13 +3,15 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, MapPin, CheckCircle, Zap, Banknote } from 'lucide-react';
+import { Trophy, MapPin, CheckCircle, Zap, Banknote, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import ProntoPagoModal from '@/components/ProntoPagoModal';
+import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
 
 export default function Ganados() {
+  const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const [wonAuctions, setWonAuctions] = useState([]);
   const [prontoPagoAuction, setProntoPagoAuction] = useState(null);
@@ -42,7 +44,7 @@ export default function Ganados() {
               const existingPP = currentUser ? getProntoPagoByUserAndAuction(currentUser.id, auction.id) : null;
               return (
                 <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-                  <Card className="overflow-hidden border border-border shadow-sm rounded-2xl bg-card">
+                  <Card className="overflow-hidden border border-border shadow-sm rounded-2xl bg-card cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
                     <div className="relative h-36">
                       {auction.photos?.[0] && <img src={auction.photos[0]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />}
                       <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground font-semibold px-2.5 py-1 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Ganado</Badge>

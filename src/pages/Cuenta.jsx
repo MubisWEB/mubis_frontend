@@ -126,7 +126,10 @@ export default function Cuenta() {
   ];
 
   if (role === 'dealer' || role === 'recomprador') {
-    menuItems.splice(1, 0, { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') });
+    menuItems.splice(1, 0,
+      { icon: Trophy, label: 'Mis Ganados', action: () => navigate('/Ganados') },
+      { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
+    );
   }
 
   const showWonSection = (role === 'dealer' || role === 'recomprador') && wonAuctions.length > 0;

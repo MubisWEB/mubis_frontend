@@ -3,21 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap } from 'lucide-react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
+import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
+  const [searchParams] = useSearchParams();
+  const fromGanados = searchParams.get('from') === 'ganados';
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const [vehicle, setVehicle] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
+  const [prontoPagoModalOpen, setProntoPagoModalOpen] = useState(false);
+  const [prontoPagoRefresh, setProntoPagoRefresh] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
   const [auditEvents, setAuditEvents] = useState([]);
@@ -103,6 +108,11 @@ export default function DetalleSubasta() {
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
 
+  // Won auction: show seller contact
+  const isWonByMe = vehicle.status === 'ENDED' && vehicle.winnerId === currentUser?.id;
+  const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
+  const existingPP = isWonByMe && currentUser ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+
   return (
     <div className="min-h-screen bg-muted pb-40">
       <TopBar />
@@ -127,8 +137,11 @@ export default function DetalleSubasta() {
           {images.length > 0 && (
             <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><Camera className="w-3 h-3" />{currentImageIndex + 1}/{images.length}</div>
           )}
-          <button onClick={() => navigate('/Comprar')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white"><ArrowLeft className="w-5 h-5" /></button>
-          {vehicle.isLeading && (
+          <button onClick={() => navigate(fromGanados ? '/Ganados' : '/Comprar')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white"><ArrowLeft className="w-5 h-5" /></button>
+          {isWonByMe && (
+            <div className="absolute top-4 right-4"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Ganado!</Badge></div>
+          )}
+          {!isWonByMe && vehicle.isLeading && (
             <div className="absolute top-4 right-4"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
           )}
         </div>
@@ -246,17 +259,80 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
+        {/* Seller Contact — only for won auctions */}
+        {isWonByMe && seller && (
+          <Card className="p-4 border border-border shadow-sm rounded-xl">
+            <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Building2 className="w-4 h-4 text-secondary" />Datos del vendedor</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{seller.nombre}</p>
+                  <p className="text-xs text-muted-foreground">{seller.company}{seller.branch ? ` · ${seller.branch}` : ''}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                <a href={`mailto:${seller.email}`} className="text-secondary hover:underline">{seller.email}</a>
+              </div>
+              {seller.telefono && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  <a href={`tel:${seller.telefono}`} className="text-secondary hover:underline">{seller.telefono}</a>
+                </div>
+              )}
+              <div className="flex items-center gap-3 text-sm">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground">{vehicle.city}</span>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Pronto Pago for won auctions */}
+        {isWonByMe && (
+          <Card className="p-4 border border-primary/20 shadow-sm rounded-xl bg-primary/5">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="w-4 h-4 text-secondary" />
+              <p className="font-bold text-foreground">Pronto Pago</p>
+            </div>
+            {existingPP ? (
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Solicitud aprobada</p>
+                  <p className="text-xs text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
+                </div>
+                <Badge className="ml-auto bg-primary/10 text-primary text-xs font-semibold">{existingPP.status}</Badge>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground mb-3">Obtén hasta el 10% del valor del vehículo como adelanto de liquidez. Comisión: 5%.</p>
+                <Button onClick={(e) => { e.stopPropagation(); setProntoPagoModalOpen(true); }} variant="outline" className="w-full h-10 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-sm">
+                  <Zap className="w-4 h-4 mr-2" />Solicitar Pronto Pago — Hasta {formatPrice((vehicle.current_bid || 0) * 0.10)}
+                </Button>
+              </>
+            )}
+          </Card>
+        )}
+
         {/* Activity Timeline */}
         <ActivityTimeline events={auditEvents} />
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50">
-        <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
-          {vehicle.isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
-        </Button>
-      </div>
+      {/* Bottom action bar */}
+      {!isWonByMe && (
+        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50">
+          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
+            {vehicle.isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+          </Button>
+        </div>
+      )}
 
       <BidModal vehicle={vehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
+      <ProntoPagoModal open={prontoPagoModalOpen} onClose={() => setProntoPagoModalOpen(false)} auction={vehicle} userId={currentUser?.id} onComplete={() => { setProntoPagoRefresh(k => k + 1); setProntoPagoModalOpen(false); }} />
       <BottomNav />
     </div>
   );
