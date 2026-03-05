@@ -91,6 +91,10 @@ export default function Cuenta() {
     { icon: HelpCircle, label: 'Ayuda y soporte', action: () => navigate('/AyudaSoporte') },
   ];
 
+  if (role === 'dealer' || role === 'recomprador') {
+    menuItems.splice(1, 0, { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') });
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
