@@ -174,11 +174,13 @@ function buildSeedAuctions(vehicles) {
       current_bid: currentBid,
       bids_count: bidsCount,
       views: 20 + Math.floor(Math.random() * 200),
-      status: i < 10 ? 'active' : 'ended',
+      status: i === 0 ? 'active' : (i < 10 ? 'active' : 'ended'),
       winnerId: i >= 10 ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
-      ends_at: i < 10
-        ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()
-        : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
+      ends_at: i === 0
+        ? new Date(Date.now() + 2 * 60000).toISOString()  // 2 minutes from now
+        : (i < 10
+          ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()
+          : new Date(Date.now() - (i - 9) * 86400000).toISOString()),
       createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
     };
   });
@@ -255,9 +257,9 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v5') {
+  if (seedVersion !== 'v6') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v5');
+    localStorage.setItem('mubis_seed_version', 'v6');
   }
 
   if (!load(KEYS.users)) {
@@ -408,11 +410,22 @@ export function reconcileAuctionStatuses() {
   const auctions = getAuctions();
   let changed = false;
   const now = new Date();
+  const allBids = getBids();
   const updated = auctions.map(a => {
     if (a.status === 'active' && new Date(a.ends_at) < now) {
       changed = true;
-      const ended = { ...a, status: 'ended' };
+      // Find highest bidder to assign as winner
+      const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
+      const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
+      const ended = { ...a, status: 'ended', winnerId };
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta finalizada: ${a.brand} ${a.model} ${a.year}`, actorUserId: '', actorRole: 'system' });
+      if (winnerId) {
+        addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'winner_set', message: `Ganador asignado`, actorUserId: winnerId, actorRole: 'recomprador' });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+        if (a.dealerId) {
+          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta finalizada', body: `Tu ${a.brand} ${a.model} ${a.year} fue vendido.` });
+        }
+      }
       return ended;
     }
     return a;
@@ -673,4 +686,53 @@ export function getWatchlistCountByAuctionId(auctionId) {
 export function getUniqueBidderCountByAuctionId(auctionId) {
   const bids = getBidsByAuctionId(auctionId);
   return new Set(bids.map(b => b.userId)).size;
+}
+
+// ── Pronto Pago ──
+const PRONTO_PAGO_KEY = 'mubis_store_pronto_pago';
+function getProntoPagoItems() { return load(PRONTO_PAGO_KEY) || []; }
+function saveProntoPagoItems(items) { save(PRONTO_PAGO_KEY, items); }
+
+const PRONTO_PAGO_COMMISSION = 0.05; // 5%
+const PRONTO_PAGO_MAX_PERCENT = 0.10; // 10% of car value
+
+export function getProntoPagoConfig() {
+  return { commission: PRONTO_PAGO_COMMISSION, maxPercent: PRONTO_PAGO_MAX_PERCENT };
+}
+
+export function requestProntoPago({ userId, auctionId, requestedAmount, vehicleValue }) {
+  const items = getProntoPagoItems();
+  const existing = items.find(p => p.userId === userId && p.auctionId === auctionId);
+  if (existing) return existing;
+
+  const maxAmount = vehicleValue * PRONTO_PAGO_MAX_PERCENT;
+  const amount = Math.min(requestedAmount, maxAmount);
+  const commission = amount * PRONTO_PAGO_COMMISSION;
+
+  const item = {
+    id: `pp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    userId,
+    auctionId,
+    requestedAmount: amount,
+    commission,
+    netAmount: amount - commission,
+    vehicleValue,
+    status: 'APPROVED', // instant approval in prototype
+    createdAt: new Date().toISOString(),
+  };
+  items.push(item);
+  saveProntoPagoItems(items);
+
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'pronto_pago_requested', message: `Pronto Pago solicitado: $${(amount / 1000000).toFixed(1)}M (comisión: $${(commission / 1000000).toFixed(2)}M)`, actorUserId: userId, actorRole: 'recomprador' });
+  addNotification({ userId, type: 'pronto_pago', title: 'Pronto Pago aprobado', body: `Tu adelanto de $${(amount / 1000000).toFixed(1)}M fue aprobado. Recibirás $${((amount - commission) / 1000000).toFixed(1)}M.` });
+
+  return item;
+}
+
+export function getProntoPagoByUserAndAuction(userId, auctionId) {
+  return getProntoPagoItems().find(p => p.userId === userId && p.auctionId === auctionId) || null;
+}
+
+export function getProntoPagoByUserId(userId) {
+  return getProntoPagoItems().filter(p => p.userId === userId);
 }
