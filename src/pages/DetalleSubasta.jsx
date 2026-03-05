@@ -120,7 +120,7 @@ export default function DetalleSubasta() {
   const completionExpired = completionRemaining <= 0;
 
   return (
-    <div className="min-h-screen bg-muted pb-40">
+    <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
       <TopBar />
       <div className="relative">
         <div className="relative h-64 bg-muted overflow-hidden">
