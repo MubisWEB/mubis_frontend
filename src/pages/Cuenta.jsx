@@ -55,10 +55,6 @@ export default function Cuenta() {
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [wonAuctions, setWonAuctions] = useState([]);
-  const [prontoPagoAuction, setProntoPagoAuction] = useState(null);
-  const [, setTick] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -66,23 +62,6 @@ export default function Cuenta() {
       setUnreadCount(getUnreadCount(user.id));
     }
   }, []);
-
-  useEffect(() => {
-    if (user && (role === 'dealer' || role === 'recomprador')) {
-      const won = getWonAuctionsByUserId(user.id).filter(a => {
-        const endTime = new Date(a.ends_at).getTime();
-        return Date.now() - endTime < PRONTO_PAGO_WINDOW_MS;
-      });
-      setWonAuctions(won);
-    }
-  }, [user?.id, role, refreshKey]);
-
-  // Tick every second for countdown timers
-  useEffect(() => {
-    if (wonAuctions.length === 0) return;
-    const interval = setInterval(() => setTick(t => t + 1), 1000);
-    return () => clearInterval(interval);
-  }, [wonAuctions.length]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
