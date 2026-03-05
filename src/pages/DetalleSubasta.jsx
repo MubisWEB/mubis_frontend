@@ -99,6 +99,7 @@ export default function DetalleSubasta() {
 
   const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);
+  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
 
