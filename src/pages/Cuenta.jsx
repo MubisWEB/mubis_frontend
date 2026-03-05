@@ -304,14 +304,8 @@ export default function Cuenta() {
         </DialogContent>
       </Dialog>
 
-      {/* Pronto Pago Modal */}
-      <ProntoPagoModal
-        open={!!prontoPagoAuction}
-        onClose={() => setProntoPagoAuction(null)}
-        auction={prontoPagoAuction}
-        userId={user?.id}
-        onComplete={() => setRefreshKey(k => k + 1)}
-      />
+
+
 
       <BottomNav />
     </div>
