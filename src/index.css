@@ -121,10 +121,23 @@
   
 
 
-/* Smooth scrolling */
+/* Smooth scrolling & kill extra scrollbars */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
+
+/* Remove unnecessary nested scrollbars */
+html, body, #root {
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar on webkit but keep scrolling */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
 
 /* Font mono for stats */
 .font-mono {

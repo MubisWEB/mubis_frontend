@@ -86,7 +86,7 @@ export default function AdminDashboard() {
               {totalPending > 0 && <Badge className="bg-accent text-accent-foreground text-[13px] font-semibold min-h-[28px] px-2.5 py-1">{totalPending}</Badge>}
             </Button>
             <Button onClick={() => navigate('/AdminSubastas')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Subastas</span><Badge className="bg-secondary/10 text-secondary">{stats.auctions.total}</Badge>
+              <span>Subastas</span><Badge className="bg-secondary/10 text-secondary text-[13px] font-semibold min-h-[28px] px-2.5 py-1">{stats.auctions.total}</Badge>
             </Button>
           </div>
         </Card>

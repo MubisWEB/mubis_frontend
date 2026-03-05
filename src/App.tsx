@@ -50,6 +50,7 @@ const App = () => (
           <Route path="/Comprar" element={<RequireRole roles={['dealer','recomprador']}><Comprar /></RequireRole>} />
           <Route path="/DetalleSubasta/:auctionId" element={<RequireRole roles={['dealer','recomprador']}><DetalleSubasta /></RequireRole>} />
           <Route path="/Ganados" element={<RequireRole roles={['dealer','recomprador']}><Ganados /></RequireRole>} />
+          <Route path="/Guardadas" element={<RequireRole roles={['dealer','recomprador']}><Guardadas /></RequireRole>} />
 
           {/* Vender: dealer only */}
           <Route path="/MisSubastas" element={<RequireRole roles={['dealer']}><MisSubastas /></RequireRole>} />

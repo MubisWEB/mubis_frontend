@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Flame, Trophy, Heart } from 'lucide-react';
+import { Clock, Users, Flame, Trophy, Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getCurrentUser, isInWatchlist, toggleWatchlist, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
+import { toast } from 'sonner';
 
-export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite = false, index = 0, linkPrefix = '/DetalleSubasta/' }) {
+export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, linkPrefix = '/DetalleSubasta/' }) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+  const currentUser = getCurrentUser();
+  const saved = isFavoriteProp !== undefined ? isFavoriteProp : (currentUser ? isInWatchlist(currentUser.id, vehicle.id) : false);
+  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
 
   useEffect(() => {
     const calculateTime = () => {
@@ -35,6 +40,17 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
   };
 
+  const handleToggleSave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite(vehicle);
+    } else if (currentUser) {
+      const added = toggleWatchlist(currentUser.id, vehicle.id);
+      toast.success(added ? 'Agregada a guardados' : 'Eliminada de guardados');
+    }
+  };
+
   const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
   const detailUrl = `/DetalleSubasta/${vehicle.id}`;
 
@@ -58,12 +74,20 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
             <div className="flex items-center gap-2 mt-1">
               <span className={`font-bold text-lg ${vehicle.isLeading ? 'text-primary' : 'text-secondary'} w-[75px]`}>{formatPrice(vehicle.current_bid || 0)}</span>
               <span className="text-muted-foreground text-xs flex items-center w-[36px]"><Users className="w-3 h-3 mr-0.5 flex-shrink-0" />{vehicle.bids_count || 0}</span>
+              {uniqueBidders > 0 && (
+                <span className="text-muted-foreground text-[10px] flex items-center"><Flame className="w-2.5 h-2.5 mr-0.5 text-secondary flex-shrink-0" />{uniqueBidders}</span>
+              )}
             </div>
           </Link>
           <div className="flex flex-col items-end justify-between">
-            <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-1 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'}`}>
-              <Clock className="w-2.5 h-2.5 flex-shrink-0" />
-              <span className="font-medium tabular-nums">{timeLeft}</span>
+            <div className="flex items-center gap-1">
+              <button onClick={handleToggleSave} className="p-1 rounded-full hover:bg-muted transition-colors">
+                <Bookmark className={`w-3.5 h-3.5 ${saved ? 'fill-secondary text-secondary' : 'text-muted-foreground'}`} />
+              </button>
+              <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-1 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'}`}>
+                <Clock className="w-2.5 h-2.5 flex-shrink-0" />
+                <span className="font-medium tabular-nums">{timeLeft}</span>
+              </div>
             </div>
             <Button onClick={() => onBid?.(vehicle)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-4 h-8 rounded-full text-sm">
               Pujar

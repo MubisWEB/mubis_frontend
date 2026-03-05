@@ -129,6 +129,9 @@ export default function Comprar() {
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
             <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
           </Badge>
+          <button onClick={() => navigate('/Guardadas')} className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors">
+            <Bookmark className="w-3.5 h-3.5" />Guardadas
+          </button>
         </div>
         <div className="relative mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

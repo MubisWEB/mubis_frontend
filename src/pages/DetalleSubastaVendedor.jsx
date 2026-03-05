@@ -121,7 +121,7 @@ export default function DetalleSubastaVendedor() {
           </div>
           <div className="grid grid-cols-3 gap-3 mt-3">
             <div className="text-center p-3 bg-primary/5 rounded-xl"><p className="text-2xl font-bold text-primary">{formatPrice(auction.current_bid)}</p><p className="text-primary text-xs">Puja actual</p></div>
-            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.bids_count || 0}</p><p className="text-secondary text-xs">Pujas</p></div>
+            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.bids_count || 0}</p><p className="text-secondary text-xs">Pujas</p><p className="text-[10px] text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p></div>
             <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.views || 0}</p><p className="text-secondary text-xs">Vistas</p></div>
           </div>
         </div>

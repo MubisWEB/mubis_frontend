@@ -636,3 +636,41 @@ export function getRecentAuctionActivity(limit = 5) {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, limit);
 }
+
+// ── Watchlist ──
+const WATCHLIST_KEY = 'mubis_store_watchlist';
+function getWatchlistItems() { return load(WATCHLIST_KEY) || []; }
+function saveWatchlistItems(items) { save(WATCHLIST_KEY, items); }
+
+export function toggleWatchlist(userId, auctionId) {
+  const items = getWatchlistItems();
+  const idx = items.findIndex(w => w.userId === userId && w.auctionId === auctionId);
+  if (idx >= 0) {
+    items.splice(idx, 1);
+    saveWatchlistItems(items);
+    return false; // removed
+  }
+  items.push({ id: `wl-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, userId, auctionId, createdAt: new Date().toISOString() });
+  saveWatchlistItems(items);
+  return true; // added
+}
+
+export function isInWatchlist(userId, auctionId) {
+  return getWatchlistItems().some(w => w.userId === userId && w.auctionId === auctionId);
+}
+
+export function getWatchlistByUserId(userId) {
+  const items = getWatchlistItems().filter(w => w.userId === userId);
+  const auctions = getAuctions();
+  return items.map(w => auctions.find(a => a.id === w.auctionId)).filter(Boolean);
+}
+
+export function getWatchlistCountByAuctionId(auctionId) {
+  return new Set(getWatchlistItems().filter(w => w.auctionId === auctionId).map(w => w.userId)).size;
+}
+
+// ── Unique bidders ──
+export function getUniqueBidderCountByAuctionId(auctionId) {
+  const bids = getBidsByAuctionId(auctionId);
+  return new Set(bids.map(b => b.userId)).size;
+}
