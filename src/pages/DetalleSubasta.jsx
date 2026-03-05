@@ -191,7 +191,33 @@ export default function DetalleSubasta() {
                 </div>
               )}
             </div>
-            {/* 48h auto-completion countdown for won auctions */}
+            {/* Pronto Pago inside price card */}
+            {isWonByMe && (
+              <div className="mt-3 border-t border-border pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-secondary" />
+                  <p className="text-sm font-bold text-foreground">Pronto Pago</p>
+                </div>
+                {existingPP ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Solicitud aprobada</p>
+                      <p className="text-xs text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
+                    </div>
+                    <Badge className="ml-auto bg-primary/10 text-primary text-xs font-semibold">{existingPP.status}</Badge>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-2">Adelanto de hasta el 10% del valor. Comisión: 5%.</p>
+                    <Button onClick={(e) => { e.stopPropagation(); setProntoPagoModalOpen(true); }} variant="outline" className="w-full h-9 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-sm">
+                      <Zap className="w-4 h-4 mr-2" />Solicitar — Hasta {formatPrice((vehicle.current_bid || 0) * 0.10)}
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+            {/* 48h auto-completion countdown */}
             {isWonByMe && !completionExpired && (
               <div className="mt-3 bg-secondary/10 rounded-lg p-3 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-secondary" />
