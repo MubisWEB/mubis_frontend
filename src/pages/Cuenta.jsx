@@ -37,14 +37,6 @@ function timeAgo(dateStr) {
   return `Hace ${days}d`;
 }
 
-function formatCountdown(ms) {
-  if (ms <= 0) return 'Expirado';
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-  return `${hours}h ${minutes}m ${seconds}s`;
-}
-
 export default function Cuenta() {
   const navigate = useNavigate();
   const user = getCurrentUser();
@@ -93,8 +85,6 @@ export default function Cuenta() {
     }
   };
 
-  const formatPrice = (price) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
-
   const menuItems = [
     { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); } },
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
@@ -107,8 +97,6 @@ export default function Cuenta() {
       { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
     );
   }
-
-  
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -131,77 +119,6 @@ export default function Cuenta() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-
-        {/* Won auctions with Pronto Pago */}
-        {showWonSection && (
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
-            <div className="flex items-center gap-2 mb-2 px-1">
-              <Trophy className="w-4 h-4 text-secondary" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Subastas ganadas recientes</p>
-              <Badge className="bg-secondary/10 text-secondary text-[10px] px-1.5 py-0 font-semibold">{wonAuctions.length}</Badge>
-            </div>
-            <div className="space-y-3">
-              {wonAuctions.map(auction => {
-                const endTime = new Date(auction.ends_at).getTime();
-                const remaining = PRONTO_PAGO_WINDOW_MS - (Date.now() - endTime);
-                const isExpired = remaining <= 0;
-                const existingPP = user ? getProntoPagoByUserAndAuction(user.id, auction.id) : null;
-                const urgency = remaining < 6 * 60 * 60 * 1000 && !isExpired; // less than 6h
-
-                return (
-                  <Card key={auction.id} className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
-                    <div className="flex p-3 gap-3">
-                      <div className="w-20 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                        {auction.photos?.[0] && <img src={auction.photos[0]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h4>
-                            <p className="text-muted-foreground text-xs">{auction.year} · {auction.city}</p>
-                          </div>
-                          <p className="font-bold text-primary text-sm">{formatPrice(auction.current_bid || 0)}</p>
-                        </div>
-                        {/* Countdown timer */}
-                        <div className={`flex items-center gap-1 mt-1.5 text-xs ${urgency ? 'text-destructive' : 'text-muted-foreground'}`}>
-                          <Clock className="w-3 h-3" />
-                          <span className="font-medium tabular-nums">
-                            {isExpired ? 'Tiempo expirado' : `Pronto Pago: ${formatCountdown(remaining)}`}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-3 pb-3">
-                      {existingPP ? (
-                        <div className="bg-primary/10 border border-primary/20 rounded-lg p-2.5 flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-foreground">Pronto Pago aprobado</p>
-                            <p className="text-[10px] text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
-                          </div>
-                          <Badge className="bg-primary/10 text-primary text-[10px] font-semibold">{existingPP.status}</Badge>
-                        </div>
-                      ) : isExpired ? (
-                        <div className="bg-muted rounded-lg p-2.5 text-center">
-                          <p className="text-xs text-muted-foreground">Ventana de Pronto Pago cerrada</p>
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={() => setProntoPagoAuction(auction)}
-                          variant="outline"
-                          className="w-full h-9 rounded-lg border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-xs"
-                        >
-                          <Zap className="w-3.5 h-3.5 mr-1.5" />
-                          Solicitar Pronto Pago — Hasta {formatPrice((auction.current_bid || 0) * 0.10)}
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
 
         {/* Notifications preview */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
@@ -303,9 +220,6 @@ export default function Cuenta() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
-
 
       <BottomNav />
     </div>

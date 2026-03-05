@@ -80,6 +80,12 @@ export default function DetalleSubasta() {
   };
 
   const formatPrice = (price) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
+  const formatCountdown48 = (ms) => {
+    if (ms <= 0) return 'Completado';
+    const h = Math.floor(ms / (1000 * 60 * 60));
+    const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    return `${h}h ${m}m`;
+  };
 
   if (!vehicle) {
     return (
@@ -111,10 +117,16 @@ export default function DetalleSubasta() {
   // Won auction: show seller contact
   const isWonByMe = vehicle.status === 'ENDED' && vehicle.winnerId === currentUser?.id;
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
-  const existingPP = isWonByMe && currentUser ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+  const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+
+  // 48h auto-completion countdown
+  const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
+  const endTime = vehicle.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
+  const completionRemaining = isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0;
+  const completionExpired = completionRemaining <= 0;
 
   return (
-    <div className="min-h-screen bg-muted pb-40">
+    <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
       <TopBar />
       <div className="relative">
         <div className="relative h-64 bg-muted overflow-hidden">
@@ -153,7 +165,9 @@ export default function DetalleSubasta() {
               <p className="text-muted-foreground text-sm flex items-center gap-1"><MapPin className="w-3 h-3" />{vehicle.city} · {vehicle.year}</p>
             </div>
             {isWonByMe ? (
-              <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
+              completionExpired
+                ? <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
+                : <Badge className="bg-secondary/10 text-secondary font-semibold px-3 py-1.5 rounded-full text-xs"><Clock className="w-3 h-3 mr-1" />Cierre automático</Badge>
             ) : (
               <div className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
                 <Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span>
@@ -176,6 +190,22 @@ export default function DetalleSubasta() {
                 </div>
               )}
             </div>
+            {/* 48h auto-completion countdown for won auctions */}
+            {isWonByMe && !completionExpired && (
+              <div className="mt-3 bg-secondary/10 rounded-lg p-3 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-secondary" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Cierre automático del trato</p>
+                  <p className="text-xs text-muted-foreground">Mubis completará esta transacción en {formatCountdown48(completionRemaining)}</p>
+                </div>
+              </div>
+            )}
+            {isWonByMe && completionExpired && (
+              <div className="mt-3 bg-primary/10 rounded-lg p-3 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-primary" />
+                <p className="text-xs font-semibold text-foreground">Trato completado por Mubis</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -324,8 +354,8 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Activity Timeline */}
-        <ActivityTimeline events={auditEvents} />
+        {/* Activity Timeline — only for active auctions */}
+        {!isWonByMe && <ActivityTimeline events={auditEvents} />}
       </div>
 
       {/* Bottom action bar */}
