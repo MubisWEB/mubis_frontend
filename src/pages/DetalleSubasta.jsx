@@ -104,7 +104,7 @@ export default function DetalleSubasta() {
   const docs = vehicle.documentation || vehData?.documentation || null;
 
   return (
-    <div className="min-h-screen bg-muted pb-32">
+    <div className="min-h-screen bg-muted pb-40">
       <TopBar />
       <div className="relative">
         <div className="relative h-64 bg-muted overflow-hidden">
