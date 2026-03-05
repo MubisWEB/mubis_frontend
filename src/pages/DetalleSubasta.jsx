@@ -84,7 +84,8 @@ export default function DetalleSubasta() {
     if (ms <= 0) return 'Completado';
     const h = Math.floor(ms / (1000 * 60 * 60));
     const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-    return `${h}h ${m}m`;
+    const s = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${h}h ${m}m ${s}s`;
   };
 
   if (!vehicle) {
@@ -122,8 +123,16 @@ export default function DetalleSubasta() {
   // 48h auto-completion countdown
   const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
   const endTime = vehicle.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
-  const completionRemaining = isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0;
+  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
   const completionExpired = completionRemaining <= 0;
+
+  useEffect(() => {
+    if (!isWonByMe || !endTime) return;
+    const tick = () => setCompletionRemaining(COMPLETION_WINDOW_MS - (Date.now() - endTime));
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isWonByMe, endTime]);
 
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
@@ -190,7 +199,33 @@ export default function DetalleSubasta() {
                 </div>
               )}
             </div>
-            {/* 48h auto-completion countdown for won auctions */}
+            {/* Pronto Pago inside price card */}
+            {isWonByMe && (
+              <div className="mt-3 border-t border-border pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-secondary" />
+                  <p className="text-sm font-bold text-foreground">Pronto Pago</p>
+                </div>
+                {existingPP ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Solicitud aprobada</p>
+                      <p className="text-xs text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
+                    </div>
+                    <Badge className="ml-auto bg-primary/10 text-primary text-xs font-semibold">{existingPP.status}</Badge>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-2">Adelanto de hasta el 10% del valor. Comisión: 5%.</p>
+                    <Button onClick={(e) => { e.stopPropagation(); setProntoPagoModalOpen(true); }} variant="outline" className="w-full h-9 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-sm">
+                      <Zap className="w-4 h-4 mr-2" />Solicitar — Hasta {formatPrice((vehicle.current_bid || 0) * 0.10)}
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+            {/* 48h auto-completion countdown */}
             {isWonByMe && !completionExpired && (
               <div className="mt-3 bg-secondary/10 rounded-lg p-3 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-secondary" />
@@ -327,32 +362,6 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Pronto Pago for won auctions */}
-        {isWonByMe && (
-          <Card className="p-4 border border-primary/20 shadow-sm rounded-xl bg-primary/5">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-secondary" />
-              <p className="font-bold text-foreground">Pronto Pago</p>
-            </div>
-            {existingPP ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Solicitud aprobada</p>
-                  <p className="text-xs text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
-                </div>
-                <Badge className="ml-auto bg-primary/10 text-primary text-xs font-semibold">{existingPP.status}</Badge>
-              </div>
-            ) : (
-              <>
-                <p className="text-xs text-muted-foreground mb-3">Obtén hasta el 10% del valor del vehículo como adelanto de liquidez. Comisión: 5%.</p>
-                <Button onClick={(e) => { e.stopPropagation(); setProntoPagoModalOpen(true); }} variant="outline" className="w-full h-10 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-sm">
-                  <Zap className="w-4 h-4 mr-2" />Solicitar Pronto Pago — Hasta {formatPrice((vehicle.current_bid || 0) * 0.10)}
-                </Button>
-              </>
-            )}
-          </Card>
-        )}
 
         {/* Activity Timeline — only for active auctions */}
         {!isWonByMe && <ActivityTimeline events={auditEvents} />}
