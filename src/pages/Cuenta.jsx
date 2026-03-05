@@ -109,7 +109,7 @@ export default function Cuenta() {
     );
   }
 
-  const showWonSection = (role === 'dealer' || role === 'recomprador') && wonAuctions.length > 0;
+  
 
   return (
     <div className="min-h-screen bg-background pb-24">
