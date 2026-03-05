@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -90,6 +90,10 @@ export default function Cuenta() {
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
     { icon: HelpCircle, label: 'Ayuda y soporte', action: () => navigate('/AyudaSoporte') },
   ];
+
+  if (role === 'dealer' || role === 'recomprador') {
+    menuItems.splice(1, 0, { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') });
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">

@@ -9,7 +9,7 @@ import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import { toast } from 'sonner';
-import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
@@ -76,6 +76,7 @@ export default function DetalleSubastaVendedor() {
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
   const isActive = auction.status === 'active' && new Date(auction.ends_at) > new Date();
   const bids = getBidsByAuctionId(auction.id);
+  const uniqueBidders = getUniqueBidderCountByAuctionId(auction.id);
   const photos = auction.photos || [];
   const inspection = auction.vehicleId ? getInspectionByVehicleId(auction.vehicleId) : null;
   const vehData = auction.vehicleId ? getVehicleById(auction.vehicleId) : null;
@@ -120,7 +121,7 @@ export default function DetalleSubastaVendedor() {
           </div>
           <div className="grid grid-cols-3 gap-3 mt-3">
             <div className="text-center p-3 bg-primary/5 rounded-xl"><p className="text-2xl font-bold text-primary">{formatPrice(auction.current_bid)}</p><p className="text-primary text-xs">Puja actual</p></div>
-            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.bids_count || 0}</p><p className="text-secondary text-xs">Pujas</p></div>
+            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.bids_count || 0}</p><p className="text-secondary text-xs">Pujas</p><p className="text-[10px] text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p></div>
             <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.views || 0}</p><p className="text-secondary text-xs">Vistas</p></div>
           </div>
         </div>

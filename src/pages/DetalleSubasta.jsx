@@ -9,7 +9,7 @@ import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
@@ -99,11 +99,12 @@ export default function DetalleSubasta() {
 
   const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);
+  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
 
   return (
-    <div className="min-h-screen bg-muted pb-32">
+    <div className="min-h-screen bg-muted pb-40">
       <TopBar />
       <div className="relative">
         <div className="relative h-64 bg-muted overflow-hidden">
@@ -148,9 +149,12 @@ export default function DetalleSubasta() {
                 <p className="text-muted-foreground text-xs mb-1">Puja actual</p>
                 <p className="text-2xl font-bold text-secondary">{formatPrice(vehicle.current_bid || 0)}</p>
               </div>
-              <div className="text-right">
-                <p className="text-muted-foreground text-xs mb-1">Pujas</p>
-                <p className="text-lg font-semibold text-foreground flex items-center justify-end gap-1"><Users className="w-4 h-4" />{vehicle.bids_count || 0}</p>
+              <div className="text-right space-y-1">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-0.5">Pujas</p>
+                  <p className="text-lg font-semibold text-foreground flex items-center justify-end gap-1"><Users className="w-4 h-4" />{vehicle.bids_count || 0}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p>
               </div>
             </div>
           </div>
@@ -246,7 +250,7 @@ export default function DetalleSubasta() {
         <ActivityTimeline events={auditEvents} />
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4">
+      <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50">
         <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
           {vehicle.isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
         </Button>
