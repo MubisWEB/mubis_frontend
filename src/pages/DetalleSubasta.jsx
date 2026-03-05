@@ -111,7 +111,13 @@ export default function DetalleSubasta() {
   // Won auction: show seller contact
   const isWonByMe = vehicle.status === 'ENDED' && vehicle.winnerId === currentUser?.id;
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
-  const existingPP = isWonByMe && currentUser ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+  const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+
+  // 48h auto-completion countdown
+  const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
+  const endTime = vehicle.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
+  const completionRemaining = isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0;
+  const completionExpired = completionRemaining <= 0;
 
   return (
     <div className="min-h-screen bg-muted pb-40">
