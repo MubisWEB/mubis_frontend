@@ -152,23 +152,29 @@ export default function DetalleSubasta() {
               <h1 className="text-xl font-bold text-foreground font-sans">{vehicle.brand} {vehicle.model}</h1>
               <p className="text-muted-foreground text-sm flex items-center gap-1"><MapPin className="w-3 h-3" />{vehicle.city} · {vehicle.year}</p>
             </div>
-            <div className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
-              <Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span>
-            </div>
+            {isWonByMe ? (
+              <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
+            ) : (
+              <div className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
+                <Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span>
+              </div>
+            )}
           </div>
           <div className="bg-muted rounded-xl p-4 mt-3">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-muted-foreground text-xs mb-1">Puja actual</p>
+                <p className="text-muted-foreground text-xs mb-1">{isWonByMe ? 'Precio final' : 'Puja actual'}</p>
                 <p className="text-2xl font-bold text-secondary">{formatPrice(vehicle.current_bid || 0)}</p>
               </div>
-              <div className="text-right space-y-1">
-                <div>
-                  <p className="text-muted-foreground text-xs mb-0.5">Pujas</p>
-                  <p className="text-lg font-semibold text-foreground flex items-center justify-end gap-1"><Users className="w-4 h-4" />{vehicle.bids_count || 0}</p>
+              {!isWonByMe && (
+                <div className="text-right space-y-1">
+                  <div>
+                    <p className="text-muted-foreground text-xs mb-0.5">Pujas</p>
+                    <p className="text-lg font-semibold text-foreground flex items-center justify-end gap-1"><Users className="w-4 h-4" />{vehicle.bids_count || 0}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -245,7 +251,7 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {bids.length > 0 && (
+        {!isWonByMe && bids.length > 0 && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <p className="font-bold text-foreground mb-3">Últimas pujas</p>
             <div className="space-y-2">

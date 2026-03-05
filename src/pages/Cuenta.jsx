@@ -7,12 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, Trophy, Zap, Clock, CheckCircle } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, Trophy } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import ProntoPagoModal from '@/components/ProntoPagoModal';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead, getWonAuctionsByUserId, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
+import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
 const ROLE_LABELS = { dealer: 'Dealer', recomprador: 'Recomprador', perito: 'Perito', admin: 'Administrador' };
@@ -26,8 +25,6 @@ const TYPE_ICONS = {
   inspection_completed: ClipboardCheck,
   user_approved: UserCheck,
 };
-
-const PRONTO_PAGO_WINDOW_MS = 48 * 60 * 60 * 1000; // 48 hours
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -57,10 +54,6 @@ export default function Cuenta() {
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [wonAuctions, setWonAuctions] = useState([]);
-  const [prontoPagoAuction, setProntoPagoAuction] = useState(null);
-  const [, setTick] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -68,23 +61,6 @@ export default function Cuenta() {
       setUnreadCount(getUnreadCount(user.id));
     }
   }, []);
-
-  useEffect(() => {
-    if (user && (role === 'dealer' || role === 'recomprador')) {
-      const won = getWonAuctionsByUserId(user.id).filter(a => {
-        const endTime = new Date(a.ends_at).getTime();
-        return Date.now() - endTime < PRONTO_PAGO_WINDOW_MS;
-      });
-      setWonAuctions(won);
-    }
-  }, [user?.id, role, refreshKey]);
-
-  // Tick every second for countdown timers
-  useEffect(() => {
-    if (wonAuctions.length === 0) return;
-    const interval = setInterval(() => setTick(t => t + 1), 1000);
-    return () => clearInterval(interval);
-  }, [wonAuctions.length]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -132,7 +108,7 @@ export default function Cuenta() {
     );
   }
 
-  const showWonSection = (role === 'dealer' || role === 'recomprador') && wonAuctions.length > 0;
+  
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -328,14 +304,8 @@ export default function Cuenta() {
         </DialogContent>
       </Dialog>
 
-      {/* Pronto Pago Modal */}
-      <ProntoPagoModal
-        open={!!prontoPagoAuction}
-        onClose={() => setProntoPagoAuction(null)}
-        auction={prontoPagoAuction}
-        userId={user?.id}
-        onComplete={() => setRefreshKey(k => k + 1)}
-      />
+
+
 
       <BottomNav />
     </div>
