@@ -174,11 +174,13 @@ function buildSeedAuctions(vehicles) {
       current_bid: currentBid,
       bids_count: bidsCount,
       views: 20 + Math.floor(Math.random() * 200),
-      status: i < 10 ? 'active' : 'ended',
+      status: i === 0 ? 'active' : (i < 10 ? 'active' : 'ended'),
       winnerId: i >= 10 ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
-      ends_at: i < 10
-        ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()
-        : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
+      ends_at: i === 0
+        ? new Date(Date.now() + 2 * 60000).toISOString()  // 2 minutes from now
+        : (i < 10
+          ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()
+          : new Date(Date.now() - (i - 9) * 86400000).toISOString()),
       createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
     };
   });
