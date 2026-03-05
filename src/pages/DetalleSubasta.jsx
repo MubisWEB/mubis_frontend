@@ -149,9 +149,12 @@ export default function DetalleSubasta() {
                 <p className="text-muted-foreground text-xs mb-1">Puja actual</p>
                 <p className="text-2xl font-bold text-secondary">{formatPrice(vehicle.current_bid || 0)}</p>
               </div>
-              <div className="text-right">
-                <p className="text-muted-foreground text-xs mb-1">Pujas</p>
-                <p className="text-lg font-semibold text-foreground flex items-center justify-end gap-1"><Users className="w-4 h-4" />{vehicle.bids_count || 0}</p>
+              <div className="text-right space-y-1">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-0.5">Pujas</p>
+                  <p className="text-lg font-semibold text-foreground flex items-center justify-end gap-1"><Users className="w-4 h-4" />{vehicle.bids_count || 0}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p>
               </div>
             </div>
           </div>
