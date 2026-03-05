@@ -48,12 +48,11 @@ export default function Comprar() {
     return () => clearInterval(interval);
   }, [loadActivity]);
 
-  // Rotate activity banner every 4s
   useEffect(() => {
     if (activityItems.length <= 1) return;
     const timer = setInterval(() => {
       setActivityIdx(prev => (prev + 1) % activityItems.length);
-    }, 4000);
+    }, 5000);
     return () => clearInterval(timer);
   }, [activityItems.length]);
 
@@ -107,7 +106,7 @@ export default function Comprar() {
                     transition={{ duration: 0.2 }}
                     className="text-sm text-foreground truncate"
                   >
-                    {currentActivity.body}
+                    {currentActivity.message}
                   </motion.p>
                 ) : (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-muted-foreground">

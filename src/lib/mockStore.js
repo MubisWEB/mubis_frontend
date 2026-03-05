@@ -11,6 +11,7 @@ const KEYS = {
   bids: 'mubis_store_bids',
   notifications: 'mubis_store_notifications',
   supportTickets: 'mubis_store_support_tickets',
+  auditEvents: 'mubis_store_audit_events',
 };
 
 // ── Admin whitelist ──
@@ -39,17 +40,14 @@ const PHOTOS = [
 // ── Seed data ──
 const SEED_USERS = [
   { id: 'u-admin-1', email: 'admin@mubis.com', password: 'admin123', role: 'admin', nombre: 'Admin Mubis', company: 'Mubis', branch: 'Principal', telefono: '3000000000', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
-  // Dealers
   { id: 'u-dealer-1', email: 'dealer@test.com', password: 'dealer123', role: 'dealer', nombre: 'Autonal Colombia', company: 'Autonal', branch: 'Bogotá Norte', telefono: '3001112233', ciudad: 'Bogotá', nit: '900123456-7', verification_status: 'VERIFIED' },
   { id: 'u-dealer-2', email: 'dealer2@test.com', password: 'dealer123', role: 'dealer', nombre: 'Los Coches', company: 'Los Coches', branch: 'Medellín Centro', telefono: '3159998877', ciudad: 'Medellín', nit: '900234567-8', verification_status: 'VERIFIED' },
   { id: 'u-dealer-3', email: 'dealer3@test.com', password: 'dealer123', role: 'dealer', nombre: 'Motor Uno', company: 'Motor Uno', branch: 'Bogotá Norte', telefono: '3201234000', ciudad: 'Bogotá', nit: '900444555-1', verification_status: 'VERIFIED' },
   { id: 'u-dealer-4', email: 'dealer4@test.com', password: 'dealer123', role: 'dealer', nombre: 'CarHouse Cali', company: 'CarHouse', branch: 'Cali Sur', telefono: '3164567890', ciudad: 'Cali', nit: '900555666-2', verification_status: 'PENDING' },
   { id: 'u-dealer-5', email: 'dealer5@test.com', password: 'dealer123', role: 'dealer', nombre: 'Importados Premium', company: 'Importados Premium', branch: 'Barranquilla Centro', telefono: '3178889900', ciudad: 'Barranquilla', nit: '900666777-3', verification_status: 'PENDING' },
-  // Peritos
   { id: 'u-perito-1', email: 'perito@test.com', password: 'perito123', role: 'perito', nombre: 'Carlos Peritaje', company: 'Autonal', branch: 'Bogotá Norte', telefono: '3201234567', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
   { id: 'u-perito-2', email: 'perito2@test.com', password: 'perito123', role: 'perito', nombre: 'María Inspección', company: 'Los Coches', branch: 'Medellín Centro', telefono: '3107654321', ciudad: 'Medellín', nit: '', verification_status: 'VERIFIED' },
   { id: 'u-perito-3', email: 'perito3@test.com', password: 'perito123', role: 'perito', nombre: 'Jorge Técnico', company: 'CarHouse', branch: 'Cali Sur', telefono: '3189876543', ciudad: 'Cali', nit: '', verification_status: 'PENDING' },
-  // Recompradores
   { id: 'u-recomprador-1', email: 'recomprador@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'CarMax Colombia', company: 'CarMax', branch: 'Cali Sur', telefono: '3114567890', ciudad: 'Cali', nit: '900345678-9', verification_status: 'VERIFIED' },
   { id: 'u-recomprador-2', email: 'recomprador2@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'AutoCompra SAS', company: 'AutoCompra', branch: 'Bogotá Norte', telefono: '3125556677', ciudad: 'Bogotá', nit: '900456789-0', verification_status: 'VERIFIED' },
   { id: 'u-recomprador-3', email: 'recomprador3@test.com', password: 'recomprador123', role: 'recomprador', nombre: 'VehíCompra', company: 'VehíCompra', branch: 'Medellín Centro', telefono: '3136667788', ciudad: 'Medellín', nit: '900567890-1', verification_status: 'VERIFIED' },
@@ -170,6 +168,8 @@ function buildSeedAuctions(vehicles) {
       placa: v.placa,
       photos: v.photos,
       documentation: v.documentation,
+      dealerCompany: v.dealerCompany,
+      dealerBranch: v.dealerBranch,
       starting_price: basePrice,
       current_bid: currentBid,
       bids_count: bidsCount,
@@ -177,7 +177,7 @@ function buildSeedAuctions(vehicles) {
       status: i < 10 ? 'active' : 'ended',
       winnerId: i >= 10 ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
       ends_at: i < 10
-        ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()  // 5min to ~1h from now
+        ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()
         : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
       createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
     };
@@ -192,7 +192,7 @@ function buildSeedBids(auctions) {
     const count = a.bids_count || 3;
     for (let j = 0; j < count; j++) {
       const userId = bidders[(j + auctions.indexOf(a)) % bidders.length];
-      if (userId === a.dealerId) continue; // can't bid own
+      if (userId === a.dealerId) continue;
       bids.push({
         id: `bid-seed-${++bidIdx}`,
         auctionId: a.id,
@@ -205,6 +205,47 @@ function buildSeedBids(auctions) {
   return bids;
 }
 
+function buildSeedAuditEvents(vehicles, inspections, auctions, bids) {
+  const events = [];
+  let idx = 0;
+  vehicles.forEach(v => {
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'vehicle', entityId: v.id, type: 'vehicle_created', message: `Vehículo ${v.brand} ${v.model} ${v.year} registrado`, createdAt: v.createdAt, actorUserId: v.dealerId, actorRole: 'dealer' });
+  });
+  inspections.forEach(insp => {
+    const v = vehicles.find(x => x.id === insp.vehicleId);
+    const vLabel = v ? `${v.brand} ${v.model} ${v.year}` : insp.vehicleId;
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'vehicle', entityId: insp.vehicleId, type: 'inspection_requested', message: `Peritaje solicitado para ${vLabel}`, createdAt: insp.createdAt, actorUserId: v?.dealerId || '', actorRole: 'dealer' });
+    if (insp.status === 'COMPLETED' || insp.status === 'IN_PROGRESS') {
+      events.push({ id: `audit-seed-${++idx}`, entityType: 'vehicle', entityId: insp.vehicleId, type: 'inspection_taken', message: `Peritaje tomado por perito`, createdAt: new Date(new Date(insp.createdAt).getTime() + 3600000).toISOString(), actorUserId: insp.peritoId || '', actorRole: 'perito' });
+    }
+    if (insp.status === 'COMPLETED') {
+      events.push({ id: `audit-seed-${++idx}`, entityType: 'vehicle', entityId: insp.vehicleId, type: 'inspection_completed', message: `Peritaje completado — Score: ${insp.scoreGlobal}/100`, createdAt: insp.completedAt || insp.createdAt, actorUserId: insp.peritoId || '', actorRole: 'perito' });
+    }
+    if (insp.status === 'REJECTED') {
+      events.push({ id: `audit-seed-${++idx}`, entityType: 'vehicle', entityId: insp.vehicleId, type: 'inspection_rejected', message: `Peritaje rechazado`, createdAt: insp.completedAt || insp.createdAt, actorUserId: insp.peritoId || '', actorRole: 'perito' });
+    }
+  });
+  auctions.forEach(a => {
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: a.id, type: 'auction_published', message: `Subasta publicada: ${a.brand} ${a.model} ${a.year}`, createdAt: a.createdAt, actorUserId: a.dealerId, actorRole: 'system' });
+    // Also link to vehicle
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'vehicle', entityId: a.vehicleId, type: 'auction_published', message: `Subasta publicada: ${a.brand} ${a.model} ${a.year}`, createdAt: a.createdAt, actorUserId: a.dealerId, actorRole: 'system' });
+    if (a.status === 'ended' || a.status === 'closed') {
+      events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta finalizada`, createdAt: a.ends_at, actorUserId: '', actorRole: 'system' });
+      if (a.winnerId) {
+        events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: a.id, type: 'winner_set', message: `Ganador asignado`, createdAt: a.ends_at, actorUserId: a.winnerId, actorRole: 'recomprador' });
+      }
+    }
+  });
+  // Sample bids as audit events
+  bids.slice(0, 30).forEach(b => {
+    const a = auctions.find(x => x.id === b.auctionId);
+    if (!a) return;
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: b.auctionId, type: 'bid_created', message: `Nueva puja: $${(b.amount / 1000000).toFixed(1)}M en ${a.brand} ${a.model} ${a.year}`, createdAt: b.createdAt, actorUserId: b.userId, actorRole: 'recomprador' });
+  });
+  events.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  return events;
+}
+
 function load(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
 }
@@ -213,12 +254,10 @@ function save(key, data) {
 }
 
 function ensureSeeded() {
-  // Check if we have the new seed format (v2)
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v4') {
-    // Clear old data and re-seed
+  if (seedVersion !== 'v5') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v4');
+    localStorage.setItem('mubis_seed_version', 'v5');
   }
 
   if (!load(KEYS.users)) {
@@ -234,15 +273,19 @@ function ensureSeeded() {
     const auctions = buildSeedAuctions(vehicles);
     save(KEYS.auctions, auctions);
 
-    save(KEYS.bids, buildSeedBids(auctions));
+    const bids = buildSeedBids(auctions);
+    save(KEYS.bids, bids);
+
+    const auditEvents = buildSeedAuditEvents(vehicles, inspections, auctions, bids);
+    save(KEYS.auditEvents, auditEvents);
   } else {
     if (!load(KEYS.inspections)) save(KEYS.inspections, []);
     if (!load(KEYS.bids)) save(KEYS.bids, []);
     if (!load(KEYS.auctions)) save(KEYS.auctions, []);
+    if (!load(KEYS.auditEvents)) save(KEYS.auditEvents, []);
   }
 }
 
-// Init on import
 ensureSeeded();
 
 // ── Users ──
@@ -273,6 +316,7 @@ export function addVehicle(vehicle) {
   const v = { id: `v-${Date.now()}`, createdAt: new Date().toISOString(), ...vehicle };
   vehicles.unshift(v);
   save(KEYS.vehicles, vehicles);
+  addAuditEvent({ entityType: 'vehicle', entityId: v.id, type: 'vehicle_created', message: `Vehículo ${v.brand} ${v.model} ${v.year} registrado`, actorUserId: v.dealerId || '', actorRole: 'dealer' });
   return v;
 }
 export function getVehicleById(id) { return getVehicles().find(v => v.id === id); }
@@ -289,6 +333,7 @@ export function addInspection(inspection) {
   const item = { id: `insp-${Date.now()}`, createdAt: new Date().toISOString(), ...inspection };
   list.unshift(item);
   save(KEYS.inspections, list);
+  addAuditEvent({ entityType: 'vehicle', entityId: item.vehicleId, type: 'inspection_requested', message: `Peritaje solicitado`, actorUserId: '', actorRole: 'dealer' });
   return item;
 }
 export function getInspectionById(id) { return getInspections().find(i => i.id === id); }
@@ -298,46 +343,28 @@ export function updateInspection(id, updates) {
   save(KEYS.inspections, list);
   const updated = list.find(i => i.id === id);
 
-  // Auto-generate notifications on inspection status changes
   if (updated && updates.status) {
     const vehicle = getVehicleById(updated.vehicleId);
     const vLabel = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}` : updated.vehicleId;
 
     if (updates.status === 'IN_PROGRESS' && updated.peritoId) {
-      addNotification({
-        userId: updated.peritoId,
-        type: 'inspection_taken',
-        title: 'Peritaje tomado',
-        body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.`,
-      });
+      addNotification({ userId: updated.peritoId, type: 'inspection_taken', title: 'Peritaje tomado', body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.` });
+      addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_taken', message: `Peritaje tomado por perito`, actorUserId: updated.peritoId, actorRole: 'perito' });
     }
     if (updates.status === 'COMPLETED') {
       if (updated.peritoId) {
-        addNotification({
-          userId: updated.peritoId,
-          type: 'inspection_completed',
-          title: 'Peritaje finalizado',
-          body: `Finalizaste el peritaje de ${vLabel}.`,
-        });
+        addNotification({ userId: updated.peritoId, type: 'inspection_completed', title: 'Peritaje finalizado', body: `Finalizaste el peritaje de ${vLabel}.` });
       }
       if (vehicle?.dealerId) {
-        addNotification({
-          userId: vehicle.dealerId,
-          type: 'auction_published',
-          title: 'Vehículo publicado en subasta',
-          body: `${vLabel} ya está en subasta.`,
-        });
+        addNotification({ userId: vehicle.dealerId, type: 'auction_published', title: 'Vehículo publicado en subasta', body: `${vLabel} ya está en subasta.` });
       }
+      addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_completed', message: `Peritaje completado — Score: ${updates.scoreGlobal || updated.scoreGlobal || '?'}/100`, actorUserId: updated.peritoId || '', actorRole: 'perito' });
     }
     if (updates.status === 'REJECTED') {
       if (vehicle?.dealerId) {
-        addNotification({
-          userId: vehicle.dealerId,
-          type: 'inspection_rejected',
-          title: 'Peritaje rechazado',
-          body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}`,
-        });
+        addNotification({ userId: vehicle.dealerId, type: 'inspection_rejected', title: 'Peritaje rechazado', body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}` });
       }
+      addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_rejected', message: `Peritaje rechazado${updates.comments ? `: ${updates.comments}` : ''}`, actorUserId: updated.peritoId || '', actorRole: 'perito' });
     }
   }
 
@@ -354,6 +381,8 @@ export function addAuction(auction) {
   const item = { id: `auc-${Date.now()}`, createdAt: new Date().toISOString(), ...auction };
   list.unshift(item);
   save(KEYS.auctions, list);
+  addAuditEvent({ entityType: 'auction', entityId: item.id, type: 'auction_published', message: `Subasta publicada: ${item.brand} ${item.model} ${item.year}`, actorUserId: item.dealerId || '', actorRole: 'system' });
+  addAuditEvent({ entityType: 'vehicle', entityId: item.vehicleId, type: 'auction_published', message: `Subasta publicada: ${item.brand} ${item.model} ${item.year}`, actorUserId: item.dealerId || '', actorRole: 'system' });
   return item;
 }
 export function getAuctionById(id) { return getAuctions().find(a => a.id === id); }
@@ -370,13 +399,11 @@ export function getActiveAuctions() {
   const inspections = getInspections();
   return getAuctions().filter(a => {
     if (a.status !== 'active') return false;
-    // Only show if vehicle has a COMPLETED inspection
     const insp = inspections.find(i => i.vehicleId === a.vehicleId);
     return insp && insp.status === 'COMPLETED';
   });
 }
 
-/** Reconcile: mark expired active auctions as 'ended' */
 export function reconcileAuctionStatuses() {
   const auctions = getAuctions();
   let changed = false;
@@ -384,7 +411,9 @@ export function reconcileAuctionStatuses() {
   const updated = auctions.map(a => {
     if (a.status === 'active' && new Date(a.ends_at) < now) {
       changed = true;
-      return { ...a, status: 'ended' };
+      const ended = { ...a, status: 'ended' };
+      addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta finalizada: ${a.brand} ${a.model} ${a.year}`, actorUserId: '', actorRole: 'system' });
+      return ended;
     }
     return a;
   });
@@ -399,27 +428,15 @@ export function addBid(bid) {
   list.unshift(item);
   save(KEYS.bids, list);
 
-  // Auto-generate notifications for bids
   const auction = getAuctionById(bid.auctionId);
   if (auction) {
     const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
     const amountStr = `$${(bid.amount / 1000000).toFixed(1)}M`;
-    // Notify dealer who owns the auction
     if (auction.dealerId && auction.dealerId !== bid.userId) {
-      addNotification({
-        userId: auction.dealerId,
-        type: 'new_bid',
-        title: 'Nueva puja en tu subasta',
-        body: `Puja de ${amountStr} en tu ${vLabel}.`,
-      });
+      addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.` });
     }
-    // Notify the bidder
-    addNotification({
-      userId: bid.userId,
-      type: 'bid_placed',
-      title: 'Puja registrada',
-      body: `Pujaste ${amountStr} en ${vLabel}.`,
-    });
+    addNotification({ userId: bid.userId, type: 'bid_placed', title: 'Puja registrada', body: `Pujaste ${amountStr} en ${vLabel}.` });
+    addAuditEvent({ entityType: 'auction', entityId: bid.auctionId, type: 'bid_created', message: `Nueva puja: ${amountStr} en ${vLabel}`, actorUserId: bid.userId, actorRole: 'recomprador' });
   }
 
   return item;
@@ -511,14 +528,14 @@ export function getAdminStats() {
     dealers: { total: byRole('dealer').length, verified: byStatus(byRole('dealer'), 'VERIFIED').length, pending: byStatus(byRole('dealer'), 'PENDING').length, rejected: byStatus(byRole('dealer'), 'REJECTED').length },
     peritos: { total: byRole('perito').length, verified: byStatus(byRole('perito'), 'VERIFIED').length, pending: byStatus(byRole('perito'), 'PENDING').length, rejected: byStatus(byRole('perito'), 'REJECTED').length },
     recompradores: { total: byRole('recomprador').length, verified: byStatus(byRole('recomprador'), 'VERIFIED').length, pending: byStatus(byRole('recomprador'), 'PENDING').length, rejected: byStatus(byRole('recomprador'), 'REJECTED').length },
-    auctions: { total: auctions.length, active: auctions.filter(a => a.status === 'active').length },
+    auctions: { total: auctions.length, active: auctions.filter(a => a.status === 'active').length, ended: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, withWinner: auctions.filter(a => (a.status === 'ended' || a.status === 'closed') && a.winnerId).length },
     inspections: { total: inspections.length, pending: inspections.filter(i => i.status === 'PENDING').length, completed: inspections.filter(i => i.status === 'COMPLETED').length },
   };
 }
 
-/** Call this to force re-seed all data (useful for demo reset) */
 export function resetAllData() {
   Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+  localStorage.removeItem('mubis_seed_version');
   ensureSeeded();
 }
 
@@ -550,65 +567,27 @@ function ensureSeedNotifications() {
   const inspections = getInspections();
   const notifs = [];
 
-  // For each auction → notify the dealer
   auctions.forEach((a, i) => {
-    notifs.push({
-      id: `notif-seed-pub-${i}`,
-      userId: a.dealerId,
-      type: 'auction_published',
-      title: 'Vehículo en subasta',
-      body: `Tu ${a.brand} ${a.model} ${a.year} fue publicado en subasta.`,
-      createdAt: a.createdAt,
-      read: i > 2,
-    });
+    notifs.push({ id: `notif-seed-pub-${i}`, userId: a.dealerId, type: 'auction_published', title: 'Vehículo en subasta', body: `Tu ${a.brand} ${a.model} ${a.year} fue publicado en subasta.`, createdAt: a.createdAt, read: i > 2 });
   });
 
-  // Bid notifications to dealers (sample)
   const bids = getBids();
   const seen = new Set();
   bids.slice(0, 20).forEach((b, i) => {
     const auction = auctions.find(a => a.id === b.auctionId);
     if (!auction || seen.has(b.auctionId)) return;
     seen.add(b.auctionId);
-    notifs.push({
-      id: `notif-seed-bid-${i}`,
-      userId: auction.dealerId,
-      type: 'new_bid',
-      title: 'Nueva puja recibida',
-      body: `Puja de $${(b.amount / 1000000).toFixed(1)}M en tu ${auction.brand} ${auction.model}.`,
-      createdAt: b.createdAt,
-      read: i > 3,
-    });
+    notifs.push({ id: `notif-seed-bid-${i}`, userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja recibida', body: `Puja de $${(b.amount / 1000000).toFixed(1)}M en tu ${auction.brand} ${auction.model}.`, createdAt: b.createdAt, read: i > 3 });
   });
 
-  // Inspection completed → notify perito
   inspections.filter(i => i.status === 'COMPLETED').slice(0, 5).forEach((insp, i) => {
-    notifs.push({
-      id: `notif-seed-insp-${i}`,
-      userId: insp.peritoId,
-      type: 'inspection_completed',
-      title: 'Peritaje completado',
-      body: `Has finalizado el peritaje del vehículo ${insp.vehicleId}. Score: ${insp.scoreGlobal}/100.`,
-      createdAt: insp.completedAt || insp.createdAt,
-      read: i > 1,
-    });
+    notifs.push({ id: `notif-seed-insp-${i}`, userId: insp.peritoId, type: 'inspection_completed', title: 'Peritaje completado', body: `Has finalizado el peritaje del vehículo ${insp.vehicleId}. Score: ${insp.scoreGlobal}/100.`, createdAt: insp.completedAt || insp.createdAt, read: i > 1 });
   });
 
-  // Admin notifications
-  notifs.push({
-    id: 'notif-seed-admin-1',
-    userId: 'u-admin-1',
-    type: 'user_approved',
-    title: 'Nuevo usuario registrado',
-    body: 'CarHouse Cali se registró y está pendiente de verificación.',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    read: false,
-  });
+  notifs.push({ id: 'notif-seed-admin-1', userId: 'u-admin-1', type: 'user_approved', title: 'Nuevo usuario registrado', body: 'CarHouse Cali se registró y está pendiente de verificación.', createdAt: new Date(Date.now() - 3600000).toISOString(), read: false });
 
   save(KEYS.notifications, notifs);
 }
-
-// Call after main seed
 ensureSeedNotifications();
 
 // ── Notification helpers ──
@@ -634,12 +613,26 @@ export function updateSupportTicket(id, updates) {
   return list.find(t => t.id === id);
 }
 
-// ── Live activity feed (auction-related notifications for all users) ──
+// ── Audit Events ──
+export function getAuditEvents() { return load(KEYS.auditEvents) || []; }
+export function addAuditEvent(event) {
+  const list = getAuditEvents();
+  const item = { id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, createdAt: new Date().toISOString(), ...event };
+  list.push(item);
+  save(KEYS.auditEvents, list);
+  return item;
+}
+export function getAuditEventsByEntity(entityType, entityId) {
+  return getAuditEvents()
+    .filter(e => e.entityType === entityType && e.entityId === entityId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+// ── Live activity feed from audit events ──
 export function getRecentAuctionActivity(limit = 5) {
-  const allNotifs = getNotifications();
-  const activityTypes = ['new_bid', 'bid_placed', 'auction_published'];
-  return allNotifs
-    .filter(n => activityTypes.includes(n.type))
+  const activityTypes = ['bid_created', 'auction_published', 'inspection_completed', 'inspection_rejected'];
+  return getAuditEvents()
+    .filter(e => activityTypes.includes(e.type))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, limit);
 }

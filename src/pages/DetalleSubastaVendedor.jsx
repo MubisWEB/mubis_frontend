@@ -7,8 +7,9 @@ import { ArrowLeft, Clock, Users, Eye, TrendingUp, Calendar, Gauge, Settings2, F
 import { useNavigate, useParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
+import ActivityTimeline from '@/components/ActivityTimeline';
 import { toast } from 'sonner';
-import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity } from '@/lib/mockStore';
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
@@ -16,18 +17,26 @@ export default function DetalleSubastaVendedor() {
   const [auction, setAuction] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
+  const [auditEvents, setAuditEvents] = useState([]);
+
+  const loadAuditEvents = (a) => {
+    const ae = getAuditEventsByEntity('auction', a.id);
+    const ve = a.vehicleId ? getAuditEventsByEntity('vehicle', a.vehicleId) : [];
+    const merged = [...ae, ...ve].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+    setAuditEvents(merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i));
+  };
 
   useEffect(() => {
     if (!auctionId) return;
     const data = getAuctionById(auctionId);
-    if (data) setAuction(data);
+    if (data) { setAuction(data); loadAuditEvents(data); }
   }, [auctionId]);
 
   useEffect(() => {
     if (!auctionId) return;
     const interval = setInterval(() => {
       const data = getAuctionById(auctionId);
-      if (data) setAuction(data);
+      if (data) { setAuction(data); loadAuditEvents(data); }
     }, 3000);
     return () => clearInterval(interval);
   }, [auctionId]);
@@ -68,8 +77,6 @@ export default function DetalleSubastaVendedor() {
   const isActive = auction.status === 'active' && new Date(auction.ends_at) > new Date();
   const bids = getBidsByAuctionId(auction.id);
   const photos = auction.photos || [];
-
-  // Real inspection data
   const inspection = auction.vehicleId ? getInspectionByVehicleId(auction.vehicleId) : null;
   const vehData = auction.vehicleId ? getVehicleById(auction.vehicleId) : null;
   const docs = auction.documentation || vehData?.documentation || null;
@@ -120,7 +127,6 @@ export default function DetalleSubastaVendedor() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Specs */}
         <Card className="p-4 border border-border shadow-sm rounded-xl">
           <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Settings2 className="w-4 h-4 text-secondary" />Especificaciones</p>
           <div className="grid grid-cols-2 gap-3">
@@ -133,25 +139,17 @@ export default function DetalleSubastaVendedor() {
           </div>
         </Card>
 
-        {/* Ganancia estimada */}
         <Card className="p-4 border border-border shadow-sm space-y-3 rounded-xl">
           <div className="flex items-center justify-between"><h2 className="font-bold text-foreground font-sans">Ganancia estimada</h2><TrendingUp className="w-5 h-5 text-primary" /></div>
           <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - (auction.starting_price || 0))}</p>
           <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price || 0)}</p>
         </Card>
 
-        {/* Peritaje from inspection store */}
         {inspection && inspection.status === 'COMPLETED' && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-foreground flex items-center gap-2"><FileCheck className="w-4 h-4 text-secondary" />Peritaje Mubis</p>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                inspection.scoreGlobal >= 80
-                  ? 'bg-primary/10 text-primary'
-                  : inspection.scoreGlobal >= 50
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-destructive/10 text-destructive'
-              }`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${inspection.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : inspection.scoreGlobal >= 50 ? 'bg-purple-100 text-purple-800' : 'bg-destructive/10 text-destructive'}`}>
                 {inspection.scoreGlobal}
               </div>
             </div>
@@ -168,9 +166,7 @@ export default function DetalleSubastaVendedor() {
                 ))}
               </div>
             )}
-            {inspection.comments && (
-              <p className="text-xs text-muted-foreground mt-3 italic">"{inspection.comments}"</p>
-            )}
+            {inspection.comments && <p className="text-xs text-muted-foreground mt-3 italic">"{inspection.comments}"</p>}
             <div className="mt-4 bg-secondary/5 rounded-lg p-3 flex items-start gap-2">
               <Shield className="w-4 h-4 text-secondary mt-0.5" />
               <p className="text-xs text-muted-foreground">Inspeccionado por un perito certificado de Mubis.</p>
@@ -178,7 +174,6 @@ export default function DetalleSubastaVendedor() {
           </Card>
         )}
 
-        {/* Documentation */}
         {docs && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <p className="font-bold text-foreground mb-3 flex items-center gap-2"><FileText className="w-4 h-4 text-secondary" />Documentación</p>
@@ -186,37 +181,28 @@ export default function DetalleSubastaVendedor() {
               <div className="flex items-center justify-between py-2 border-b border-border">
                 <span className="text-sm text-foreground font-medium">SOAT</span>
                 <div className="text-right">
-                  <Badge className={`text-xs ${docs.soat?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
-                    {docs.soat?.status === 'vigente' ? 'Vigente' : 'Vencido'}
-                  </Badge>
+                  <Badge className={`text-xs ${docs.soat?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{docs.soat?.status === 'vigente' ? 'Vigente' : 'Vencido'}</Badge>
                   {docs.soat?.fecha && <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.soat.fecha}</p>}
                 </div>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-border">
                 <span className="text-sm text-foreground font-medium">Tecnomecánica</span>
                 <div className="text-right">
-                  <Badge className={`text-xs ${docs.tecno?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
-                    {docs.tecno?.status === 'vigente' ? 'Vigente' : 'Vencida'}
-                  </Badge>
+                  <Badge className={`text-xs ${docs.tecno?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{docs.tecno?.status === 'vigente' ? 'Vigente' : 'Vencida'}</Badge>
                   {docs.tecno?.fecha && <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.tecno.fecha}</p>}
                 </div>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-foreground font-medium">Multas</span>
                 <div className="text-right">
-                  <Badge className={`text-xs ${docs.multas?.tiene === 'no' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
-                    {docs.multas?.tiene === 'no' ? 'Sin multas' : 'Con multas'}
-                  </Badge>
-                  {docs.multas?.tiene === 'si' && docs.multas?.descripcion && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[180px] text-right">{docs.multas.descripcion}</p>
-                  )}
+                  <Badge className={`text-xs ${docs.multas?.tiene === 'no' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{docs.multas?.tiene === 'no' ? 'Sin multas' : 'Con multas'}</Badge>
+                  {docs.multas?.tiene === 'si' && docs.multas?.descripcion && <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[180px] text-right">{docs.multas.descripcion}</p>}
                 </div>
               </div>
             </div>
           </Card>
         )}
 
-        {/* Recent bids */}
         {bids.length > 0 && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <h2 className="font-bold text-foreground mb-3 font-sans">Últimas pujas</h2>
@@ -230,6 +216,9 @@ export default function DetalleSubastaVendedor() {
             </div>
           </Card>
         )}
+
+        {/* Activity Timeline */}
+        <ActivityTimeline events={auditEvents} />
 
         {isActive && (
           <Button onClick={handleCloseAuction} variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-2">
