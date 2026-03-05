@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, MapPin, CheckCircle, Zap, Banknote } from 'lucide-react';
+import { Trophy, MapPin, CheckCircle, Zap, Banknote, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import ProntoPagoModal from '@/components/ProntoPagoModal';
+import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
 
 export default function Ganados() {
