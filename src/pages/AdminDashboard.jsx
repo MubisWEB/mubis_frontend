@@ -66,8 +66,8 @@ export default function AdminDashboard() {
                 <span className="font-medium text-foreground">{label}</span>
                 <div className="flex items-center gap-2">
                   <Badge className="bg-primary/10 text-primary text-xs">{data.verified} ✓</Badge>
-                  {data.pending > 0 && <Badge className="bg-accent/10 text-accent-foreground text-xs">{data.pending} pend.</Badge>}
-                  {data.rejected > 0 && <Badge className="bg-destructive/10 text-destructive text-xs">{data.rejected} rech.</Badge>}
+                  {data.pending > 0 && <Badge className="bg-accent/10 text-accent-foreground text-[13px] font-semibold min-h-[28px] px-2.5 py-1 border border-accent/20">{data.pending} pend.</Badge>}
+                  {data.rejected > 0 && <Badge className="bg-destructive/10 text-destructive text-[13px] font-semibold min-h-[28px] px-2.5 py-1 border border-destructive/20">{data.rejected} rech.</Badge>}
                   <span className="text-muted-foreground text-xs">{data.total} total</span>
                 </div>
               </div>
