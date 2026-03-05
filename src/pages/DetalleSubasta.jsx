@@ -259,17 +259,80 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
+        {/* Seller Contact — only for won auctions */}
+        {isWonByMe && seller && (
+          <Card className="p-4 border border-border shadow-sm rounded-xl">
+            <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Building2 className="w-4 h-4 text-secondary" />Datos del vendedor</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{seller.nombre}</p>
+                  <p className="text-xs text-muted-foreground">{seller.company}{seller.branch ? ` · ${seller.branch}` : ''}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                <a href={`mailto:${seller.email}`} className="text-secondary hover:underline">{seller.email}</a>
+              </div>
+              {seller.telefono && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  <a href={`tel:${seller.telefono}`} className="text-secondary hover:underline">{seller.telefono}</a>
+                </div>
+              )}
+              <div className="flex items-center gap-3 text-sm">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground">{vehicle.city}</span>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Pronto Pago for won auctions */}
+        {isWonByMe && (
+          <Card className="p-4 border border-primary/20 shadow-sm rounded-xl bg-primary/5">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="w-4 h-4 text-secondary" />
+              <p className="font-bold text-foreground">Pronto Pago</p>
+            </div>
+            {existingPP ? (
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Solicitud aprobada</p>
+                  <p className="text-xs text-muted-foreground">Recibes: {formatPrice(existingPP.netAmount)}</p>
+                </div>
+                <Badge className="ml-auto bg-primary/10 text-primary text-xs font-semibold">{existingPP.status}</Badge>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground mb-3">Obtén hasta el 10% del valor del vehículo como adelanto de liquidez. Comisión: 5%.</p>
+                <Button onClick={(e) => { e.stopPropagation(); setProntoPagoModalOpen(true); }} variant="outline" className="w-full h-10 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-sm">
+                  <Zap className="w-4 h-4 mr-2" />Solicitar Pronto Pago — Hasta {formatPrice((vehicle.current_bid || 0) * 0.10)}
+                </Button>
+              </>
+            )}
+          </Card>
+        )}
+
         {/* Activity Timeline */}
         <ActivityTimeline events={auditEvents} />
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50">
-        <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
-          {vehicle.isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
-        </Button>
-      </div>
+      {/* Bottom action bar */}
+      {!isWonByMe && (
+        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50">
+          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
+            {vehicle.isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+          </Button>
+        </div>
+      )}
 
       <BidModal vehicle={vehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
+      <ProntoPagoModal open={prontoPagoModalOpen} onClose={() => setProntoPagoModalOpen(false)} auction={vehicle} userId={currentUser?.id} onComplete={() => { setProntoPagoRefresh(k => k + 1); setProntoPagoModalOpen(false); }} />
       <BottomNav />
     </div>
   );
