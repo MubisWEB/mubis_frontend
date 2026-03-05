@@ -10,9 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, Trophy } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import ProntoPagoModal from '@/components/ProntoPagoModal';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead, getWonAuctionsByUserId, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
+import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
 const ROLE_LABELS = { dealer: 'Dealer', recomprador: 'Recomprador', perito: 'Perito', admin: 'Administrador' };
