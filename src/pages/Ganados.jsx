@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
 
 export default function Ganados() {
+  const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const [wonAuctions, setWonAuctions] = useState([]);
   const [prontoPagoAuction, setProntoPagoAuction] = useState(null);
