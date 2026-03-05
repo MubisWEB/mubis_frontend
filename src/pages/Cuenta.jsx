@@ -27,8 +27,6 @@ const TYPE_ICONS = {
   user_approved: UserCheck,
 };
 
-const PRONTO_PAGO_WINDOW_MS = 48 * 60 * 60 * 1000; // 48 hours
-
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
