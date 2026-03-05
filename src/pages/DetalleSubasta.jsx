@@ -251,7 +251,7 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {bids.length > 0 && (
+        {!isWonByMe && bids.length > 0 && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <p className="font-bold text-foreground mb-3">Últimas pujas</p>
             <div className="space-y-2">
