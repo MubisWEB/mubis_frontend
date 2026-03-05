@@ -676,3 +676,52 @@ export function getUniqueBidderCountByAuctionId(auctionId) {
   const bids = getBidsByAuctionId(auctionId);
   return new Set(bids.map(b => b.userId)).size;
 }
+
+// ── Pronto Pago ──
+const PRONTO_PAGO_KEY = 'mubis_store_pronto_pago';
+function getProntoPagoItems() { return load(PRONTO_PAGO_KEY) || []; }
+function saveProntoPagoItems(items) { save(PRONTO_PAGO_KEY, items); }
+
+const PRONTO_PAGO_COMMISSION = 0.05; // 5%
+const PRONTO_PAGO_MAX_PERCENT = 0.10; // 10% of car value
+
+export function getProntoPagoConfig() {
+  return { commission: PRONTO_PAGO_COMMISSION, maxPercent: PRONTO_PAGO_MAX_PERCENT };
+}
+
+export function requestProntoPago({ userId, auctionId, requestedAmount, vehicleValue }) {
+  const items = getProntoPagoItems();
+  const existing = items.find(p => p.userId === userId && p.auctionId === auctionId);
+  if (existing) return existing;
+
+  const maxAmount = vehicleValue * PRONTO_PAGO_MAX_PERCENT;
+  const amount = Math.min(requestedAmount, maxAmount);
+  const commission = amount * PRONTO_PAGO_COMMISSION;
+
+  const item = {
+    id: `pp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    userId,
+    auctionId,
+    requestedAmount: amount,
+    commission,
+    netAmount: amount - commission,
+    vehicleValue,
+    status: 'APPROVED', // instant approval in prototype
+    createdAt: new Date().toISOString(),
+  };
+  items.push(item);
+  saveProntoPagoItems(items);
+
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'pronto_pago_requested', message: `Pronto Pago solicitado: $${(amount / 1000000).toFixed(1)}M (comisión: $${(commission / 1000000).toFixed(2)}M)`, actorUserId: userId, actorRole: 'recomprador' });
+  addNotification({ userId, type: 'pronto_pago', title: 'Pronto Pago aprobado', body: `Tu adelanto de $${(amount / 1000000).toFixed(1)}M fue aprobado. Recibirás $${((amount - commission) / 1000000).toFixed(1)}M.` });
+
+  return item;
+}
+
+export function getProntoPagoByUserAndAuction(userId, auctionId) {
+  return getProntoPagoItems().find(p => p.userId === userId && p.auctionId === auctionId) || null;
+}
+
+export function getProntoPagoByUserId(userId) {
+  return getProntoPagoItems().filter(p => p.userId === userId);
+}
