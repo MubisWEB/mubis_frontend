@@ -19,6 +19,7 @@ import Cuenta from './pages/Cuenta';
 import Configuracion from './pages/Configuracion';
 import AyudaSoporte from './pages/AyudaSoporte';
 import Ganados from './pages/Ganados';
+import Guardadas from './pages/Guardadas';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDealers from './pages/AdminDealers';
 import AdminDealerDetalle from './pages/AdminDealerDetalle';
