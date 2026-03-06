@@ -130,15 +130,13 @@ export default function MisSubastas() {
   const enProceso = vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status));
   const rechazados = vehicles.filter(v => v.status === 'INSPECTION_REJECTED');
   const activas = auctions.filter(a => a.status === 'active');
-  const finConGanador = auctions.filter(a => (a.status === 'ended' || a.status === 'closed') && a.winnerId);
-  const finSinGanador = auctions.filter(a => (a.status === 'ended' || a.status === 'closed') && !a.winnerId);
+  const finalizadas = auctions.filter(a => a.status === 'ended' || a.status === 'closed');
 
   const tabs = [
     { key: 'proceso', label: 'En proceso', count: enProceso.length },
     { key: 'rechazados', label: 'Rechazados', count: rechazados.length },
     { key: 'activas', label: 'Activas', count: activas.length },
-    { key: 'con_ganador', label: 'Con ganador', count: finConGanador.length },
-    { key: 'sin_ganador', label: 'Sin ganador', count: finSinGanador.length },
+    { key: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
   ];
 
   return (
@@ -175,10 +173,10 @@ export default function MisSubastas() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
         <Tabs defaultValue="proceso" className="w-full">
-          <TabsList className="w-full flex overflow-x-auto gap-1 bg-muted/50 p-1 rounded-xl mb-4">
+          <TabsList className="w-full grid grid-cols-4 bg-muted/50 p-1 rounded-xl mb-4">
             {tabs.map(t => (
-              <TabsTrigger key={t.key} value={t.key} className="flex-1 min-w-0 text-xs whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-2 py-1.5">
-                {t.label} <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{t.count}</Badge>
+              <TabsTrigger key={t.key} value={t.key} className="text-[11px] whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-1.5 py-1.5">
+                {t.label} <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">{t.count}</Badge>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -201,15 +199,9 @@ export default function MisSubastas() {
             )}
           </TabsContent>
 
-          <TabsContent value="con_ganador">
-            {finConGanador.length === 0 ? <EmptyState text="Sin subastas finalizadas con ganador" /> : (
-              <div className="space-y-3">{finConGanador.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="sin_ganador">
-            {finSinGanador.length === 0 ? <EmptyState text="Sin subastas finalizadas sin ganador" /> : (
-              <div className="space-y-3">{finSinGanador.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+          <TabsContent value="finalizadas">
+            {finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
+              <div className="space-y-3">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             )}
           </TabsContent>
         </Tabs>
