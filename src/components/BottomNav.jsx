@@ -12,8 +12,8 @@ const NAV_CONFIGS = {
   ],
   recomprador: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
-    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
     { icon: Heart, label: 'Ganados', path: '/Ganados' },
+    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   perito: [
