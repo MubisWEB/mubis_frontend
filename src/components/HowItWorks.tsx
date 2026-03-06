@@ -5,39 +5,39 @@ import { Users, Car, Gavel, ArrowRight } from "lucide-react";
 
 const roles = [
   {
-    icon: Car,
-    title: "Recomprador",
-    description:
-      "Persona que quiere vender su carro usado de forma rápida y al mejor precio. Publica su vehículo y recibe ofertas de múltiples dealers verificados.",
-  },
-  {
     icon: Users,
     title: "Dealer",
     description:
-      "Concesionario o comprador profesional verificado que participa en subastas privadas para adquirir inventario de calidad a precios competitivos.",
+      "Concesionario o comprador profesional verificado que puede comprar y vender vehículos en subastas privadas. Publica inventario y también puja por otros vehículos.",
+  },
+  {
+    icon: Car,
+    title: "Recomprador",
+    description:
+      "Comprador que participa en subastas para adquirir vehículos verificados al mejor precio. Solo puede comprar, no publicar vehículos.",
   },
 ];
 
 const steps = [
   {
     num: 1,
-    title: "El Recomprador publica su carro",
+    title: "El Dealer publica su vehículo",
     description:
-      "El dueño del vehículo sube la información de su carro. Mubis realiza un peritaje certificado con fotos estandarizadas y documentación validada.",
+      "El Dealer sube su inventario a la plataforma. Mubis realiza un peritaje certificado con fotos estandarizadas y documentación validada.",
     image: step1Img,
   },
   {
     num: 2,
-    title: "Los Dealers pujan en subasta privada",
+    title: "Dealers y Recompradores pujan",
     description:
-      "Concesionarios verificados compiten en tiempo real para ofrecer el mejor precio por el vehículo. Más competencia = mejor precio para el vendedor.",
+      "Compradores verificados compiten en tiempo real para ofrecer el mejor precio. Más competencia = mejor precio para el vendedor.",
     image: step2Img,
   },
   {
     num: 3,
     title: "Se cierra el trato",
     description:
-      "El Dealer ganador completa la compra. Documentos listos, transferencia facilitada y pago seguro para ambas partes.",
+      "El ganador completa la compra. Documentos listos, transferencia facilitada y pago seguro para ambas partes.",
     image: step3Img,
   },
 ];
@@ -50,7 +50,7 @@ const HowItWorks = () => {
           Así funciona Mubis
         </h2>
         <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">
-          Conectamos a personas que quieren vender su carro (<span className="font-semibold text-foreground">Recompradores</span>) con concesionarios verificados (<span className="font-semibold text-foreground">Dealers</span>) a través de subastas privadas.
+          Los <span className="font-semibold text-foreground">Dealers</span> pueden comprar y vender vehículos. Los <span className="font-semibold text-foreground">Recompradores</span> participan en subastas para comprar al mejor precio.
         </p>
 
         {/* Roles */}
