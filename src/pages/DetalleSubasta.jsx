@@ -99,7 +99,7 @@ export default function DetalleSubasta() {
 
   useEffect(() => {
     if (!isWonByMe || !endTime) return;
-    const tick = () => setCompletionRemaining(COMPLETION_WINDOW_MS - (Date.now() - endTime));
+    const tick = () => setCompletionRemaining(totalWindowMs - (Date.now() - endTime));
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
