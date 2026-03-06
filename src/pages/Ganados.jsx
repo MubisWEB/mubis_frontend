@@ -6,7 +6,7 @@ import { Trophy, MapPin, CheckCircle, Clock, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getWonAuctionsByUserId, getCurrentUser } from '@/lib/mockStore';
+import { getWonAuctionsByUserId, getCurrentUser, getAuctions, updateAuction } from '@/lib/mockStore';
 
 const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
 
@@ -25,7 +25,19 @@ export default function Ganados() {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    const won = getWonAuctionsByUserId(currentUser.id);
+    let won = getWonAuctionsByUserId(currentUser.id);
+    // If user has no won auctions, assign 2 ended auctions to them for demo
+    if (won.length === 0) {
+      const allAuctions = getAuctions();
+      const endedWithoutMe = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
+      const toAssign = endedWithoutMe.slice(0, 2);
+      toAssign.forEach(a => {
+        updateAuction(a.id, { winnerId: currentUser.id });
+      });
+      if (toAssign.length > 0) {
+        won = getWonAuctionsByUserId(currentUser.id);
+      }
+    }
     setWonAuctions(won);
   }, [currentUser?.id]);
 
