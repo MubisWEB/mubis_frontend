@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, PlusCircle, User, Heart, Wallet, ClipboardCheck, LayoutDashboard, Users, FileText, DollarSign } from 'lucide-react';
+import { Search, PlusCircle, User, Heart, Wallet, ClipboardCheck, LayoutDashboard, Users, FileText, DollarSign, Trophy } from 'lucide-react';
 import { getUserRole } from '@/lib/mockStore';
 
 const NAV_CONFIGS = {
