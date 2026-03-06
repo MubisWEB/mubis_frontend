@@ -13,7 +13,7 @@ const auctions = [
     bid: "$78.500.000",
     bids: 3,
     dealers: 25,
-    time: { hours: 2, minutes: 14, seconds: 37 },
+    time: { hours: 0, minutes: 47, seconds: 12 },
   },
   {
     id: "MUB-20412",
@@ -23,7 +23,7 @@ const auctions = [
     bid: "$65.200.000",
     bids: 7,
     dealers: 18,
-    time: { hours: 0, minutes: 48, seconds: 12 },
+    time: { hours: 0, minutes: 18, seconds: 45 },
   },
   {
     id: "MUB-20455",
@@ -33,7 +33,7 @@ const auctions = [
     bid: "$52.800.000",
     bids: 5,
     dealers: 12,
-    time: { hours: 1, minutes: 22, seconds: 5 },
+    time: { hours: 0, minutes: 55, seconds: 30 },
   },
 ];
 
