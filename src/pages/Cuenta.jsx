@@ -93,7 +93,7 @@ export default function Cuenta() {
 
   if (role === 'dealer' || role === 'recomprador') {
     menuItems.splice(1, 0,
-      { icon: Trophy, label: 'Mis Ganados', action: () => navigate('/Ganados') },
+      { icon: DollarSign, label: 'Movimientos', action: () => navigate('/Movimientos') },
       { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
     );
   }
