@@ -2,18 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, MapPin, CheckCircle, Clock, ChevronRight } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Trophy, MapPin, CheckCircle, Clock, ChevronRight, CalendarPlus } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, getAuctions, updateAuction } from '@/lib/mockStore';
+import ExtensionModal from '@/components/ExtensionModal';
 
-const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
+const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000; // 4 días
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-function formatCountdown48(ms) {
+function formatCountdown(ms) {
   if (ms <= 0) return 'Completado';
-  const h = Math.floor(ms / (1000 * 60 * 60));
+  const d = Math.floor(ms / (1000 * 60 * 60 * 24));
+  const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+  if (d > 0) return `${d}d ${h}h ${m}m`;
   return `${h}h ${m}m`;
 }
 
@@ -22,11 +27,11 @@ export default function Ganados() {
   const currentUser = getCurrentUser();
   const [wonAuctions, setWonAuctions] = useState([]);
   const [, setTick] = useState(0);
+  const [extensionModal, setExtensionModal] = useState({ open: false, auctionId: null, vehicleName: '' });
 
   useEffect(() => {
     if (!currentUser?.id) return;
     let won = getWonAuctionsByUserId(currentUser.id);
-    // If user has no won auctions, assign 2 ended auctions to them for demo
     if (won.length === 0) {
       const allAuctions = getAuctions();
       const endedWithoutMe = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
@@ -41,7 +46,6 @@ export default function Ganados() {
     setWonAuctions(won);
   }, [currentUser?.id]);
 
-  // Tick every minute for countdown
   useEffect(() => {
     if (wonAuctions.length === 0) return;
     const interval = setInterval(() => setTick(t => t + 1), 60000);
@@ -49,6 +53,24 @@ export default function Ganados() {
   }, [wonAuctions.length]);
 
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
+
+  const getCompletionWindow = (auction) => {
+    const extensionMs = (auction.extensionDays || 0) * ONE_DAY_MS;
+    return COMPLETION_WINDOW_MS + extensionMs;
+  };
+
+  const handleExtensionConfirm = ({ days, reason }) => {
+    const { auctionId } = extensionModal;
+    const auction = wonAuctions.find(a => a.id === auctionId);
+    const currentExtension = auction?.extensionDays || 0;
+    updateAuction(auctionId, {
+      extensionDays: currentExtension + days,
+      extensionReason: reason,
+    });
+    setWonAuctions(prev => prev.map(a =>
+      a.id === auctionId ? { ...a, extensionDays: currentExtension + days, extensionReason: reason } : a
+    ));
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -67,8 +89,10 @@ export default function Ganados() {
           <div className="space-y-4">
             {wonAuctions.map((auction, index) => {
               const endTime = new Date(auction.ends_at).getTime();
-              const remaining = COMPLETION_WINDOW_MS - (Date.now() - endTime);
+              const windowMs = getCompletionWindow(auction);
+              const remaining = windowMs - (Date.now() - endTime);
               const isCompleted = remaining <= 0;
+              const canExtend = !isCompleted && remaining < ONE_DAY_MS;
 
               return (
                 <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
@@ -92,17 +116,32 @@ export default function Ganados() {
                         <MapPin className="w-4 h-4" /><span>{auction.city}</span>
                       </div>
 
-                      {/* 48h completion status */}
-                      <div className={`rounded-xl p-3 flex items-center justify-between ${isCompleted ? 'bg-primary/10 border border-primary/20' : 'bg-secondary/10 border border-secondary/20'}`}>
+                      {/* Completion status */}
+                      <div className={`rounded-xl p-3 flex items-center justify-between ${isCompleted ? 'bg-primary/10 border border-primary/20' : canExtend ? 'bg-destructive/10 border border-destructive/20' : 'bg-secondary/10 border border-secondary/20'}`}>
                         <div className="flex items-center gap-2">
-                          {isCompleted ? <CheckCircle className="w-4 h-4 text-primary" /> : <Clock className="w-4 h-4 text-secondary" />}
+                          {isCompleted ? <CheckCircle className="w-4 h-4 text-primary" /> : <Clock className={`w-4 h-4 ${canExtend ? 'text-destructive' : 'text-secondary'}`} />}
                           <div>
                             <p className="text-xs font-semibold text-foreground">{isCompleted ? 'Trato completado' : 'Cierre automático'}</p>
-                            <p className="text-[10px] text-muted-foreground">{isCompleted ? 'Transacción finalizada por Mubis' : `Faltan ${formatCountdown48(remaining)}`}</p>
+                            <p className="text-[10px] text-muted-foreground">{isCompleted ? 'Transacción finalizada por Mubis' : `Faltan ${formatCountdown(remaining)}`}</p>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       </div>
+
+                      {/* Extend button */}
+                      {canExtend && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-3 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExtensionModal({ open: true, auctionId: auction.id, vehicleName: `${auction.brand} ${auction.model}` });
+                          }}
+                        >
+                          <CalendarPlus className="w-4 h-4 mr-2" />Solicitar extensión de plazo
+                        </Button>
+                      )}
                     </div>
                   </Card>
                 </motion.div>
@@ -111,6 +150,13 @@ export default function Ganados() {
           </div>
         )}
       </div>
+
+      <ExtensionModal
+        open={extensionModal.open}
+        onOpenChange={(open) => setExtensionModal(prev => ({ ...prev, open }))}
+        onConfirm={handleExtensionConfirm}
+        vehicleName={extensionModal.vehicleName}
+      />
 
       <BottomNav />
     </div>

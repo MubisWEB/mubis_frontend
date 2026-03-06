@@ -88,8 +88,10 @@ export default function DetalleSubasta() {
     return `${h}h ${m}m ${s}s`;
   };
 
-  // 48h auto-completion countdown (must be before early return)
-  const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
+  // 96h (4 days) auto-completion countdown (must be before early return)
+  const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000;
+  const extensionMs = (vehicle?.extensionDays || 0) * 24 * 60 * 60 * 1000;
+  const totalWindowMs = COMPLETION_WINDOW_MS + extensionMs;
   const endTime = vehicle?.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
   const isWonByMe = (vehicle?.status === 'ENDED' || vehicle?.status === 'ended') && vehicle?.winnerId === currentUser?.id;
   const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
