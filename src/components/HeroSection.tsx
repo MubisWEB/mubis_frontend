@@ -33,7 +33,7 @@ const auctions = [
     bid: "$52.800.000",
     bids: 5,
     dealers: 12,
-    time: { hours: 1, minutes: 22, seconds: 5 },
+    time: { hours: 0, minutes: 55, seconds: 30 },
   },
 ];
 
