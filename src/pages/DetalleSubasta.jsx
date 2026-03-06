@@ -94,7 +94,7 @@ export default function DetalleSubasta() {
   const totalWindowMs = COMPLETION_WINDOW_MS + extensionMs;
   const endTime = vehicle?.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
   const isWonByMe = (vehicle?.status === 'ENDED' || vehicle?.status === 'ended') && vehicle?.winnerId === currentUser?.id;
-  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
+  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? totalWindowMs - (Date.now() - endTime) : 0);
   const completionExpired = completionRemaining <= 0;
 
   useEffect(() => {
