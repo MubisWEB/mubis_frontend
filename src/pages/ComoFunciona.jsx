@@ -36,7 +36,7 @@ const steps = [
     title: "Se cierra la venta",
     description: "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 96 horas (4 días).",
     details: [
-      "Cierre de venta en 48 horas",
+      "Cierre de venta en 96 horas (4 días)",
       "Mubis conecta comprador y vendedor",
       "Opción de Pronto Pago para liquidez inmediata",
       "Soporte dedicado durante todo el proceso",
