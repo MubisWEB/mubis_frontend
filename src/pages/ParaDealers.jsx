@@ -8,7 +8,7 @@ const features = [
   { icon: DollarSign, title: "Precios competitivos", description: "El modelo de subasta garantiza precios justos de mercado para compradores y vendedores." },
   { icon: Shield, title: "Transacciones seguras", description: "Cada operación está respaldada por documentación verificada y soporte legal." },
   { icon: BarChart3, title: "Analíticas en tiempo real", description: "Monitorea tus subastas, pujas y rendimiento desde un dashboard centralizado." },
-  { icon: Clock, title: "Cierre en 48h", description: "Proceso optimizado para que recibas tu inventario lo más rápido posible." },
+  { icon: Clock, title: "Cierre en 4 días", description: "Proceso optimizado para que recibas tu inventario lo más rápido posible." },
   { icon: Users, title: "Red exclusiva", description: "Forma parte de una red privada de dealers verificados en todo el país." },
 ];
 

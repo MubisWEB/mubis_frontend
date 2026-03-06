@@ -26,7 +26,7 @@ export default function TerminosCondiciones() {
           </ul>
 
           <h2 className="text-2xl font-bold text-foreground">5. Funcionamiento de las Subastas</h2>
-          <p>Las subastas tienen una duración de <strong>1 hora</strong>, son rápidas, claras y eficientes. Cada vehículo publicado cuenta con un peritaje profesional de <strong>100 puntos</strong>. El cierre de la venta entre las partes se realiza en un plazo máximo de <strong>48 horas</strong> posteriores a la finalización de la subasta. Mubis facilita la conexión entre comprador y vendedor.</p>
+          <p>Las subastas tienen una duración de <strong>1 hora</strong>, son rápidas, claras y eficientes. Cada vehículo publicado cuenta con un peritaje profesional de <strong>100 puntos</strong>. El cierre de la venta entre las partes se realiza en un plazo máximo de <strong>96 horas (4 días)</strong> posteriores a la finalización de la subasta. El comprador puede solicitar una extensión de 4 u 8 días adicionales si lo necesita. Mubis facilita la conexión entre comprador y vendedor.</p>
 
           <h2 className="text-2xl font-bold text-foreground">6. Comisiones</h2>
           <p>No existe comisión de compra para los compradores. El modelo de comisiones aplicable a los vendedores será informado de forma transparente al momento del registro y publicación de vehículos.</p>

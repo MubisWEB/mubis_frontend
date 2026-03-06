@@ -37,7 +37,7 @@ const steps = [
     num: 3,
     title: "Se cierra la venta",
     description:
-      "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 48 horas.",
+      "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 96 horas (4 días).",
     image: step3Img,
   },
 ];

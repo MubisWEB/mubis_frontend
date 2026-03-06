@@ -75,7 +75,7 @@ const roles = [
 const benefits = [
   { icon: Shield, title: "100% Verificado", description: "Cada vehículo pasa por un peritaje de 100 puntos antes de ser publicado." },
   { icon: Zap, title: "Subastas de 1 hora", description: "Subastas rápidas, claras y eficientes. Sin esperas innecesarias." },
-  { icon: Clock, title: "Cierre en 48 horas", description: "Desde la subasta hasta el cierre de venta en máximo 48 horas." },
+  { icon: Clock, title: "Cierre en 4 días", description: "Desde la subasta hasta el cierre de venta en máximo 96 horas (4 días)." },
   { icon: DollarSign, title: "Sin comisión de compra", description: "Comprar en Mubis no tiene costo. Los compradores no pagan ninguna comisión." },
   { icon: TrendingUp, title: "Todo en un solo lugar", description: "Dealers y Recompradores conectados en una sola plataforma." },
   { icon: UserCheck, title: "Soporte dedicado", description: "Equipo de soporte disponible para acompañarte en cada paso." },
