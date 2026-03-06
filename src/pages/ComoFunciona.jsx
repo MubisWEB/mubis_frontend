@@ -55,7 +55,7 @@ const roles = [
       "Publica vehículos y recibe ofertas competitivas",
       "Compra inventario verificado de otros Dealers",
       "Acceso completo a compra y venta en la plataforma",
-      "Cierre de venta en 48 horas",
+      "Cierre de venta en 96 horas (4 días)",
     ],
   },
   {
