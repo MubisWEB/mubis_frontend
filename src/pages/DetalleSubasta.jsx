@@ -10,6 +10,7 @@ import BidModal from '@/components/BidModal';
 import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
+import ExtensionModal from '@/components/ExtensionModal';
 import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
 
 export default function DetalleSubasta() {
