@@ -6,7 +6,7 @@ import { Trophy, MapPin, CheckCircle, Clock, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getWonAuctionsByUserId, getCurrentUser } from '@/lib/mockStore';
+import { getWonAuctionsByUserId, getCurrentUser, getAuctions, updateAuction } from '@/lib/mockStore';
 
 const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
 
