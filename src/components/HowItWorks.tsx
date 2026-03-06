@@ -23,21 +23,21 @@ const steps = [
     num: 1,
     title: "El Dealer publica su vehículo",
     description:
-      "El Dealer sube su inventario a la plataforma. Mubis realiza un peritaje certificado con fotos estandarizadas y documentación validada.",
+      "El Dealer sube su inventario a la plataforma. Mubis coordina un peritaje de 100 puntos con fotos estandarizadas y documentación validada.",
     image: step1Img,
   },
   {
     num: 2,
     title: "Dealers y Recompradores pujan",
     description:
-      "Compradores verificados compiten en tiempo real para ofrecer el mejor precio. Más competencia = mejor precio para el vendedor.",
+      "Compradores verificados compiten en subastas de 1 hora: rápidas, claras y eficientes. Más competencia = mejor precio.",
     image: step2Img,
   },
   {
     num: 3,
-    title: "Se cierra el trato",
+    title: "Se cierra la venta",
     description:
-      "El ganador completa la compra. Documentos listos, transferencia facilitada y pago seguro para ambas partes.",
+      "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 48 horas.",
     image: step3Img,
   },
 ];
