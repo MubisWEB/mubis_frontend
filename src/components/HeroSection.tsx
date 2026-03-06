@@ -59,7 +59,7 @@ const AuctionCard = ({
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => { onClick(); window.location.href = '/registro'; }}
       className={`absolute inset-0 w-full bg-background rounded-2xl border border-border shadow-xl overflow-hidden cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${positionStyles[position]}`}
       style={{ willChange: "transform, opacity" }}
     >
