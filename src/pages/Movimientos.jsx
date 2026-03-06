@@ -74,7 +74,7 @@ export default function Movimientos() {
           </Card>
           <Card className="p-3 border border-border rounded-xl text-center">
             <p className="text-2xl font-bold text-primary">{ventas}</p>
-            <p className="text-xs text-muted-foreground">Ventas</p>
+            <p className="text-xs text-muted-foreground">Comprados</p>
             <p className="text-sm font-semibold text-foreground mt-1">{formatShortPrice(totalVendido)}</p>
           </Card>
         </div>
