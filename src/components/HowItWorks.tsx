@@ -5,16 +5,16 @@ import { Users, Car, Gavel, ArrowRight } from "lucide-react";
 
 const roles = [
   {
-    icon: Car,
-    title: "Recomprador",
-    description:
-      "Persona que quiere vender su carro usado de forma rápida y al mejor precio. Publica su vehículo y recibe ofertas de múltiples dealers verificados.",
-  },
-  {
     icon: Users,
     title: "Dealer",
     description:
-      "Concesionario o comprador profesional verificado que participa en subastas privadas para adquirir inventario de calidad a precios competitivos.",
+      "Concesionario o comprador profesional verificado que puede comprar y vender vehículos en subastas privadas. Publica inventario y también puja por otros vehículos.",
+  },
+  {
+    icon: Car,
+    title: "Recomprador",
+    description:
+      "Comprador que participa en subastas para adquirir vehículos verificados al mejor precio. Solo puede comprar, no publicar vehículos.",
   },
 ];
 
