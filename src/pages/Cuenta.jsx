@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, Trophy } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -93,7 +93,7 @@ export default function Cuenta() {
 
   if (role === 'dealer' || role === 'recomprador') {
     menuItems.splice(1, 0,
-      { icon: Trophy, label: 'Mis Ganados', action: () => navigate('/Ganados') },
+      { icon: DollarSign, label: 'Movimientos', action: () => navigate('/Movimientos') },
       { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
     );
   }

@@ -1,18 +1,18 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, PlusCircle, User, Heart, Wallet, ClipboardCheck, LayoutDashboard, Users, FileText, DollarSign } from 'lucide-react';
+import { Search, PlusCircle, User, Heart, Wallet, ClipboardCheck, LayoutDashboard, Users, FileText, DollarSign, Trophy } from 'lucide-react';
 import { getUserRole } from '@/lib/mockStore';
 
 const NAV_CONFIGS = {
   dealer: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Heart, label: 'Vender', path: '/MisSubastas' },
-    { icon: Wallet, label: 'Movimientos', path: '/Movimientos' },
+    { icon: Trophy, label: 'Ganados', path: '/Ganados' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   recomprador: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
-    { icon: Heart, label: 'Ganados', path: '/Ganados' },
+    { icon: Trophy, label: 'Ganados', path: '/Ganados' },
     { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
