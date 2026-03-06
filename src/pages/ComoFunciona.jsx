@@ -10,11 +10,11 @@ const steps = [
   {
     num: 1,
     title: "El Dealer publica su vehículo",
-    description: "El Dealer sube su inventario a la plataforma. Mubis coordina un peritaje certificado de 150+ puntos de inspección con fotos estandarizadas y documentación legal validada.",
+    description: "El Dealer sube su inventario a la plataforma. Mubis coordina un peritaje certificado de 100 puntos de inspección con fotos estandarizadas y documentación validada.",
     details: [
-      "Peritaje de 150+ puntos de inspección",
+      "Peritaje de 100 puntos de inspección",
       "Fotos profesionales estandarizadas",
-      "Documentación legal verificada (SOAT, Tecnomecánica, multas)",
+      "Documentación del vehículo validada",
       "Historial de mantenimiento disponible",
     ],
     image: step1Img,
@@ -22,22 +22,22 @@ const steps = [
   {
     num: 2,
     title: "Dealers y Recompradores pujan",
-    description: "Compradores verificados (Dealers y Recompradores) compiten en subastas con tiempo limitado para ofrecer el mejor precio. Más competencia significa un mejor precio para el vendedor.",
+    description: "Compradores verificados compiten en subastas de 1 hora, rápidas, claras y eficientes. Más competencia significa un mejor precio para el vendedor.",
     details: [
-      "Subastas con tiempo limitado para decisiones rápidas",
+      "Subastas de 1 hora: rápidas y eficientes",
       "Dealers y Recompradores compitiendo por el mismo vehículo",
       "Alertas en tiempo real cuando te superan",
-      "Precio de reserva transparente",
+      "Proceso claro y transparente",
     ],
     image: step2Img,
   },
   {
     num: 3,
-    title: "Se cierra el trato",
-    description: "El ganador completa la compra. Documentos listos, transferencia facilitada y proceso seguro para ambas partes.",
+    title: "Se cierra la venta",
+    description: "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 48 horas.",
     details: [
-      "Cierre en menos de 48 horas",
-      "Documentos de transferencia preparados",
+      "Cierre de venta en 48 horas",
+      "Mubis conecta comprador y vendedor",
       "Opción de Pronto Pago para liquidez inmediata",
       "Soporte dedicado durante todo el proceso",
     ],
@@ -55,7 +55,7 @@ const roles = [
       "Publica vehículos y recibe ofertas competitivas",
       "Compra inventario verificado de otros Dealers",
       "Acceso completo a compra y venta en la plataforma",
-      "Cierre rápido y documentación lista",
+      "Cierre de venta en 48 horas",
     ],
   },
   {
@@ -64,21 +64,21 @@ const roles = [
     subtitle: "Comprador verificado",
     description: "Comprador que participa en subastas privadas para adquirir vehículos verificados al mejor precio. Solo puede comprar, no publicar vehículos en la plataforma.",
     benefits: [
-      "Acceso a inventario verificado y periciado",
-      "Participa en subastas para conseguir los mejores precios",
-      "Sin visitas innecesarias: toda la información está en la plataforma",
-      "Proceso seguro con documentación respaldada",
+      "Acceso a inventario verificado con peritaje de 100 puntos",
+      "Subastas de 1 hora: rápidas, claras y eficientes",
+      "Toda la información del vehículo en un solo lugar",
+      "Cierre de venta en 48 horas",
     ],
   },
 ];
 
 const benefits = [
-  { icon: Shield, title: "100% Verificado", description: "Cada vehículo pasa por un peritaje exhaustivo antes de ser publicado." },
-  { icon: Zap, title: "Cierre rápido", description: "Proceso optimizado para cerrar operaciones en menos de 48 horas." },
-  { icon: Clock, title: "Ahorro de tiempo", description: "Sin visitas innecesarias. Toda la información que necesitas está en la plataforma." },
-  { icon: DollarSign, title: "Mejores precios", description: "La competencia entre dealers garantiza precios justos de mercado para todos." },
-  { icon: TrendingUp, title: "Transparencia total", description: "Peritaje, documentación y proceso de subasta completamente transparentes." },
-  { icon: UserCheck, title: "Soporte dedicado", description: "Equipo de soporte disponible para acompañar a Recompradores y Dealers en cada paso." },
+  { icon: Shield, title: "100% Verificado", description: "Cada vehículo pasa por un peritaje de 100 puntos antes de ser publicado." },
+  { icon: Zap, title: "Subastas de 1 hora", description: "Subastas rápidas, claras y eficientes. Sin esperas innecesarias." },
+  { icon: Clock, title: "Cierre en 48 horas", description: "Desde la subasta hasta el cierre de venta en máximo 48 horas." },
+  { icon: DollarSign, title: "Mejores precios", description: "La competencia entre compradores garantiza precios justos de mercado." },
+  { icon: TrendingUp, title: "Todo en un solo lugar", description: "Dealers y Recompradores conectados en una sola plataforma." },
+  { icon: UserCheck, title: "Soporte dedicado", description: "Equipo de soporte disponible para acompañarte en cada paso." },
 ];
 
 export default function ComoFunciona() {
