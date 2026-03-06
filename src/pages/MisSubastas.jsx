@@ -130,15 +130,13 @@ export default function MisSubastas() {
   const enProceso = vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status));
   const rechazados = vehicles.filter(v => v.status === 'INSPECTION_REJECTED');
   const activas = auctions.filter(a => a.status === 'active');
-  const finConGanador = auctions.filter(a => (a.status === 'ended' || a.status === 'closed') && a.winnerId);
-  const finSinGanador = auctions.filter(a => (a.status === 'ended' || a.status === 'closed') && !a.winnerId);
+  const finalizadas = auctions.filter(a => a.status === 'ended' || a.status === 'closed');
 
   const tabs = [
     { key: 'proceso', label: 'En proceso', count: enProceso.length },
     { key: 'rechazados', label: 'Rechazados', count: rechazados.length },
     { key: 'activas', label: 'Activas', count: activas.length },
-    { key: 'con_ganador', label: 'Con ganador', count: finConGanador.length },
-    { key: 'sin_ganador', label: 'Sin ganador', count: finSinGanador.length },
+    { key: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
   ];
 
   return (
