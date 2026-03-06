@@ -1,26 +1,39 @@
-import { MapPin, ChevronDown, Check, Menu, X } from "lucide-react";
+import { MapPin, ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import MubisLogo from "@/components/MubisLogo";
+
+const links = [
+  { label: "Inicio", path: "/" },
+  { label: "Cómo funciona", path: "/como-funciona" },
+  { label: "Para Dealers", path: "/para-dealers" },
+  { label: "Contacto", path: "/contacto" },
+];
 
 const MainNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const links = ["Inicio", "Cómo funciona", "Para Dealers", "Contacto"];
+  const handleNav = (path: string) => {
+    navigate(path);
+    setMobileOpen(false);
+  };
 
   return (
     <nav className="w-full bg-background sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <div className="flex items-center gap-8">
-          <MubisLogo size="md" />
+          <button onClick={() => navigate("/")}><MubisLogo size="md" /></button>
           <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              <button
+                key={link.path}
+                onClick={() => handleNav(link.path)}
+                className={`text-sm font-medium transition-colors ${location.pathname === link.path ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {link}
-              </a>
+                {link.label}
+              </button>
             ))}
           </div>
         </div>
@@ -30,31 +43,28 @@ const MainNav = () => {
             Bogotá
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
-          <a href="/login" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
+          <button onClick={() => navigate("/login")} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
             Log in
-          </a>
+          </button>
         </div>
-        <button
-          className="md:hidden p-2"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
+        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background px-4 pb-4 space-y-3">
           {links.map((link) => (
-            <a key={link} href="#" className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-              {link}
-            </a>
+            <button key={link.path} onClick={() => handleNav(link.path)} className="block w-full text-left py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              {link.label}
+            </button>
           ))}
           <div className="flex flex-col gap-2 pt-2">
             <button className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground">
               <MapPin className="w-4 h-4" /> Bogotá
             </button>
-            <a href="/login" className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+            <button onClick={() => handleNav("/login")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
               Log in
-            </a>
+            </button>
           </div>
         </div>
       )}
