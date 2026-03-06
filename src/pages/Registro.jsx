@@ -84,8 +84,8 @@ export default function Registro() {
             <Card className="relative overflow-hidden p-8 bg-background border border-border/60 shadow-premium rounded-2xl">
               <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl" style={{ background: "var(--gradient-purple)" }} />
               <div className="text-center mb-6">
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Solicita tu acceso</h1>
-                <p className="text-muted-foreground text-sm">Únete a la plataforma líder de subastas de vehículos</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Lista de Espera</h1>
+                <p className="text-muted-foreground text-sm">Aplica ahora para ser parte de la plataforma líder en subastas de vehículos usados</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
