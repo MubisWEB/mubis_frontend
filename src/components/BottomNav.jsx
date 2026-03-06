@@ -7,13 +7,13 @@ const NAV_CONFIGS = {
   dealer: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Heart, label: 'Vender', path: '/MisSubastas' },
-    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
+    { icon: Wallet, label: 'Movimientos', path: '/Movimientos' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   recomprador: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
-    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
     { icon: Heart, label: 'Ganados', path: '/Ganados' },
+    { icon: DollarSign, label: 'Movimientos', path: '/Movimientos' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   perito: [
