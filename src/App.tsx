@@ -10,6 +10,9 @@ import Login from './pages/Login';
 import Registro from './pages/Registro';
 import RegistroConfirmacion from './pages/RegistroConfirmacion';
 import PendienteVerificacion from './pages/PendienteVerificacion';
+import ComoFunciona from './pages/ComoFunciona';
+import ParaDealers from './pages/ParaDealers';
+import Contacto from './pages/Contacto';
 import Comprar from './pages/Comprar';
 import DetalleSubasta from './pages/DetalleSubasta';
 import MisSubastas from './pages/MisSubastas';
@@ -41,6 +44,9 @@ const App = () => (
         <Routes>
           {/* Public */}
           <Route path="/" element={<Landing />} />
+          <Route path="/como-funciona" element={<ComoFunciona />} />
+          <Route path="/para-dealers" element={<ParaDealers />} />
+          <Route path="/contacto" element={<Contacto />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/registro-confirmacion" element={<RegistroConfirmacion />} />
