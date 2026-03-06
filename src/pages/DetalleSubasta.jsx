@@ -229,15 +229,25 @@ export default function DetalleSubasta() {
                 )}
               </div>
             )}
-            {/* 48h auto-completion countdown */}
+            {/* 96h auto-completion countdown */}
             {isWonByMe && !completionExpired && (
-              <div className="mt-3 bg-secondary/10 rounded-lg p-3 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-secondary" />
-                <div>
+              <div className={`mt-3 rounded-lg p-3 flex items-center gap-2 ${completionRemaining < 24 * 60 * 60 * 1000 ? 'bg-destructive/10' : 'bg-secondary/10'}`}>
+                <Clock className={`w-4 h-4 ${completionRemaining < 24 * 60 * 60 * 1000 ? 'text-destructive' : 'text-secondary'}`} />
+                <div className="flex-1">
                   <p className="text-xs font-semibold text-foreground">Cierre automático del trato</p>
                   <p className="text-xs text-muted-foreground">Mubis completará esta transacción en {formatCountdown48(completionRemaining)}</p>
                 </div>
               </div>
+            )}
+            {isWonByMe && !completionExpired && completionRemaining < 24 * 60 * 60 * 1000 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-2 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-xs"
+                onClick={(e) => { e.stopPropagation(); setExtensionModalOpen(true); }}
+              >
+                <CalendarPlus className="w-4 h-4 mr-2" />Solicitar extensión de plazo
+              </Button>
             )}
             {isWonByMe && completionExpired && (
               <div className="mt-3 bg-primary/10 rounded-lg p-3 flex items-center gap-2">
