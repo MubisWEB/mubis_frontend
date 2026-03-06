@@ -55,11 +55,30 @@ export default function Movimientos() {
     if (days === 0) return 'Hoy'; if (days === 1) return 'Ayer'; return `Hace ${days} días`;
   };
 
+  const totalComprado = movements.filter(m => m.kind === 'bought').reduce((s, m) => s + m.amount, 0);
+  const totalVendido = movements.filter(m => m.kind === 'sold').reduce((s, m) => s + m.amount, 0);
+  const pujas = movements.filter(m => m.kind === 'bought').length;
+  const ventas = movements.filter(m => m.kind === 'sold').length;
+
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title="Movimientos" />
+      <Header title="Movimientos" subtitle={`${movements.length} transacciones`} />
 
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 space-y-4">
+        {/* Métricas */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="p-3 border border-border rounded-xl text-center">
+            <p className="text-2xl font-bold text-secondary">{pujas}</p>
+            <p className="text-xs text-muted-foreground">Pujas realizadas</p>
+            <p className="text-sm font-semibold text-foreground mt-1">{formatShortPrice(totalComprado)}</p>
+          </Card>
+          <Card className="p-3 border border-border rounded-xl text-center">
+            <p className="text-2xl font-bold text-primary">{ventas}</p>
+            <p className="text-xs text-muted-foreground">Ventas</p>
+            <p className="text-sm font-semibold text-foreground mt-1">{formatShortPrice(totalVendido)}</p>
+          </Card>
+        </div>
+
         <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
           {movements.length === 0 ? (
             <div className="p-8 text-center">

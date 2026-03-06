@@ -199,15 +199,9 @@ export default function MisSubastas() {
             )}
           </TabsContent>
 
-          <TabsContent value="con_ganador">
-            {finConGanador.length === 0 ? <EmptyState text="Sin subastas finalizadas con ganador" /> : (
-              <div className="space-y-3">{finConGanador.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="sin_ganador">
-            {finSinGanador.length === 0 ? <EmptyState text="Sin subastas finalizadas sin ganador" /> : (
-              <div className="space-y-3">{finSinGanador.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+          <TabsContent value="finalizadas">
+            {finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
+              <div className="space-y-3">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             )}
           </TabsContent>
         </Tabs>
