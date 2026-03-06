@@ -67,7 +67,7 @@ const roles = [
       "Acceso a inventario verificado con peritaje de 100 puntos",
       "Subastas de 1 hora: rápidas, claras y eficientes",
       "Toda la información del vehículo en un solo lugar",
-      "Cierre de venta en 48 horas",
+      "Cierre de venta en 96 horas (4 días)",
     ],
   },
 ];
