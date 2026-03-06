@@ -34,9 +34,9 @@ const steps = [
   {
     num: 3,
     title: "Se cierra la venta",
-    description: "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 48 horas.",
+    description: "El ganador y el vendedor cierran el trato directamente. Mubis facilita la conexión y el cierre se completa en 96 horas (4 días).",
     details: [
-      "Cierre de venta en 48 horas",
+      "Cierre de venta en 96 horas (4 días)",
       "Mubis conecta comprador y vendedor",
       "Opción de Pronto Pago para liquidez inmediata",
       "Soporte dedicado durante todo el proceso",
@@ -55,7 +55,7 @@ const roles = [
       "Publica vehículos y recibe ofertas competitivas",
       "Compra inventario verificado de otros Dealers",
       "Acceso completo a compra y venta en la plataforma",
-      "Cierre de venta en 48 horas",
+      "Cierre de venta en 96 horas (4 días)",
     ],
   },
   {
@@ -67,7 +67,7 @@ const roles = [
       "Acceso a inventario verificado con peritaje de 100 puntos",
       "Subastas de 1 hora: rápidas, claras y eficientes",
       "Toda la información del vehículo en un solo lugar",
-      "Cierre de venta en 48 horas",
+      "Cierre de venta en 96 horas (4 días)",
     ],
   },
 ];
@@ -75,7 +75,7 @@ const roles = [
 const benefits = [
   { icon: Shield, title: "100% Verificado", description: "Cada vehículo pasa por un peritaje de 100 puntos antes de ser publicado." },
   { icon: Zap, title: "Subastas de 1 hora", description: "Subastas rápidas, claras y eficientes. Sin esperas innecesarias." },
-  { icon: Clock, title: "Cierre en 48 horas", description: "Desde la subasta hasta el cierre de venta en máximo 48 horas." },
+  { icon: Clock, title: "Cierre en 4 días", description: "Desde la subasta hasta el cierre de venta en máximo 96 horas (4 días)." },
   { icon: DollarSign, title: "Sin comisión de compra", description: "Comprar en Mubis no tiene costo. Los compradores no pagan ninguna comisión." },
   { icon: TrendingUp, title: "Todo en un solo lugar", description: "Dealers y Recompradores conectados en una sola plataforma." },
   { icon: UserCheck, title: "Soporte dedicado", description: "Equipo de soporte disponible para acompañarte en cada paso." },

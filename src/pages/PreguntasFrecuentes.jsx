@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     q: "¿Cuánto tiempo toma cerrar una venta?",
-    a: "Una vez finalizada la subasta, el comprador ganador y el vendedor cierran el trato directamente en un plazo máximo de 48 horas."
+    a: "Una vez finalizada la subasta, el comprador ganador y el vendedor cierran el trato directamente en un plazo máximo de 96 horas (4 días). Si necesitas más tiempo, puedes solicitar una extensión de 4 u 8 días adicionales."
   },
   {
     q: "¿Mubis gestiona las transferencias de vehículos?",

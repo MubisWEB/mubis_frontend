@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap } from 'lucide-react';
+import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap, CalendarPlus } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
 import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
+import ExtensionModal from '@/components/ExtensionModal';
 import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
 
 export default function DetalleSubasta() {
@@ -25,6 +26,8 @@ export default function DetalleSubasta() {
   const [prontoPagoRefresh, setProntoPagoRefresh] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+  const [auditEvents, setAuditEvents] = useState([]);
+  const [extensionModalOpen, setExtensionModalOpen] = useState(false);
   const [auditEvents, setAuditEvents] = useState([]);
 
   useEffect(() => {
@@ -88,16 +91,18 @@ export default function DetalleSubasta() {
     return `${h}h ${m}m ${s}s`;
   };
 
-  // 48h auto-completion countdown (must be before early return)
-  const COMPLETION_WINDOW_MS = 48 * 60 * 60 * 1000;
+  // 96h (4 days) auto-completion countdown (must be before early return)
+  const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000;
+  const extensionMs = (vehicle?.extensionDays || 0) * 24 * 60 * 60 * 1000;
+  const totalWindowMs = COMPLETION_WINDOW_MS + extensionMs;
   const endTime = vehicle?.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
   const isWonByMe = (vehicle?.status === 'ENDED' || vehicle?.status === 'ended') && vehicle?.winnerId === currentUser?.id;
-  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? COMPLETION_WINDOW_MS - (Date.now() - endTime) : 0);
+  const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? totalWindowMs - (Date.now() - endTime) : 0);
   const completionExpired = completionRemaining <= 0;
 
   useEffect(() => {
     if (!isWonByMe || !endTime) return;
-    const tick = () => setCompletionRemaining(COMPLETION_WINDOW_MS - (Date.now() - endTime));
+    const tick = () => setCompletionRemaining(totalWindowMs - (Date.now() - endTime));
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
@@ -224,15 +229,25 @@ export default function DetalleSubasta() {
                 )}
               </div>
             )}
-            {/* 48h auto-completion countdown */}
+            {/* 96h auto-completion countdown */}
             {isWonByMe && !completionExpired && (
-              <div className="mt-3 bg-secondary/10 rounded-lg p-3 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-secondary" />
-                <div>
+              <div className={`mt-3 rounded-lg p-3 flex items-center gap-2 ${completionRemaining < 24 * 60 * 60 * 1000 ? 'bg-destructive/10' : 'bg-secondary/10'}`}>
+                <Clock className={`w-4 h-4 ${completionRemaining < 24 * 60 * 60 * 1000 ? 'text-destructive' : 'text-secondary'}`} />
+                <div className="flex-1">
                   <p className="text-xs font-semibold text-foreground">Cierre automático del trato</p>
                   <p className="text-xs text-muted-foreground">Mubis completará esta transacción en {formatCountdown48(completionRemaining)}</p>
                 </div>
               </div>
+            )}
+            {isWonByMe && !completionExpired && completionRemaining < 24 * 60 * 60 * 1000 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-2 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-xs"
+                onClick={(e) => { e.stopPropagation(); setExtensionModalOpen(true); }}
+              >
+                <CalendarPlus className="w-4 h-4 mr-2" />Solicitar extensión de plazo
+              </Button>
             )}
             {isWonByMe && completionExpired && (
               <div className="mt-3 bg-primary/10 rounded-lg p-3 flex items-center gap-2">
@@ -377,6 +392,16 @@ export default function DetalleSubasta() {
 
       <BidModal vehicle={vehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
       <ProntoPagoModal open={prontoPagoModalOpen} onClose={() => setProntoPagoModalOpen(false)} auction={vehicle} userId={currentUser?.id} onComplete={() => { setProntoPagoRefresh(k => k + 1); setProntoPagoModalOpen(false); }} />
+      <ExtensionModal
+        open={extensionModalOpen}
+        onOpenChange={setExtensionModalOpen}
+        onConfirm={({ days, reason }) => {
+          const currentExt = vehicle?.extensionDays || 0;
+          updateAuction(vehicle.id, { extensionDays: currentExt + days, extensionReason: reason });
+          setVehicle(prev => ({ ...prev, extensionDays: currentExt + days, extensionReason: reason }));
+        }}
+        vehicleName={vehicle ? `${vehicle.brand} ${vehicle.model}` : ''}
+      />
       <BottomNav />
     </div>
   );
