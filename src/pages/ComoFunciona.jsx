@@ -9,8 +9,8 @@ import { CheckCircle, Shield, Zap, Clock, Users, TrendingUp, ArrowRight, Car, Ga
 const steps = [
   {
     num: 1,
-    title: "El Recomprador publica su vehículo",
-    description: "El dueño del carro sube su vehículo a la plataforma. Mubis coordina un peritaje certificado de 150+ puntos de inspección con fotos estandarizadas y documentación legal validada.",
+    title: "El Dealer publica su vehículo",
+    description: "El Dealer sube su inventario a la plataforma. Mubis coordina un peritaje certificado de 150+ puntos de inspección con fotos estandarizadas y documentación legal validada.",
     details: [
       "Peritaje de 150+ puntos de inspección",
       "Fotos profesionales estandarizadas",
@@ -21,11 +21,11 @@ const steps = [
   },
   {
     num: 2,
-    title: "Los Dealers pujan en subasta privada",
-    description: "Concesionarios verificados compiten en subastas con tiempo limitado para ofrecer el mejor precio. Más dealers compitiendo significa un mejor precio para el Recomprador.",
+    title: "Dealers y Recompradores pujan",
+    description: "Compradores verificados (Dealers y Recompradores) compiten en subastas con tiempo limitado para ofrecer el mejor precio. Más competencia significa un mejor precio para el vendedor.",
     details: [
       "Subastas con tiempo limitado para decisiones rápidas",
-      "Múltiples dealers compitiendo por el mismo vehículo",
+      "Dealers y Recompradores compitiendo por el mismo vehículo",
       "Alertas en tiempo real cuando te superan",
       "Precio de reserva transparente",
     ],
@@ -34,7 +34,7 @@ const steps = [
   {
     num: 3,
     title: "Se cierra el trato",
-    description: "El Dealer ganador completa la compra. El Recomprador recibe el pago y el Dealer recibe el vehículo. Documentos listos, transferencia facilitada y proceso seguro.",
+    description: "El ganador completa la compra. Documentos listos, transferencia facilitada y proceso seguro para ambas partes.",
     details: [
       "Cierre en menos de 48 horas",
       "Documentos de transferencia preparados",
@@ -47,27 +47,27 @@ const steps = [
 
 const roles = [
   {
-    icon: Car,
-    title: "Recomprador",
-    subtitle: "Vendedor particular",
-    description: "Persona que quiere vender su carro usado. En vez de negociar con un solo comprador, su vehículo se expone a una red de concesionarios que compiten entre sí, asegurando el mejor precio posible.",
-    benefits: [
-      "Recibe múltiples ofertas de dealers verificados",
-      "Obtiene el mejor precio gracias a la competencia",
-      "Peritaje profesional incluido sin costo",
-      "Proceso seguro con documentación respaldada",
-    ],
-  },
-  {
     icon: Users,
     title: "Dealer",
     subtitle: "Concesionario o comprador profesional",
-    description: "Concesionario verificado que busca adquirir inventario de calidad. Accede a vehículos con peritaje certificado y compite en subastas privadas para conseguir los mejores carros a precios competitivos.",
+    description: "Concesionario verificado que puede comprar y vender vehículos en la plataforma. Publica su inventario para subasta y también participa como comprador en subastas de otros Dealers.",
+    benefits: [
+      "Publica vehículos y recibe ofertas competitivas",
+      "Compra inventario verificado de otros Dealers",
+      "Acceso completo a compra y venta en la plataforma",
+      "Cierre rápido y documentación lista",
+    ],
+  },
+  {
+    icon: Car,
+    title: "Recomprador",
+    subtitle: "Comprador verificado",
+    description: "Comprador que participa en subastas privadas para adquirir vehículos verificados al mejor precio. Solo puede comprar, no publicar vehículos en la plataforma.",
     benefits: [
       "Acceso a inventario verificado y periciado",
+      "Participa en subastas para conseguir los mejores precios",
       "Sin visitas innecesarias: toda la información está en la plataforma",
-      "Compite por vehículos de calidad con transparencia",
-      "Cierre rápido y documentación lista",
+      "Proceso seguro con documentación respaldada",
     ],
   },
 ];
