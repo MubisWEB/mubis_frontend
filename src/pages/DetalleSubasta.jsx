@@ -392,6 +392,16 @@ export default function DetalleSubasta() {
 
       <BidModal vehicle={vehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
       <ProntoPagoModal open={prontoPagoModalOpen} onClose={() => setProntoPagoModalOpen(false)} auction={vehicle} userId={currentUser?.id} onComplete={() => { setProntoPagoRefresh(k => k + 1); setProntoPagoModalOpen(false); }} />
+      <ExtensionModal
+        open={extensionModalOpen}
+        onOpenChange={setExtensionModalOpen}
+        onConfirm={({ days, reason }) => {
+          const currentExt = vehicle?.extensionDays || 0;
+          updateAuction(vehicle.id, { extensionDays: currentExt + days, extensionReason: reason });
+          setVehicle(prev => ({ ...prev, extensionDays: currentExt + days, extensionReason: reason }));
+        }}
+        vehicleName={vehicle ? `${vehicle.brand} ${vehicle.model}` : ''}
+      />
       <BottomNav />
     </div>
   );
