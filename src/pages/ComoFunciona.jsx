@@ -94,7 +94,7 @@ export default function ComoFunciona() {
               ¿Cómo funciona <span className="text-secondary">Mubis</span>?
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Mubis es una plataforma de subastas privadas que conecta a personas que quieren vender su carro (<strong className="text-foreground">Recompradores</strong>) con concesionarios verificados (<strong className="text-foreground">Dealers</strong>) para lograr el mejor precio de forma rápida y segura.
+              Mubis es una plataforma de subastas privadas de vehículos usados. Los <strong className="text-foreground">Dealers</strong> pueden comprar y vender, mientras que los <strong className="text-foreground">Recompradores</strong> participan como compradores para conseguir el mejor precio.
             </p>
           </div>
         </section>

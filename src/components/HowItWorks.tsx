@@ -21,23 +21,23 @@ const roles = [
 const steps = [
   {
     num: 1,
-    title: "El Recomprador publica su carro",
+    title: "El Dealer publica su vehículo",
     description:
-      "El dueño del vehículo sube la información de su carro. Mubis realiza un peritaje certificado con fotos estandarizadas y documentación validada.",
+      "El Dealer sube su inventario a la plataforma. Mubis realiza un peritaje certificado con fotos estandarizadas y documentación validada.",
     image: step1Img,
   },
   {
     num: 2,
-    title: "Los Dealers pujan en subasta privada",
+    title: "Dealers y Recompradores pujan",
     description:
-      "Concesionarios verificados compiten en tiempo real para ofrecer el mejor precio por el vehículo. Más competencia = mejor precio para el vendedor.",
+      "Compradores verificados compiten en tiempo real para ofrecer el mejor precio. Más competencia = mejor precio para el vendedor.",
     image: step2Img,
   },
   {
     num: 3,
     title: "Se cierra el trato",
     description:
-      "El Dealer ganador completa la compra. Documentos listos, transferencia facilitada y pago seguro para ambas partes.",
+      "El ganador completa la compra. Documentos listos, transferencia facilitada y pago seguro para ambas partes.",
     image: step3Img,
   },
 ];
