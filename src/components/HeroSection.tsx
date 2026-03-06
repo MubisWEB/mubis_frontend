@@ -186,7 +186,7 @@ const HeroSection = () => {
                 Aplicar como Dealer <ArrowRight className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="/como-funciona"
                 className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
               >
                 <Play className="w-4 h-4" /> Cómo funciona
