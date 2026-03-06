@@ -48,8 +48,17 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-footer-heading mb-4">Legal</h4>
             <ul className="space-y-2 text-sm">
-              {["Términos y condiciones", "Política de privacidad", "Aviso legal", "Preguntas frecuentes"].map((l) => (
-                <li key={l}><a href="#" className="hover:text-footer-heading transition-colors">{l}</a></li>
+              {[
+                { label: "Términos y condiciones", path: "/terminos-y-condiciones" },
+                { label: "Política de privacidad", path: "/politica-de-privacidad" },
+                { label: "Aviso legal", path: "/aviso-legal" },
+                { label: "Preguntas frecuentes", path: "/preguntas-frecuentes" },
+              ].map((l) => (
+                <li key={l.path}>
+                  <button onClick={() => navigate(l.path)} className="hover:text-footer-heading transition-colors">
+                    {l.label}
+                  </button>
+                </li>
               ))}
             </ul>
           </div>
