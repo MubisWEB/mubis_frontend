@@ -50,7 +50,7 @@ const HowItWorks = () => {
           Así funciona Mubis
         </h2>
         <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">
-          Conectamos a personas que quieren vender su carro (<span className="font-semibold text-foreground">Recompradores</span>) con concesionarios verificados (<span className="font-semibold text-foreground">Dealers</span>) a través de subastas privadas.
+          Los <span className="font-semibold text-foreground">Dealers</span> pueden comprar y vender vehículos. Los <span className="font-semibold text-foreground">Recompradores</span> participan en subastas para comprar al mejor precio.
         </p>
 
         {/* Roles */}
