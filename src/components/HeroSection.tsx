@@ -183,7 +183,7 @@ const HeroSection = () => {
                 href="/registro"
                 className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity"
               >
-                Aplicar como Dealer <ArrowRight className="w-4 h-4" />
+                Aplicar Ahora <ArrowRight className="w-4 h-4" />
               </a>
               <a
                 href="/como-funciona"
