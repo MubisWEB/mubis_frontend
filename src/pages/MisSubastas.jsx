@@ -173,10 +173,10 @@ export default function MisSubastas() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
         <Tabs defaultValue="proceso" className="w-full">
-          <TabsList className="w-full flex overflow-x-auto gap-1 bg-muted/50 p-1 rounded-xl mb-4">
+          <TabsList className="w-full grid grid-cols-4 bg-muted/50 p-1 rounded-xl mb-4">
             {tabs.map(t => (
-              <TabsTrigger key={t.key} value={t.key} className="flex-1 min-w-0 text-xs whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-2 py-1.5">
-                {t.label} <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{t.count}</Badge>
+              <TabsTrigger key={t.key} value={t.key} className="text-[11px] whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-1.5 py-1.5">
+                {t.label} <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">{t.count}</Badge>
               </TabsTrigger>
             ))}
           </TabsList>
