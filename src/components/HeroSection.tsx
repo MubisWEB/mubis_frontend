@@ -23,7 +23,7 @@ const auctions = [
     bid: "$65.200.000",
     bids: 7,
     dealers: 18,
-    time: { hours: 0, minutes: 48, seconds: 12 },
+    time: { hours: 0, minutes: 18, seconds: 45 },
   },
   {
     id: "MUB-20455",
