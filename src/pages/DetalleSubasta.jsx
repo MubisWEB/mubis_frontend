@@ -28,7 +28,6 @@ export default function DetalleSubasta() {
   const [isUrgent, setIsUrgent] = useState(false);
   const [auditEvents, setAuditEvents] = useState([]);
   const [extensionModalOpen, setExtensionModalOpen] = useState(false);
-  const [auditEvents, setAuditEvents] = useState([]);
 
   useEffect(() => {
     if (!auctionId) return;
