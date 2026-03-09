@@ -25,6 +25,7 @@ export default function Registro() {
     contacto: "",
     email: "",
     telefono: "",
+    instagram: "",
     ciudad: "",
     password: "",
     password2: "",
@@ -39,8 +40,8 @@ export default function Registro() {
     e.preventDefault();
 
     if (!formData.role) { toast.error("Selecciona tu tipo de cuenta"); return; }
-    if (!formData.negocio || !formData.branch || !formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
-      toast.error("Por favor completa todos los campos"); return;
+    if (!formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
+      toast.error("Por favor completa todos los campos obligatorios"); return;
     }
     if (formData.password.length < 8) { toast.error("La contraseña debe tener mínimo 8 caracteres"); return; }
     if (formData.password !== formData.password2) { toast.error("Las contraseñas no coinciden"); return; }
@@ -104,12 +105,12 @@ export default function Registro() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Empresa / Concesionario *</label>
+                    <label className="text-sm font-medium text-foreground">Empresa / Concesionario</label>
                     <Input type="text" placeholder="AutoMax Colombia" value={formData.negocio} onChange={(e) => handleChange("negocio", e.target.value)} className={inputClass} disabled={loading} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Sucursal *</label>
-                    <Input type="text" placeholder="Bogotá Norte" value={formData.branch} onChange={(e) => handleChange("branch", e.target.value)} className={inputClass} disabled={loading} />
+                    <label className="text-sm font-medium text-foreground">Website</label>
+                    <Input type="text" placeholder="www.automax.co" value={formData.branch} onChange={(e) => handleChange("branch", e.target.value)} className={inputClass} disabled={loading} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">NIT</label>
@@ -126,6 +127,10 @@ export default function Registro() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Teléfono *</label>
                     <Input type="tel" placeholder="+57 300 123 4567" value={formData.telefono} onChange={(e) => handleChange("telefono", e.target.value)} className={inputClass} disabled={loading} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Instagram</label>
+                    <Input type="text" placeholder="@automax_co" value={formData.instagram} onChange={(e) => handleChange("instagram", e.target.value)} className={inputClass} disabled={loading} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Ciudad *</label>
