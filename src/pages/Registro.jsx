@@ -25,6 +25,7 @@ export default function Registro() {
     contacto: "",
     email: "",
     telefono: "",
+    instagram: "",
     ciudad: "",
     password: "",
     password2: "",
