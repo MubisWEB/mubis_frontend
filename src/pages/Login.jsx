@@ -92,17 +92,6 @@ export default function Login() {
                   className="w-full h-11 font-semibold rounded-xl shadow-sm bg-violet-600 text-white hover:bg-violet-700 transition active:translate-y-[1px]">
                   {loading ? (<><Loader2 className="w-5 h-5 animate-spin mr-2" />Iniciando sesión...</>) : "Iniciar sesión"}
                 </Button>
-
-                {/* Demo credentials */}
-                <div className="pt-2 space-y-1">
-                  <p className="text-xs text-muted-foreground text-center font-medium">Cuentas demo:</p>
-                  <div className="grid grid-cols-2 gap-1 text-[10px] text-muted-foreground">
-                    <span>dealer@test.com / dealer123</span>
-                    <span>perito@test.com / perito123</span>
-                    <span>recomprador@test.com / recomprador123</span>
-                    <span>admin@mubis.com / admin123</span>
-                  </div>
-                </div>
               </form>
             </Card>
           </div>
