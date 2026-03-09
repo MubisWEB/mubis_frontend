@@ -40,8 +40,8 @@ export default function Registro() {
     e.preventDefault();
 
     if (!formData.role) { toast.error("Selecciona tu tipo de cuenta"); return; }
-    if (!formData.negocio || !formData.branch || !formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
-      toast.error("Por favor completa todos los campos"); return;
+    if (!formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
+      toast.error("Por favor completa todos los campos obligatorios"); return;
     }
     if (formData.password.length < 8) { toast.error("La contraseña debe tener mínimo 8 caracteres"); return; }
     if (formData.password !== formData.password2) { toast.error("Las contraseñas no coinciden"); return; }
