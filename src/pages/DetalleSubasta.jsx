@@ -178,7 +178,7 @@ export default function DetalleSubasta() {
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
       <TopBar />
-      <div className="relative">
+      <div className="relative mt-3 md:mt-5">
           <PhotoGallery
             photos={images}
             alt={`${vehicle.brand} ${vehicle.model}`}
@@ -474,9 +474,9 @@ export default function DetalleSubasta() {
 
       {/* Bottom action bar */}
       {!isWonByMe && (
-        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50">
-          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            {vehicle.isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50 md:static md:bg-transparent md:pt-0 md:pb-0 md:px-0">
+          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 md:h-10 md:w-auto md:px-6 md:text-sm rounded-xl font-bold text-lg md:font-semibold shadow-lg md:shadow-none bg-secondary text-secondary-foreground hover:bg-secondary/90">
+            {vehicle.isLeading ? (<><Trophy className="w-5 h-5 md:w-4 md:h-4 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
           </Button>
         </div>
       )}

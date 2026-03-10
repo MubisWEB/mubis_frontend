@@ -134,7 +134,7 @@ export default function DetalleSubastaVendedor() {
   return (
     <div className="min-h-screen bg-muted pb-24">
       <TopBar />
-      <div className="relative">
+      <div className="relative mt-3 md:mt-5">
           <PhotoGallery
             photos={photos}
             alt={`${auction.brand} ${auction.model}`}
