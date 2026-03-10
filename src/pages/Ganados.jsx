@@ -173,10 +173,10 @@ export default function Ganados() {
   useEffect(() => {
     if (!currentUser?.id) return;
     let won = getWonAuctionsByUserId(currentUser.id);
-    if (won.length === 0) {
+    if (won.length < 5) {
       const allAuctions = getAuctions();
-      const endedWithoutMe = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
-      const toAssign = endedWithoutMe.slice(0, 2);
+      const endedNotMine = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
+      const toAssign = endedNotMine.slice(0, 6 - won.length);
       toAssign.forEach(a => { updateAuction(a.id, { winnerId: currentUser.id }); });
       if (toAssign.length > 0) won = getWonAuctionsByUserId(currentUser.id);
     }
