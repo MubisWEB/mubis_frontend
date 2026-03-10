@@ -47,6 +47,9 @@ export default function Cuenta() {
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pubBalance, setPubBalance] = useState(0);
+  const [rechargeQty, setRechargeQty] = useState(10);
+  const [rechargeOpen, setRechargeOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
