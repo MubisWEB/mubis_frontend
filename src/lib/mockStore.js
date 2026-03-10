@@ -208,6 +208,7 @@ function buildSeedAuctions(vehicles) {
       documentation: v.documentation,
       dealerCompany: v.dealerCompany,
       dealerBranch: v.dealerBranch,
+      specs: v.specs || null,
       starting_price: basePrice,
       current_bid: currentBid,
       bids_count: bidsCount,
