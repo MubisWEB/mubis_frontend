@@ -34,6 +34,7 @@ export default function DetalleSubasta() {
   const [extensionModalOpen, setExtensionModalOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
 
   useEffect(() => {
     if (!auctionId) return;
@@ -165,7 +166,7 @@ export default function DetalleSubasta() {
   ].filter(s => s.value); // Only show specs that have values
 
   const INITIAL_SPECS_COUNT = 9;
-  const [showAllSpecs, setShowAllSpecs] = useState(false);
+  
   const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
   const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
