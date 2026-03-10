@@ -526,6 +526,7 @@ function spawnNewAuction() {
     documentation: vehicle.documentation,
     dealerCompany: vehicle.dealerCompany,
     dealerBranch: vehicle.dealerBranch,
+    specs: car.specs || null,
     starting_price: basePrice,
     current_bid: currentBid,
     bids_count: bidsCount,
