@@ -143,7 +143,7 @@ function buildSeedVehicles() {
       dealerCompany: companies[dealerId],
       photos: [PHOTOS[i % PHOTOS.length], PHOTOS[(i + 3) % PHOTOS.length]],
       documentation: generateDocumentation(i),
-      status: i < 24 ? 'READY_FOR_AUCTION' : i < 28 ? 'IN_PROGRESS' : i < 32 ? 'INSPECTION_REJECTED' : 'PENDING_INSPECTION',
+      status: i < 36 ? 'READY_FOR_AUCTION' : i < 45 ? 'IN_PROGRESS' : 'INSPECTION_REJECTED',
       createdAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
     };
   });
