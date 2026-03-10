@@ -313,13 +313,13 @@ export default function MisSubastas() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
         <div className="grid grid-cols-4 gap-2 mb-4">
           {[
-            { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, colorClass: 'text-secondary' },
-            { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary' },
-            { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive' },
-            { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary' },
+            { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+            { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+            { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
+            { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' },
           ].map(stat => (
             <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-              className={`text-center p-3 rounded-xl border transition-all ${activeTab === stat.key ? 'border-border bg-muted/30 shadow-sm' : 'border-transparent hover:bg-muted/20'}`}>
+              className={`text-center p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
               <p className={`text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
               <p className={`text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
             </button>
