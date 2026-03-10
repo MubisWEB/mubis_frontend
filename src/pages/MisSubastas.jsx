@@ -266,6 +266,7 @@ export default function MisSubastas() {
   const [auctions, setAuctions] = useState([]);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
+  const [activeTab, setActiveTab] = useState('activas');
   const currentUser = getCurrentUser();
 
   const loadData = useCallback(() => {
