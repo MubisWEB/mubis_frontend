@@ -33,7 +33,7 @@ function StatusBadge({ isCompleted, canExtend, remaining, isCancelled }) {
 }
 
 /** Grid view card (vertical, single photo) */
-export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
+export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
