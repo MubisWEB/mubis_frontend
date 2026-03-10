@@ -140,21 +140,29 @@ export default function Comprar() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
-        <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue placeholder="Ordenar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Más nuevos</SelectItem>
-              <SelectItem value="ending_soon">Por terminar</SelectItem>
-              <SelectItem value="most_bids">Más populares</SelectItem>
-              <SelectItem value="price_low">Precio: menor</SelectItem>
-              <SelectItem value="price_high">Precio: mayor</SelectItem>
-            </SelectContent>
-          </Select>
-          {/* Mobile: sheet filter */}
-          <div className="md:hidden">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar">
+            {[
+              { key: 'newest', label: 'Más nuevos' },
+              { key: 'ending_soon', label: 'Por terminar' },
+              { key: 'most_bids', label: 'Más populares' },
+              { key: 'price_low', label: 'Precio: menor' },
+              { key: 'price_high', label: 'Precio: mayor' },
+            ].map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setSortBy(opt.key)}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex-shrink-0 ${
+                  sortBy === opt.key
+                    ? 'bg-secondary text-secondary-foreground border-secondary shadow-md'
+                    : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="md:hidden flex-shrink-0">
             <FilterSheet filters={filters} setFilters={setFilters} />
           </div>
         </div>
