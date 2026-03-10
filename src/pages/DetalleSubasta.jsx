@@ -218,7 +218,7 @@ export default function DetalleSubasta() {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-muted-foreground text-xs mb-1">{isWonByMe ? 'Precio final' : 'Puja actual'}</p>
-                <p className="text-2xl font-bold text-secondary">{formatPrice(vehicle.current_bid || 0)}</p>
+                <p className="text-2xl font-bold text-foreground">{formatPrice(vehicle.current_bid || 0)}</p>
               </div>
               {!isWonByMe && (
                 <div className="text-right space-y-1">
