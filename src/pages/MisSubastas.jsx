@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight } from 'lucide-react';
@@ -314,15 +313,15 @@ export default function MisSubastas() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
         <div className="grid grid-cols-4 gap-2 mb-4">
           {[
-            { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, color: 'secondary' },
-            { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, color: 'secondary' },
-            { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, color: 'destructive' },
-            { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, color: 'primary' },
+            { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, colorClass: 'text-secondary' },
+            { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary' },
+            { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive' },
+            { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary' },
           ].map(stat => (
             <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-              className={`text-center p-3 rounded-xl transition-all ${activeTab === stat.key ? `bg-${stat.color}/20 ring-2 ring-${stat.color} shadow-sm` : `bg-${stat.color}/10 hover:bg-${stat.color}/15`}`}>
-              <p className={`text-2xl font-bold text-${stat.color}`}>{stat.count}</p>
-              <p className="text-muted-foreground text-[10px]">{stat.label}</p>
+              className={`text-center p-3 rounded-xl border transition-all ${activeTab === stat.key ? 'border-border bg-muted/30 shadow-sm' : 'border-transparent hover:bg-muted/20'}`}>
+              <p className={`text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
+              <p className={`text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
             </button>
           ))}
         </div>
