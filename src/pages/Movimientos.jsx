@@ -66,12 +66,14 @@ export default function Movimientos() {
 
       <div className="px-4 py-4 space-y-4">
         {/* Métricas */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-3 border border-border rounded-xl text-center">
-            <p className="text-2xl font-bold text-secondary">{pujas}</p>
-            <p className="text-xs text-muted-foreground">Vendidos</p>
-            <p className="text-sm font-semibold text-foreground mt-1">{formatShortPrice(totalComprado)}</p>
-          </Card>
+        <div className={`grid gap-3 ${role === 'dealer' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          {role === 'dealer' && (
+            <Card className="p-3 border border-border rounded-xl text-center">
+              <p className="text-2xl font-bold text-secondary">{pujas}</p>
+              <p className="text-xs text-muted-foreground">Vendidos</p>
+              <p className="text-sm font-semibold text-foreground mt-1">{formatShortPrice(totalComprado)}</p>
+            </Card>
+          )}
           <Card className="p-3 border border-border rounded-xl text-center">
             <p className="text-2xl font-bold text-primary">{ventas}</p>
             <p className="text-xs text-muted-foreground">Comprados</p>
