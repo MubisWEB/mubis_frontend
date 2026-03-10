@@ -84,14 +84,31 @@ export default function DetalleSubastaVendedor() {
   const vehData = auction.vehicleId ? getVehicleById(auction.vehicleId) : null;
   const docs = auction.documentation || vehData?.documentation || null;
 
-  const specs = [
+  const vehSpecs = vehData?.specs || auction.specs || {};
+  const allSpecs = [
+    // Top 6 (always visible)
+    { icon: Car, label: 'Marca', value: auction.brand },
+    { icon: Car, label: 'Modelo', value: auction.model },
     { icon: Calendar, label: 'Año', value: auction.year },
     { icon: Gauge, label: 'Kilometraje', value: `${Number(auction.mileage || auction.km || 0).toLocaleString('es-CO')} km` },
-    { icon: Settings2, label: 'Transmisión', value: auction.transmission || auction.traction || '' },
     { icon: Fuel, label: 'Combustible', value: auction.fuel_type || auction.combustible || '' },
+    { icon: Settings2, label: 'Transmisión', value: vehSpecs.transmission || auction.transmission || auction.traction || '' },
+    // Extended (shown on "Ver más")
     { icon: Palette, label: 'Color', value: auction.color || '' },
-    { icon: MapPin, label: 'Ciudad', value: auction.city || '' },
-  ];
+    { icon: Settings2, label: 'Cilindraje', value: auction.cilindraje || vehData?.cilindraje || '' },
+    { icon: Settings2, label: 'Tracción', value: auction.traction || vehData?.traction || '' },
+    { icon: Car, label: 'Carrocería', value: vehSpecs.body_type || '' },
+    { icon: Settings2, label: 'Puertas', value: vehSpecs.doors || '' },
+    { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers || '' },
+    { icon: Settings2, label: 'Dirección', value: vehSpecs.steering || '' },
+    { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning != null ? (vehSpecs.air_conditioning ? 'Sí' : 'No') : '' },
+    { icon: FileText, label: 'Placa', value: auction.placa || vehData?.placa || '' },
+    { icon: MapPin, label: 'Ubicación', value: auction.city || auction.ubicacion || auction.dealerBranch || '' },
+  ].filter(s => s.value);
+
+  const INITIAL_SPECS_COUNT = 6;
+  const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
+  const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
   return (
     <div className="min-h-screen bg-muted pb-24">
