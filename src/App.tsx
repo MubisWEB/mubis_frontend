@@ -36,6 +36,7 @@ import AdminMovimientos from './pages/AdminMovimientos';
 import AdminAnaliticas from './pages/AdminAnaliticas';
 import PeritajesPendientes from './pages/PeritajesPendientes';
 import PeritajeDetalle from './pages/PeritajeDetalle';
+import SoporteCasos, { SoporteCasoDetalle } from './pages/SoporteCasos';
 
 const queryClient = new QueryClient();
 
