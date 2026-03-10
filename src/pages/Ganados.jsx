@@ -120,6 +120,7 @@ export default function Ganados() {
   const [sortBy, setSortBy] = useState('newest');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
   const [activeTab, setActiveTab] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
 
   useEffect(() => {
     if (!currentUser?.id) return;
