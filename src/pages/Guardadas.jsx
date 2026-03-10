@@ -37,9 +37,13 @@ export default function Guardadas() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-24">
+    <div className="min-h-screen flex flex-col bg-background pb-24 md:pb-8">
       <Header title="Guardadas" />
-      <div className="px-4 pt-4 pb-4">
+      <div className="px-4 md:px-8 pt-4 pb-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-lg font-bold text-foreground font-sans">Guardadas</p>
+          <span className="text-sm text-muted-foreground">{vehicles.length} vehículos</span>
+        </div>
         {vehicles.length === 0 ? (
           <div className="py-16 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -49,18 +53,20 @@ export default function Guardadas() {
             <p className="text-xs text-muted-foreground mt-1">Guarda subastas desde Comprar para verlas aquí</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {vehicles.map((vehicle, index) => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
-                onBid={handleBid}
-                onToggleFavorite={() => handleToggleWatchlist(vehicle)}
-                isFavorite={true}
-                index={index}
-              />
-            ))}
-          </div>
+          <>
+            {/* Mobile: compact */}
+            <div className="space-y-3 md:hidden">
+              {vehicles.map((vehicle, index) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} onToggleFavorite={() => handleToggleWatchlist(vehicle)} isFavorite={true} index={index} variant="compact" />
+              ))}
+            </div>
+            {/* Desktop: grid */}
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {vehicles.map((vehicle, index) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} onToggleFavorite={() => handleToggleWatchlist(vehicle)} isFavorite={true} index={index} variant="grid" />
+              ))}
+            </div>
+          </>
         )}
       </div>
       <BidModal vehicle={selectedVehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
