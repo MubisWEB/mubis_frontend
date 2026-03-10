@@ -154,12 +154,93 @@ export default function Ganados() {
   useEffect(() => {
     if (!currentUser?.id) return;
     let won = getWonAuctionsByUserId(currentUser.id);
-    if (won.length < 5) {
+    
+    // Generate mock won auctions if not enough
+    if (won.length < 14) {
       const allAuctions = getAuctions();
       const endedNotMine = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
-      const toAssign = endedNotMine.slice(0, 6 - won.length);
+      
+      // Assign existing ended auctions
+      const toAssign = endedNotMine.slice(0, Math.max(0, 14 - won.length));
       toAssign.forEach(a => { updateAuction(a.id, { winnerId: currentUser.id }); });
       if (toAssign.length > 0) won = getWonAuctionsByUserId(currentUser.id);
+
+      // Create additional mock won auctions to fill gaps
+      const mockCars = [
+        { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
+        { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Medellín', mileage: 12000, current_bid: 98000000 },
+        { brand: 'Chevrolet', model: 'Tracker', year: 2021, city: 'Cali', mileage: 35000, current_bid: 65000000 },
+        { brand: 'Renault', model: 'Duster', year: 2020, city: 'Barranquilla', mileage: 42000, current_bid: 52000000 },
+        { brand: 'Kia', model: 'Sportage', year: 2023, city: 'Bogotá', mileage: 8000, current_bid: 105000000 },
+        { brand: 'Hyundai', model: 'Tucson', year: 2022, city: 'Medellín', mileage: 22000, current_bid: 88000000 },
+        { brand: 'BMW', model: 'X3', year: 2021, city: 'Bogotá', mileage: 30000, current_bid: 145000000 },
+        { brand: 'Volkswagen', model: 'Tiguan', year: 2022, city: 'Cali', mileage: 19000, current_bid: 92000000 },
+        { brand: 'Ford', model: 'Escape', year: 2020, city: 'Bucaramanga', mileage: 48000, current_bid: 58000000 },
+        { brand: 'Nissan', model: 'Qashqai', year: 2023, city: 'Bogotá', mileage: 5000, current_bid: 112000000 },
+        { brand: 'Audi', model: 'Q5', year: 2021, city: 'Medellín', mileage: 28000, current_bid: 165000000 },
+        { brand: 'Mercedes-Benz', model: 'GLC', year: 2022, city: 'Bogotá', mileage: 15000, current_bid: 195000000 },
+        { brand: 'Toyota', model: 'RAV4', year: 2023, city: 'Cali', mileage: 9000, current_bid: 118000000 },
+        { brand: 'Mazda', model: '3', year: 2022, city: 'Pereira', mileage: 20000, current_bid: 68000000 },
+      ];
+
+      const photos = [
+        'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1542362567-b07e54358753?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&h=400&fit=crop',
+      ];
+
+      const now = Date.now();
+      // Status distribution: 4 en proceso, 8 completado, 2 cancelado = 14 total
+      // En proceso: ends_at < 72h ago (remaining > 24h)
+      // Completado: ends_at > 96h ago (remaining <= 0)  
+      // Cancelado: ends_at 72-96h ago (0 < remaining < 24h)
+      const statusDates = [
+        // 4 En proceso (ended 12h, 24h, 36h, 48h ago)
+        now - 12 * 60 * 60 * 1000,
+        now - 24 * 60 * 60 * 1000,
+        now - 36 * 60 * 60 * 1000,
+        now - 48 * 60 * 60 * 1000,
+        // 8 Completado (ended 5-12 days ago)
+        now - 5 * 24 * 60 * 60 * 1000,
+        now - 6 * 24 * 60 * 60 * 1000,
+        now - 7 * 24 * 60 * 60 * 1000,
+        now - 8 * 24 * 60 * 60 * 1000,
+        now - 9 * 24 * 60 * 60 * 1000,
+        now - 10 * 24 * 60 * 60 * 1000,
+        now - 11 * 24 * 60 * 60 * 1000,
+        now - 12 * 24 * 60 * 60 * 1000,
+        // 2 Cancelado (ended ~76h and ~80h ago → remaining ~20h and ~16h)
+        now - 76 * 60 * 60 * 1000,
+        now - 80 * 60 * 60 * 1000,
+      ];
+
+      const needed = 14 - won.length;
+      for (let i = 0; i < needed; i++) {
+        const carIdx = (won.length + i) % mockCars.length;
+        const car = mockCars[carIdx];
+        const mockAuction = {
+          id: `won-mock-${Date.now()}-${i}`,
+          ...car,
+          status: 'ended',
+          winnerId: currentUser.id,
+          sellerId: 'u-dealer-1',
+          photos: [photos[(won.length + i) % photos.length]],
+          ends_at: new Date(statusDates[(won.length + i) % statusDates.length]).toISOString(),
+          extensionDays: 0,
+        };
+        won.push(mockAuction);
+      }
     }
     setWonAuctions(won);
   }, [currentUser?.id]);
