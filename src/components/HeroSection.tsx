@@ -1,7 +1,7 @@
 import { ArrowRight, Play, Clock, Users, Gavel, TrendingUp } from "lucide-react";
-import auctionCar from "@/assets/auction-car.jpg";
-import auctionCar2 from "@/assets/auction-car-2.jpg";
-import auctionCar3 from "@/assets/auction-car-3.jpg";
+import auctionCar from "@/assets/car-logan.png";
+import auctionCar2 from "@/assets/car-fortuner.png";
+import auctionCar3 from "@/assets/car-tracker.png";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const auctions = [
