@@ -151,7 +151,7 @@ function VehicleProcessGridCard({ v, navigate }) {
   const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
 
   return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group">
+    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${insp?.id || v.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <img src={v.photos?.[0] || defaultImage} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         <div className="absolute top-2 left-2">{getStatusBadge()}</div>
