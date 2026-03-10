@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { addVehicle, addInspection, getCurrentUser } from '@/lib/mockStore';
+import { addVehicle, addInspection, getCurrentUser, getPublicationsBalance, deductPublication } from '@/lib/mockStore';
 
 const BRANDS = [
   'Mazda', 'Kia', 'Chevrolet', 'Renault', 'Toyota', 'Nissan', 'Hyundai',
