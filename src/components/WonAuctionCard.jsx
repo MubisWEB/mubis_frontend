@@ -15,16 +15,19 @@ function formatCountdown(ms) {
   return `${h}h ${m}m`;
 }
 
-function StatusBadge({ isCompleted, canExtend, remaining }) {
+function StatusBadge({ isCompleted, canExtend, remaining, isCancelled }) {
   const cls = isCompleted
     ? 'bg-primary/80 text-primary-foreground'
-    : canExtend
+    : isCancelled
       ? 'bg-destructive/80 text-destructive-foreground'
-      : 'bg-background/80 text-foreground';
+      : canExtend
+        ? 'bg-destructive/80 text-destructive-foreground'
+        : 'bg-background/80 text-foreground';
+  const label = isCompleted ? 'Completado' : isCancelled ? 'Cancelado' : formatCountdown(remaining);
   return (
     <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${cls}`}>
-      {isCompleted ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-      <span className="font-semibold">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
+      {isCompleted || isCancelled ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+      <span className="font-semibold">{label}</span>
     </div>
   );
 }
