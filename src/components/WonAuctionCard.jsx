@@ -85,7 +85,7 @@ export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted
           </div>
           <div className="flex items-center justify-between mt-3">
             <span className="font-bold text-xl text-foreground">{formatPrice(auction.current_bid)}</span>
-            {canExtend ? (
+            {canExtend && !isCancelled ? (
               <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
                 onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
                 <CalendarPlus className="w-3 h-3 mr-1" />Extensión
@@ -101,7 +101,7 @@ export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted
 }
 
 /** Mobile compact card (single photo) */
-export function WonAuctionMobileCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
+export function WonAuctionMobileCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex p-3 gap-3">
