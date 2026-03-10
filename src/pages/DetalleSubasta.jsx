@@ -157,9 +157,9 @@ export default function DetalleSubasta() {
     { icon: Palette, label: 'Color', value: vehicle.color || '' },
     // Extended specs (shown on "Ver más")
     { icon: Car, label: 'Carrocería', value: vehSpecs.body_type || '' },
-    { icon: DoorOpen, label: 'Puertas', value: vehSpecs.doors || '' },
-    { icon: Armchair, label: 'Pasajeros', value: vehSpecs.passengers || '' },
-    { icon: CircleDot, label: 'Dirección', value: vehSpecs.steering || '' },
+    { icon: Settings2, label: 'Puertas', value: vehSpecs.doors || '' },
+    { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers || '' },
+    { icon: Settings2, label: 'Dirección', value: vehSpecs.steering || '' },
     { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning != null ? (vehSpecs.air_conditioning ? 'Sí' : 'No') : '' },
     { icon: MapPin, label: 'Ubicación', value: vehicle.city || vehicle.dealerBranch || '' },
   ].filter(s => s.value); // Only show specs that have values
