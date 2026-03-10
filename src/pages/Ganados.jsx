@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus, Search, SlidersHorizontal, Filter, X } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus, Search, SlidersHorizontal, Filter, X, LayoutGrid, LayoutList } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, getAuctions, updateAuction } from '@/lib/mockStore';
 import ExtensionModal from '@/components/ExtensionModal';
+import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 
 const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -107,38 +108,7 @@ function GanadosFilterSheet({ filters, setFilters }) {
   );
 }
 
-function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
-  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
-  return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">
-          <CheckCircle className="w-3 h-3 mr-1" />Ganado
-        </Badge>
-        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${isCompleted ? 'bg-primary/80 text-primary-foreground' : canExtend ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/80 text-foreground'}`}>
-          {isCompleted ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-          <span className="font-semibold">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
-        </div>
-      </div>
-      <div className="p-3.5">
-        <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
-        <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
-          {canExtend ? (
-            <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
-              onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
-              <CalendarPlus className="w-3 h-3 mr-1" />Extensión
-            </Button>
-          ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
+// Card components extracted to WonAuctionCard.jsx
 
 export default function Ganados() {
   const navigate = useNavigate();
@@ -150,6 +120,7 @@ export default function Ganados() {
   const [sortBy, setSortBy] = useState('newest');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
   const [activeTab, setActiveTab] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -351,7 +322,17 @@ export default function Ganados() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-bold text-foreground font-sans">Ganados</p>
-            <span className="text-sm text-muted-foreground">{filteredAuctions.length} vehículos</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{filteredAuctions.length} vehículos</span>
+              <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
+                <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <LayoutList className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
           {filteredAuctions.length === 0 ? (
@@ -364,60 +345,41 @@ export default function Ganados() {
             </motion.div>
           ) : (
             <>
-              {/* Mobile: compact list */}
+              {/* Mobile */}
               <div className="space-y-3 md:hidden">
                 {filteredAuctions.map((auction, index) => {
                   const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
-                  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
                   return (
                     <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
-                        <div className="flex p-3 gap-3">
-                          <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
-                            <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
-                            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
-                              <CheckCircle className="w-2.5 h-2.5 mr-0.5" />Ganado
-                            </Badge>
-                          </div>
-                          <div className="flex-1 min-w-0 flex flex-col justify-between">
-                            <div>
-                              <h3 className="font-bold text-foreground text-base leading-tight truncate">{auction.brand} {auction.model}</h3>
-                              <p className="text-muted-foreground text-xs">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
-                              <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
-                                {isCompleted ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
-                                <span className="font-medium">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end justify-between">
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                            {canExtend && (
-                              <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
-                                onClick={(e) => { e.stopPropagation(); openExtension(auction); }}>
-                                <CalendarPlus className="w-3 h-3 mr-1" />Extensión
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
+                      <WonAuctionMobileCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
                     </motion.div>
                   );
                 })}
               </div>
-              {/* Desktop: grid */}
-              <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredAuctions.map((auction, index) => {
-                  const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
-                  return (
-                    <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <WonAuctionGridCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} />
-                    </motion.div>
-                  );
-                })}
-              </div>
+              {/* Desktop: grid or list */}
+              {viewMode === 'grid' ? (
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredAuctions.map((auction, index) => {
+                    const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                    return (
+                      <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+                        <WonAuctionGridCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="hidden md:flex md:flex-col gap-4">
+                  {filteredAuctions.map((auction, index) => {
+                    const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                    return (
+                      <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+                        <WonAuctionListCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
         </div>
