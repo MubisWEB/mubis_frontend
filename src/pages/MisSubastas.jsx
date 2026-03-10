@@ -295,6 +295,7 @@ export default function MisSubastas() {
   const enProceso = useMemo(() => applyFilters(vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status))), [vehicles, search, filters]);
   const rechazados = useMemo(() => applyFilters(vehicles.filter(v => v.status === 'INSPECTION_REJECTED')), [vehicles, search, filters]);
   const activas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'active')), [auctions, search, filters]);
+  const pendienteDecision = useMemo(() => applyFilters(auctions.filter(a => a.status === 'pending_decision')), [auctions, search, filters]);
   const finalizadas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
 
 
