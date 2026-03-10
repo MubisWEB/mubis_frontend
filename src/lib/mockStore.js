@@ -161,10 +161,14 @@ function buildSeedInspections(vehicles) {
 }
 
 function buildSeedAuctions(vehicles) {
-  return vehicles.filter(v => v.status === 'READY_FOR_AUCTION').map((v, i) => {
+  const readyVehicles = vehicles.filter(v => v.status === 'READY_FOR_AUCTION');
+  return readyVehicles.map((v, i) => {
     const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
     const bidsCount = 3 + Math.floor(Math.random() * 15);
     const currentBid = basePrice + bidsCount * 100000;
+    // Stagger active auctions across the next 60 minutes so they expire at different times
+    const isActive = i < 10;
+    const isEnded = !isActive;
     return {
       id: `auc-seed-${i + 1}`,
       vehicleId: v.id,
@@ -190,13 +194,11 @@ function buildSeedAuctions(vehicles) {
       current_bid: currentBid,
       bids_count: bidsCount,
       views: 20 + Math.floor(Math.random() * 200),
-      status: i === 0 ? 'active' : (i < 10 ? 'active' : 'ended'),
-      winnerId: i >= 10 ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
-      ends_at: i === 0
-        ? new Date(Date.now() + 2 * 60000).toISOString()  // 2 minutes from now
-        : (i < 10
-          ? new Date(Date.now() + (5 + i * 6) * 60000).toISOString()
-          : new Date(Date.now() - (i - 9) * 86400000).toISOString()),
+      status: isActive ? 'active' : 'ended',
+      winnerId: isEnded ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
+      ends_at: isActive
+        ? new Date(Date.now() + (3 + i * 7) * 60000).toISOString()  // stagger 3-66 min
+        : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
       createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
     };
   });
