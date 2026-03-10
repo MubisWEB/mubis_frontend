@@ -168,7 +168,8 @@ export default function Ganados() {
   const [extensionModal, setExtensionModal] = useState({ open: false, auctionId: null, vehicleName: '' });
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('newest');
-  const [filters, setFilters] = useState({ brand: '', status: '', yearFrom: '', yearTo: '' });
+  const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     if (!currentUser?.id) return;
