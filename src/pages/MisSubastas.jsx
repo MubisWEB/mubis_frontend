@@ -97,12 +97,12 @@ function SellerFilterSheet({ filters, setFilters }) {
 }
 
 // ── Card components ──
-function VehicleProcessCard({ v }) {
+function VehicleProcessCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
     if (v.status === 'IN_PROGRESS' || (insp && insp.status === 'IN_PROGRESS')) return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente de peritaje</Badge>;
+    if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   const docs = v.documentation;
@@ -112,24 +112,27 @@ function VehicleProcessCard({ v }) {
   const docsOk = docs && soatOk && tecnoOk && multasOk;
 
   return (
-    <Card className="overflow-hidden border border-border/60 rounded-xl">
+    <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${insp?.id || v.id}`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
+        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
           {v.photos?.[0] && <img src={v.photos[0]} alt="" className="w-full h-full object-cover" />}
-          {getStatusBadge() && <div className="absolute top-1 left-1">{getStatusBadge()}</div>}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
             <p className="font-bold text-foreground text-base leading-tight">{v.brand} {v.model}</p>
             <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
           </div>
-          <div className="mt-1">
+          <div className="flex items-center gap-2 mt-1">
             {docs && (
               <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
-                {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs incompletos</>}
+                {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
               </Badge>
             )}
           </div>
+        </div>
+        <div className="flex flex-col items-end justify-between flex-shrink-0">
+          {getStatusBadge()}
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </div>
     </Card>
