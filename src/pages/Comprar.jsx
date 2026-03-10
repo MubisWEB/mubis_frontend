@@ -8,6 +8,7 @@ import { Search, SlidersHorizontal, Flame, Radio, Bookmark } from 'lucide-react'
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';
+import FilterPanel from '@/components/FilterPanel';
 import BidModal from '@/components/BidModal';
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -84,11 +85,11 @@ export default function Comprar() {
   const currentActivity = activityItems[activityIdx];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-24">
+    <div className="min-h-screen flex flex-col bg-background pb-24 lg:pb-8">
       <Header />
 
       {/* Live Activity Banner */}
-      <div className="px-4 pt-3">
+      <div className="px-4 lg:px-8 pt-3">
         <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2.5">
             <div className="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
@@ -124,7 +125,8 @@ export default function Comprar() {
         </Card>
       </div>
 
-      <div className="bg-background px-4 pt-3 pb-3">
+      {/* Search & Sort bar */}
+      <div className="bg-background px-4 lg:px-8 pt-3 pb-3">
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
             <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
@@ -150,28 +152,51 @@ export default function Comprar() {
               <SelectItem value="price_high">Precio: mayor</SelectItem>
             </SelectContent>
           </Select>
-          <FilterSheet filters={filters} setFilters={setFilters} />
+          {/* Mobile: sheet filter */}
+          <div className="lg:hidden">
+            <FilterSheet filters={filters} setFilters={setFilters} />
+          </div>
         </div>
       </div>
 
-      <div className="px-4 pt-2 pb-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-lg font-bold text-foreground font-sans">Subastas</p>
-          <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
-        </div>
-        {filteredVehicles.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-muted-foreground" />
+      {/* Main content: sidebar filter (desktop) + grid */}
+      <div className="px-4 lg:px-8 pt-2 pb-4 flex gap-6">
+        {/* Desktop sidebar filter */}
+        <aside className="hidden lg:block w-72 flex-shrink-0">
+          <FilterPanel filters={filters} setFilters={setFilters} />
+        </aside>
+
+        {/* Auction listings */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-lg font-bold text-foreground font-sans">Subastas</p>
+            <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
+          </div>
+          {filteredVehicles.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">No hay subastas activas</p>
+              <p className="text-xs text-muted-foreground mt-1">Las subastas aparecerán aquí cuando los dealers publiquen vehículos</p>
             </div>
-            <p className="text-sm font-semibold text-foreground">No hay subastas activas</p>
-            <p className="text-xs text-muted-foreground mt-1">Las subastas aparecerán aquí cuando los dealers publiquen vehículos</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredVehicles.map((vehicle, index) => (<VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} />))}
-          </div>
-        )}
+          ) : (
+            <>
+              {/* Mobile: compact list */}
+              <div className="space-y-3 lg:hidden">
+                {filteredVehicles.map((vehicle, index) => (
+                  <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
+                ))}
+              </div>
+              {/* Desktop: 3-column grid with larger cards */}
+              <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+                {filteredVehicles.map((vehicle, index) => (
+                  <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <BidModal vehicle={selectedVehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />

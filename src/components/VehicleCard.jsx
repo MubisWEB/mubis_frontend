@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { getCurrentUser, isInWatchlist, toggleWatchlist, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
-export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, linkPrefix = '/DetalleSubasta/' }) {
+export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, variant = 'compact' }) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
   const currentUser = getCurrentUser();
@@ -54,6 +54,52 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
   const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
   const detailUrl = `/DetalleSubasta/${vehicle.id}`;
 
+  // ── Grid / card variant for desktop ──
+  if (variant === 'grid') {
+    return (
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-primary' : ''}`}>
+        <Link to={detailUrl} className="block relative aspect-[4/3] bg-muted overflow-hidden">
+          <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          {vehicle.isLeading && (
+            <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">
+              <Trophy className="w-3 h-3 mr-1" />LÍDER
+            </Badge>
+          )}
+          <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${isUrgent ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/80 text-foreground'}`}>
+            <Clock className="w-3 h-3 flex-shrink-0" />
+            <span className="font-semibold tabular-nums">{timeLeft}</span>
+          </div>
+        </Link>
+        <div className="p-3.5">
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <Link to={detailUrl} className="min-w-0">
+              <h3 className="font-bold text-foreground text-sm leading-tight truncate">{vehicle.brand} {vehicle.model}</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">{vehicle.year} · {(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km</p>
+            </Link>
+            <button onClick={handleToggleSave} className="p-1.5 rounded-full hover:bg-muted transition-colors flex-shrink-0">
+              <Bookmark className={`w-4 h-4 ${saved ? 'fill-secondary text-secondary' : 'text-muted-foreground'}`} />
+            </button>
+          </div>
+          <div className="flex items-center justify-between mt-3">
+            <div>
+              <span className={`font-bold text-lg ${vehicle.isLeading ? 'text-primary' : 'text-secondary'}`}>{formatPrice(vehicle.current_bid || 0)}</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{vehicle.bids_count || 0} pujas</span>
+                {uniqueBidders > 0 && (
+                  <span className="text-muted-foreground text-xs flex items-center"><Flame className="w-3 h-3 mr-0.5 text-secondary" />{uniqueBidders}</span>
+                )}
+              </div>
+            </div>
+            <Button onClick={(e) => { e.preventDefault(); onBid?.(vehicle); }} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-4 h-9 rounded-full text-sm">
+              Pujar
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // ── Compact variant (mobile default) ──
   return (
     <div>
       <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-primary' : ''}`}>
