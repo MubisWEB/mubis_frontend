@@ -152,7 +152,7 @@ export default function Ganados() {
       };
     });
 
-    if (currentUser.role === 'recomprador' && won.length < targetStatuses.length) {
+    if (['recomprador', 'dealer'].includes(currentUser.role) && won.length < targetStatuses.length) {
       const mockCars = [
         { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
         { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Medellín', mileage: 12000, current_bid: 98000000 },
