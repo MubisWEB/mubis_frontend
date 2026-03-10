@@ -125,9 +125,8 @@ export default function Ganados() {
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    let won = getWonAuctionsByUserId(currentUser.id);
-    const isRecomprador = currentUser.role === 'recomprador';
-    const targetStatuses = isRecomprador
+    const supportsWonStates = ['recomprador', 'dealer'].includes(currentUser.role);
+    const targetStatuses = supportsWonStates
       ? [
           'proceso', 'proceso', 'proceso', 'proceso',
           'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
@@ -135,8 +134,25 @@ export default function Ganados() {
           'cancelado', 'cancelado', 'cancelado', 'cancelado',
         ]
       : [];
+    const getAssignedStatus = (index) => targetStatuses[index] || targetStatuses[targetStatuses.length - 1] || 'proceso';
 
-    if (isRecomprador && won.length < targetStatuses.length) {
+    let won = getWonAuctionsByUserId(currentUser.id).map((auction, index) => {
+      if (!supportsWonStates) return auction;
+
+      const assignedStatus = getAssignedStatus(index);
+      if (auction.mockWonStatus !== assignedStatus) {
+        updateAuction(auction.id, { mockWonStatus: assignedStatus });
+      }
+
+      return {
+        ...auction,
+        extensionDays: auction.extensionDays || 0,
+        ends_at: auction.ends_at || new Date().toISOString(),
+        mockWonStatus: assignedStatus,
+      };
+    });
+
+    if (currentUser.role === 'recomprador' && won.length < targetStatuses.length) {
       const mockCars = [
         { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
         { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Medellín', mileage: 12000, current_bid: 98000000 },
@@ -183,21 +199,12 @@ export default function Ganados() {
           photos: [photos[nextIndex % photos.length]],
           ends_at: new Date().toISOString(),
           extensionDays: 0,
-          mockWonStatus: targetStatuses[nextIndex],
+          mockWonStatus: getAssignedStatus(nextIndex),
         });
       }
     }
 
-    if (isRecomprador) {
-      won = won.slice(0, targetStatuses.length).map((auction, index) => ({
-        ...auction,
-        extensionDays: auction.extensionDays || 0,
-        ends_at: auction.ends_at || new Date().toISOString(),
-        mockWonStatus: targetStatuses[index],
-      }));
-    }
-
-    setWonAuctions(won);
+    setWonAuctions(currentUser.role === 'recomprador' ? won.slice(0, targetStatuses.length) : won);
   }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {

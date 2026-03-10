@@ -101,7 +101,11 @@ export default function DetalleSubasta() {
   const extensionMs = (vehicle?.extensionDays || 0) * 24 * 60 * 60 * 1000;
   const totalWindowMs = COMPLETION_WINDOW_MS + extensionMs;
   const endTime = vehicle?.ends_at ? new Date(vehicle.ends_at).getTime() : 0;
-  const isWonByMe = (vehicle?.status === 'ENDED' || vehicle?.status === 'ended') && vehicle?.winnerId === currentUser?.id;
+  const isWonByMe = Boolean(
+    currentUser?.id &&
+    vehicle?.winnerId === currentUser.id &&
+    ['ENDED', 'ended', 'CLOSED', 'closed'].includes(vehicle?.status)
+  );
 
   // Respect mockWonStatus for mock data
   const mockStatus = vehicle?.mockWonStatus;
