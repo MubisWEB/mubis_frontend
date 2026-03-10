@@ -79,7 +79,7 @@ export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted
           <div>
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-bold text-foreground text-base leading-tight truncate">{auction.brand} {auction.model}</h3>
-              <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} />
+              <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} isCancelled={isCancelled} />
             </div>
             <p className="text-muted-foreground text-xs mt-1">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
           </div>
