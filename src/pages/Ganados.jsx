@@ -211,6 +211,18 @@ export default function Ganados() {
   const getCompletionWindow = (auction) => COMPLETION_WINDOW_MS + (auction.extensionDays || 0) * ONE_DAY_MS;
 
   const getAuctionStatus = (auction) => {
+    if (auction.mockWonStatus === 'completado') {
+      return { remaining: 0, isCompleted: true, canExtend: false };
+    }
+
+    if (auction.mockWonStatus === 'cancelado') {
+      return { remaining: 12 * 60 * 60 * 1000, isCompleted: false, canExtend: true };
+    }
+
+    if (auction.mockWonStatus === 'proceso') {
+      return { remaining: 48 * 60 * 60 * 1000, isCompleted: false, canExtend: false };
+    }
+
     const endTime = new Date(auction.ends_at).getTime();
     const remaining = getCompletionWindow(auction) - (Date.now() - endTime);
     return { remaining, isCompleted: remaining <= 0, canExtend: remaining > 0 && remaining < ONE_DAY_MS };
