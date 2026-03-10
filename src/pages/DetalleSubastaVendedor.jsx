@@ -64,6 +64,25 @@ export default function DetalleSubastaVendedor() {
     toast.success('Subasta cerrada', { description: `${auction.brand} ${auction.model}` });
   };
 
+  const handleAcceptBid = () => {
+    if (!auction) return;
+    const updated = acceptHighestBid(auction.id);
+    if (updated) { setAuction(updated); toast.success('Puja aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+  };
+
+  const handleRejectBid = () => {
+    if (!auction) return;
+    const updated = rejectHighestBid(auction.id);
+    if (updated) { setAuction(updated); toast.info('Puja rechazada', { description: 'La subasta se extendió 48 horas para recibir mejores ofertas.' }); }
+  };
+
+  const handleAcceptPreviousBid = () => {
+    if (!auction) return;
+    const updated = acceptPreviousBid(auction.id);
+    if (updated) { setAuction(updated); toast.success('Oferta anterior aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+    else { toast.error('No hay oferta anterior disponible'); }
+  };
+
   if (!auction) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
