@@ -188,30 +188,24 @@ function AuctionCard({ auction, navigate }) {
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
           {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
+          {isEnded ? (
+            auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
+          ) : (
+            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">Activa</Badge>
+          )}
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-1">
-            <div>
-              <h3 className="font-bold text-foreground text-sm">{auction.brand} {auction.model}</h3>
-              <p className="text-muted-foreground text-xs">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              {isEnded ? (auction.winnerId ? <Badge className="bg-primary/10 text-primary text-xs"><Trophy className="w-3 h-3 mr-0.5" />Con ganador</Badge> : <Badge className="bg-muted text-muted-foreground text-xs"><XCircle className="w-3 h-3 mr-0.5" />Sin ganador</Badge>) : <Badge className="bg-primary/10 text-primary text-xs">Activa</Badge>}
-              {peritajeBadge}
-            </div>
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-foreground text-base leading-tight">{auction.brand} {auction.model}</h3>
+            <p className="text-muted-foreground text-xs mt-0.5">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p>
           </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Puja actual:</span>
-              <p className="font-bold text-primary text-sm">{formatPrice(auction.current_bid)}</p>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Users className="w-3 h-3" />{auction.bids_count || 0}</span>
-              <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{auction.views || 0}</span>
-              {!isEnded && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{getTimeLeft(auction.ends_at)}</span>}
-            </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+            <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{auction.bids_count || 0}</span>
+            {!isEnded && <span className="text-muted-foreground text-xs flex items-center"><Clock className="w-3 h-3 mr-0.5" />{getTimeLeft(auction.ends_at)}</span>}
+            {peritajeBadge}
           </div>
         </div>
       </div>
