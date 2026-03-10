@@ -94,6 +94,8 @@ const App = () => (
           <Route path="/AdminSubastas" element={<RequireRole roles={['admin']}><AdminSubastas /></RequireRole>} />
           <Route path="/AdminMovimientos" element={<RequireRole roles={['admin']}><AdminMovimientos /></RequireRole>} />
           <Route path="/AdminAnaliticas" element={<RequireRole roles={['admin']}><AdminAnaliticas /></RequireRole>} />
+          <Route path="/AdminCasos" element={<RequireRole roles={['admin']}><AdminCasos /></RequireRole>} />
+          <Route path="/AdminCasos/:caseId" element={<RequireRole roles={['admin']}><AdminCasoDetalle /></RequireRole>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
