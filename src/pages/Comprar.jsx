@@ -183,13 +183,13 @@ export default function Comprar() {
           ) : (
             <>
               {/* Mobile: compact list */}
-              <div className="space-y-3 lg:hidden">
+              <div className="space-y-3 md:hidden">
                 {filteredVehicles.map((vehicle, index) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
                 ))}
               </div>
               {/* Desktop: 3-column grid with larger cards */}
-              <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+              <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredVehicles.map((vehicle, index) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
                 ))}
