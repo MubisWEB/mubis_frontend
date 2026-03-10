@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getWonAuctionsByUserId, getCurrentUser, updateAuction } from '@/lib/mockStore';
+import { getWonAuctionsByUserId, getCurrentUser, updateAuction, addAuction, getAuctionById } from '@/lib/mockStore';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 
@@ -190,8 +190,23 @@ export default function Ganados() {
       for (let i = 0; i < needed; i++) {
         const nextIndex = won.length;
         const car = mockCars[nextIndex % mockCars.length];
+        const mockId = `won-mock-${nextIndex}`;
+        // Persist in store if not already there
+        if (!getAuctionById(mockId)) {
+          addAuction({
+            id: mockId,
+            ...car,
+            status: 'ended',
+            winnerId: currentUser.id,
+            sellerId: 'u-dealer-1',
+            photos: [photos[nextIndex % photos.length]],
+            ends_at: new Date().toISOString(),
+            bids_count: Math.floor(Math.random() * 15) + 3,
+            mileage: car.mileage,
+          });
+        }
         won.push({
-          id: `won-mock-${Date.now()}-${i}`,
+          id: mockId,
           ...car,
           status: 'ended',
           winnerId: currentUser.id,

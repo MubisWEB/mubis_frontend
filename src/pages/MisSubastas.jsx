@@ -138,7 +138,7 @@ function VehicleProcessCard({ v, navigate }) {
   );
 }
 
-function VehicleProcessGridCard({ v }) {
+function VehicleProcessGridCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
@@ -151,7 +151,7 @@ function VehicleProcessGridCard({ v }) {
   const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
 
   return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group">
+    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${insp?.id || v.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <img src={v.photos?.[0] || defaultImage} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         <div className="absolute top-2 left-2">{getStatusBadge()}</div>
@@ -378,7 +378,7 @@ export default function MisSubastas() {
               <>
                 <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
                 {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div>
                 ) : (
                   <div className="hidden md:flex md:flex-col gap-4">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
                 )}
@@ -391,7 +391,7 @@ export default function MisSubastas() {
               <>
                 <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
                 {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div>
                 ) : (
                   <div className="hidden md:flex md:flex-col gap-4">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
                 )}
