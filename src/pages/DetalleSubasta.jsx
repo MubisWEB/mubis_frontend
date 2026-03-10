@@ -369,24 +369,45 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Report problem button — only for won auctions */}
-        {isWonByMe && (
-          <Card className="p-4 border border-destructive/20 shadow-sm rounded-xl bg-destructive/5">
-            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-              <Flag className="w-4 h-4 text-destructive" />¿Problema con este vehículo?
-            </p>
-            <p className="text-xs text-muted-foreground mb-3">
-              Si encontraste un problema con el vehículo, puedes abrir un caso de soporte. Mubis mediará entre comprador y vendedor.
-            </p>
-            <Button
-              variant="outline"
-              className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 font-medium"
-              onClick={() => setReportOpen(true)}
-            >
-              <AlertTriangle className="w-4 h-4 mr-2" />Reportar problema
-            </Button>
-          </Card>
-        )}
+        {/* Report problem button — only for won auctions that haven't expired */}
+        {isWonByMe && !completionExpired && (() => {
+          const existingCase = currentUser ? getSupportCasesByUserId(currentUser.id).find(c => c.auctionId === vehicle.id) : null;
+          if (existingCase) {
+            return (
+              <Card className="p-4 border border-border shadow-sm rounded-xl">
+                <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-secondary" />Caso de soporte abierto
+                </p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Ya tienes un caso abierto para este vehículo. Revisa el estado de tu conversación.
+                </p>
+                <Button
+                  className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
+                  onClick={() => navigate(`/SoporteCasos/${existingCase.id}`)}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />Ir a conversación
+                </Button>
+              </Card>
+            );
+          }
+          return (
+            <Card className="p-4 border border-destructive/20 shadow-sm rounded-xl bg-destructive/5">
+              <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                <Flag className="w-4 h-4 text-destructive" />¿Problema con este vehículo?
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Si encontraste un problema con el vehículo, puedes abrir un caso de soporte. Mubis mediará entre comprador y vendedor.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 font-medium"
+                onClick={() => setReportOpen(true)}
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />Reportar problema
+              </Button>
+            </Card>
+          );
+        })()}
 
         {/* Activity Timeline — only for active auctions */}
         {!isWonByMe && <ActivityTimeline events={auditEvents} />}
