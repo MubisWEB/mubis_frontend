@@ -297,16 +297,6 @@ export default function Ganados() {
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
         <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue placeholder="Ordenar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Más recientes</SelectItem>
-              <SelectItem value="price_high">Precio: mayor</SelectItem>
-              <SelectItem value="price_low">Precio: menor</SelectItem>
-            </SelectContent>
-          </Select>
           <div className="md:hidden">
             <GanadosFilterSheet filters={filters} setFilters={setFilters} />
           </div>
