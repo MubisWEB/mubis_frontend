@@ -46,7 +46,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
         <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+          <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
           {canExtend ? (
             <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
               onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
