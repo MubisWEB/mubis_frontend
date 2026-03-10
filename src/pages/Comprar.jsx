@@ -153,7 +153,7 @@ export default function Comprar() {
             </SelectContent>
           </Select>
           {/* Mobile: sheet filter */}
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <FilterSheet filters={filters} setFilters={setFilters} />
           </div>
         </div>
