@@ -12,6 +12,7 @@ const KEYS = {
   notifications: 'mubis_store_notifications',
   supportTickets: 'mubis_store_support_tickets',
   auditEvents: 'mubis_store_audit_events',
+  supportCases: 'mubis_store_support_cases',
 };
 
 // ── Admin whitelist ──
@@ -890,4 +891,75 @@ export function getProntoPagoByUserAndAuction(userId, auctionId) {
 
 export function getProntoPagoByUserId(userId) {
   return getProntoPagoItems().filter(p => p.userId === userId);
+}
+
+// ── Support Cases (Buyer-Seller-Mubis mediation) ──
+export function getSupportCases() { return load(KEYS.supportCases) || []; }
+export function getSupportCaseById(id) { return getSupportCases().find(c => c.id === id) || null; }
+export function getSupportCasesByUserId(userId) {
+  return getSupportCases().filter(c => c.buyerId === userId || c.sellerId === userId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+export function addSupportCase({ buyerId, sellerId, auctionId, vehicleLabel, description }) {
+  const list = getSupportCases();
+  const buyer = getUserById(buyerId);
+  const seller = getUserById(sellerId);
+  const caseItem = {
+    id: `case-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    buyerId,
+    sellerId,
+    auctionId,
+    vehicleLabel,
+    buyerName: buyer?.nombre || 'Comprador',
+    sellerName: seller?.nombre || 'Vendedor',
+    status: 'OPEN',
+    createdAt: new Date().toISOString(),
+    messages: [
+      {
+        id: `msg-${Date.now()}-1`,
+        senderId: buyerId,
+        senderRole: 'comprador',
+        senderName: buyer?.nombre || 'Comprador',
+        text: description,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: `msg-${Date.now()}-2`,
+        senderId: 'mubis',
+        senderRole: 'mediador',
+        senderName: 'Mubis Soporte',
+        text: `Hemos recibido tu reporte sobre el ${vehicleLabel}. Un agente de Mubis revisará tu caso y se comunicará con ambas partes. Tiempo estimado de respuesta: 24 horas.`,
+        createdAt: new Date(Date.now() + 1000).toISOString(),
+      },
+    ],
+  };
+  list.unshift(caseItem);
+  save(KEYS.supportCases, list);
+
+  addNotification({ userId: buyerId, type: 'support_case', title: 'Caso abierto', body: `Tu caso sobre ${vehicleLabel} ha sido registrado.` });
+  if (sellerId) {
+    addNotification({ userId: sellerId, type: 'support_case', title: 'Caso de soporte', body: `Se abrió un caso de soporte sobre ${vehicleLabel}.` });
+  }
+
+  return caseItem;
+}
+export function addMessageToCase(caseId, { senderId, senderRole, senderName, text }) {
+  const list = getSupportCases();
+  const caseItem = list.find(c => c.id === caseId);
+  if (!caseItem) return null;
+  const msg = {
+    id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    senderId,
+    senderRole,
+    senderName,
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  caseItem.messages.push(msg);
+  save(KEYS.supportCases, list);
+  return msg;
+}
+export function updateSupportCase(id, updates) {
+  const list = getSupportCases().map(c => c.id === id ? { ...c, ...updates } : c);
+  save(KEYS.supportCases, list);
+  return list.find(c => c.id === id);
 }

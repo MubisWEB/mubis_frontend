@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getWonAuctionsByUserId, getCurrentUser, getAuctions, updateAuction } from '@/lib/mockStore';
+import { getWonAuctionsByUserId, getCurrentUser, updateAuction } from '@/lib/mockStore';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 
@@ -124,19 +124,19 @@ export default function Ganados() {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    let won = getWonAuctionsByUserId(currentUser.id);
-    
-    // Generate mock won auctions if not enough
-    if (won.length < 14) {
-      const allAuctions = getAuctions();
-      const endedNotMine = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
-      
-      // Assign existing ended auctions
-      const toAssign = endedNotMine.slice(0, Math.max(0, 14 - won.length));
-      toAssign.forEach(a => { updateAuction(a.id, { winnerId: currentUser.id }); });
-      if (toAssign.length > 0) won = getWonAuctionsByUserId(currentUser.id);
 
-      // Create additional mock won auctions to fill gaps
+    let won = getWonAuctionsByUserId(currentUser.id);
+    const isRecomprador = currentUser.role === 'recomprador';
+    const targetStatuses = isRecomprador
+      ? [
+          'proceso', 'proceso', 'proceso', 'proceso',
+          'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
+          'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
+          'cancelado', 'cancelado', 'cancelado', 'cancelado',
+        ]
+      : [];
+
+    if (isRecomprador && won.length < targetStatuses.length) {
       const mockCars = [
         { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
         { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Medellín', mileage: 12000, current_bid: 98000000 },
@@ -152,6 +152,13 @@ export default function Ganados() {
         { brand: 'Mercedes-Benz', model: 'GLC', year: 2022, city: 'Bogotá', mileage: 15000, current_bid: 195000000 },
         { brand: 'Toyota', model: 'RAV4', year: 2023, city: 'Cali', mileage: 9000, current_bid: 118000000 },
         { brand: 'Mazda', model: '3', year: 2022, city: 'Pereira', mileage: 20000, current_bid: 68000000 },
+        { brand: 'Kia', model: 'Seltos', year: 2023, city: 'Bogotá', mileage: 11000, current_bid: 82000000 },
+        { brand: 'Hyundai', model: 'Creta', year: 2022, city: 'Cali', mileage: 16000, current_bid: 76000000 },
+        { brand: 'Chevrolet', model: 'Onix', year: 2023, city: 'Medellín', mileage: 7000, current_bid: 55000000 },
+        { brand: 'Renault', model: 'Koleos', year: 2021, city: 'Bogotá', mileage: 32000, current_bid: 95000000 },
+        { brand: 'Toyota', model: 'Hilux', year: 2022, city: 'Barranquilla', mileage: 25000, current_bid: 135000000 },
+        { brand: 'Ford', model: 'Bronco Sport', year: 2023, city: 'Medellín', mileage: 6000, current_bid: 142000000 },
+        { brand: 'Nissan', model: 'Kicks', year: 2022, city: 'Cali', mileage: 18000, current_bid: 72000000 },
       ];
 
       const photos = [
@@ -161,60 +168,37 @@ export default function Ganados() {
         'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop',
         'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&h=400&fit=crop',
         'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1542362567-b07e54358753?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&h=400&fit=crop',
       ];
 
-      const now = Date.now();
-      // Status distribution: 4 en proceso, 8 completado, 2 cancelado = 14 total
-      // En proceso: ends_at < 72h ago (remaining > 24h)
-      // Completado: ends_at > 96h ago (remaining <= 0)  
-      // Cancelado: ends_at 72-96h ago (0 < remaining < 24h)
-      const statusDates = [
-        // 4 En proceso (ended 12h, 24h, 36h, 48h ago)
-        now - 12 * 60 * 60 * 1000,
-        now - 24 * 60 * 60 * 1000,
-        now - 36 * 60 * 60 * 1000,
-        now - 48 * 60 * 60 * 1000,
-        // 8 Completado (ended 5-12 days ago)
-        now - 5 * 24 * 60 * 60 * 1000,
-        now - 6 * 24 * 60 * 60 * 1000,
-        now - 7 * 24 * 60 * 60 * 1000,
-        now - 8 * 24 * 60 * 60 * 1000,
-        now - 9 * 24 * 60 * 60 * 1000,
-        now - 10 * 24 * 60 * 60 * 1000,
-        now - 11 * 24 * 60 * 60 * 1000,
-        now - 12 * 24 * 60 * 60 * 1000,
-        // 2 Cancelado (ended ~76h and ~80h ago → remaining ~20h and ~16h)
-        now - 76 * 60 * 60 * 1000,
-        now - 80 * 60 * 60 * 1000,
-      ];
-
-      const needed = 14 - won.length;
+      const needed = targetStatuses.length - won.length;
       for (let i = 0; i < needed; i++) {
-        const carIdx = (won.length + i) % mockCars.length;
-        const car = mockCars[carIdx];
-        const mockAuction = {
+        const nextIndex = won.length;
+        const car = mockCars[nextIndex % mockCars.length];
+        won.push({
           id: `won-mock-${Date.now()}-${i}`,
           ...car,
           status: 'ended',
           winnerId: currentUser.id,
           sellerId: 'u-dealer-1',
-          photos: [photos[(won.length + i) % photos.length]],
-          ends_at: new Date(statusDates[(won.length + i) % statusDates.length]).toISOString(),
+          photos: [photos[nextIndex % photos.length]],
+          ends_at: new Date().toISOString(),
           extensionDays: 0,
-        };
-        won.push(mockAuction);
+          mockWonStatus: targetStatuses[nextIndex],
+        });
       }
     }
+
+    if (isRecomprador) {
+      won = won.slice(0, targetStatuses.length).map((auction, index) => ({
+        ...auction,
+        extensionDays: auction.extensionDays || 0,
+        ends_at: auction.ends_at || new Date().toISOString(),
+        mockWonStatus: targetStatuses[index],
+      }));
+    }
+
     setWonAuctions(won);
-  }, [currentUser?.id]);
+  }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {
     if (wonAuctions.length === 0) return;
@@ -227,6 +211,18 @@ export default function Ganados() {
   const getCompletionWindow = (auction) => COMPLETION_WINDOW_MS + (auction.extensionDays || 0) * ONE_DAY_MS;
 
   const getAuctionStatus = (auction) => {
+    if (auction.mockWonStatus === 'completado') {
+      return { remaining: 0, isCompleted: true, canExtend: false };
+    }
+
+    if (auction.mockWonStatus === 'cancelado') {
+      return { remaining: 12 * 60 * 60 * 1000, isCompleted: false, canExtend: true };
+    }
+
+    if (auction.mockWonStatus === 'proceso') {
+      return { remaining: 48 * 60 * 60 * 1000, isCompleted: false, canExtend: false };
+    }
+
     const endTime = new Date(auction.ends_at).getTime();
     const remaining = getCompletionWindow(auction) - (Date.now() - endTime);
     return { remaining, isCompleted: remaining <= 0, canExtend: remaining > 0 && remaining < ONE_DAY_MS };
@@ -297,16 +293,6 @@ export default function Ganados() {
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
         <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue placeholder="Ordenar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Más recientes</SelectItem>
-              <SelectItem value="price_high">Precio: mayor</SelectItem>
-              <SelectItem value="price_low">Precio: menor</SelectItem>
-            </SelectContent>
-          </Select>
           <div className="md:hidden">
             <GanadosFilterSheet filters={filters} setFilters={setFilters} />
           </div>
@@ -349,9 +335,10 @@ export default function Ganados() {
               <div className="space-y-3 md:hidden">
                 {filteredAuctions.map((auction, index) => {
                   const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                  const isCancelled = auction.mockWonStatus === 'cancelado';
                   return (
                     <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <WonAuctionMobileCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                      <WonAuctionMobileCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} isCancelled={isCancelled} index={index} />
                     </motion.div>
                   );
                 })}
@@ -361,9 +348,10 @@ export default function Ganados() {
                 <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filteredAuctions.map((auction, index) => {
                     const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                    const isCancelled = auction.mockWonStatus === 'cancelado';
                     return (
                       <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                        <WonAuctionGridCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                        <WonAuctionGridCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} isCancelled={isCancelled} index={index} />
                       </motion.div>
                     );
                   })}
@@ -372,9 +360,10 @@ export default function Ganados() {
                 <div className="hidden md:flex md:flex-col gap-4">
                   {filteredAuctions.map((auction, index) => {
                     const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                    const isCancelled = auction.mockWonStatus === 'cancelado';
                     return (
                       <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                        <WonAuctionListCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                        <WonAuctionListCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} isCancelled={isCancelled} index={index} />
                       </motion.div>
                     );
                   })}
