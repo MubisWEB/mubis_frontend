@@ -179,9 +179,11 @@ export default function DetalleSubasta() {
               <p className="text-muted-foreground text-sm flex items-center gap-1"><MapPin className="w-3 h-3" />{vehicle.city} · {vehicle.year}</p>
             </div>
             {isWonByMe ? (
-              completionExpired
-                ? <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
-                : <Badge className="bg-secondary/10 text-secondary font-semibold px-3 py-1.5 rounded-full text-xs"><Clock className="w-3 h-3 mr-1" />Cierre automático</Badge>
+              isMockCancelled
+                ? <Badge className="bg-destructive/10 text-destructive font-semibold px-3 py-1.5 rounded-full text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Cancelado</Badge>
+                : isMockCompleted
+                  ? <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
+                  : <Badge className="bg-secondary/10 text-secondary font-semibold px-3 py-1.5 rounded-full text-xs"><Clock className="w-3 h-3 mr-1" />Cierre automático</Badge>
             ) : (
               <div className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
                 <Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span>
