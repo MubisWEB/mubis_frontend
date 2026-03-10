@@ -161,6 +161,37 @@ export default function DetalleSubastaVendedor() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
+        {/* Pending Decision: Accept/Reject buttons */}
+        {isPendingDecision && (
+          <Card className="p-4 border-2 border-accent shadow-sm rounded-xl space-y-3">
+            <div className="text-center">
+              <p className="font-bold text-foreground text-lg">¡Tu subasta finalizó!</p>
+              <p className="text-sm text-muted-foreground mt-1">Puja más alta: <span className="font-bold text-foreground">{formatPrice(auction.highestBidAmount || auction.current_bid)}</span></p>
+              {auction.decisionDeadline && (
+                <p className="text-xs text-destructive mt-2">Tienes hasta las {new Date(auction.decisionDeadline).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })} para decidir</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Button onClick={handleAcceptBid} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
+                ✅ Aceptar puja
+              </Button>
+              <Button onClick={handleRejectBid} variant="outline" className="rounded-xl border-destructive text-destructive hover:bg-destructive/5 font-semibold">
+                ❌ Rechazar puja
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Extended 48h: Show accept previous bid button */}
+        {isExtended48h && auction.rejectedBidId && (
+          <Card className="p-4 border border-accent shadow-sm rounded-xl space-y-3">
+            <p className="text-sm text-muted-foreground">Rechazaste la puja de <span className="font-bold text-foreground">{formatPrice(auction.rejectedBidAmount)}</span>. La subasta está extendida 48h para recibir mejores ofertas.</p>
+            <Button onClick={handleAcceptPreviousBid} variant="outline" className="w-full rounded-xl border-secondary text-secondary hover:bg-secondary/5 font-semibold">
+              Aceptar oferta anterior
+            </Button>
+          </Card>
+        )}
+
         <Card className="p-4 border border-border shadow-sm rounded-xl">
           <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Settings2 className="w-4 h-4 text-secondary" />Especificaciones</p>
           <div className="grid grid-cols-2 gap-3">
@@ -261,37 +292,6 @@ export default function DetalleSubastaVendedor() {
 
         {/* Activity Timeline */}
         <ActivityTimeline events={auditEvents} />
-
-        {/* Pending Decision: Accept/Reject buttons */}
-        {isPendingDecision && (
-          <Card className="p-4 border-2 border-accent shadow-sm rounded-xl space-y-3">
-            <div className="text-center">
-              <p className="font-bold text-foreground text-lg">¡Tu subasta finalizó!</p>
-              <p className="text-sm text-muted-foreground mt-1">Puja más alta: <span className="font-bold text-foreground">{formatPrice(auction.highestBidAmount || auction.current_bid)}</span></p>
-              {auction.decisionDeadline && (
-                <p className="text-xs text-destructive mt-2">Tienes hasta las {new Date(auction.decisionDeadline).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })} para decidir</p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button onClick={handleAcceptBid} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                ✅ Aceptar puja
-              </Button>
-              <Button onClick={handleRejectBid} variant="outline" className="rounded-xl border-destructive text-destructive hover:bg-destructive/5 font-semibold">
-                ❌ Rechazar puja
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Extended 48h: Show accept previous bid button */}
-        {isExtended48h && auction.rejectedBidId && (
-          <Card className="p-4 border border-accent shadow-sm rounded-xl space-y-3">
-            <p className="text-sm text-muted-foreground">Rechazaste la puja de <span className="font-bold text-foreground">{formatPrice(auction.rejectedBidAmount)}</span>. La subasta está extendida 48h para recibir mejores ofertas.</p>
-            <Button onClick={handleAcceptPreviousBid} variant="outline" className="w-full rounded-xl border-secondary text-secondary hover:bg-secondary/5 font-semibold">
-              Aceptar oferta anterior
-            </Button>
-          </Card>
-        )}
 
         {isActive && !isExtended48h && (
           <Button onClick={handleCloseAuction} variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-2">
