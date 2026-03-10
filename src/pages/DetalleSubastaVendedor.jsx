@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,24 +96,17 @@ export default function DetalleSubastaVendedor() {
     <div className="min-h-screen bg-muted pb-24">
       <TopBar />
       <div className="relative">
-        <div className="relative h-64 bg-muted overflow-hidden">
-          {photos.length > 0 ? (
-            <motion.img key={currentImageIndex} src={photos[currentImageIndex]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted"><p className="text-muted-foreground">Sin fotos</p></div>
-          )}
-          {photos.length > 1 && (
-            <>
-              <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? photos.length - 1 : prev - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronLeft className="w-5 h-5" /></button>
-              <button onClick={() => setCurrentImageIndex(prev => prev === photos.length - 1 ? 0 : prev + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronRight className="w-5 h-5" /></button>
-            </>
-          )}
-          {photos.length > 0 && (
-            <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><Camera className="w-3 h-3" />{currentImageIndex + 1}/{photos.length}</div>
-          )}
-          <button onClick={() => navigate('/MisSubastas')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white"><ArrowLeft className="w-5 h-5" /></button>
-          <Badge className={`absolute top-4 right-4 ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? 'Activa' : 'Cerrada'}</Badge>
-        </div>
+          <PhotoGallery
+            photos={photos}
+            alt={`${auction.brand} ${auction.model}`}
+            height="320px"
+            overlay={
+              <>
+                <button onClick={() => navigate('/MisSubastas')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white z-10"><ArrowLeft className="w-5 h-5" /></button>
+                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? 'Activa' : 'Cerrada'}</Badge>
+              </>
+            }
+          />
 
         <div className="bg-card px-4 py-4 shadow-sm">
           <div className="flex justify-between items-start mb-2">
