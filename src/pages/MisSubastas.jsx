@@ -297,7 +297,7 @@ export default function MisSubastas() {
 
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-32 md:pb-12">
       <Header />
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-5 pb-2">
         <div className="flex items-center justify-between mb-4">

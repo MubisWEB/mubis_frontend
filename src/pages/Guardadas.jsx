@@ -37,7 +37,7 @@ export default function Guardadas() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-24 md:pb-8">
+    <div className="min-h-screen flex flex-col bg-background pb-32 md:pb-12">
       <Header title="Guardadas" />
       <div className="px-4 md:px-8 pt-4 pb-4">
         <div className="flex items-center justify-between mb-3">

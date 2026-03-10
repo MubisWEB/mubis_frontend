@@ -270,7 +270,7 @@ export default function Ganados() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-32 md:pb-12">
       <Header title="Mis Ganados" subtitle={wonAuctions.length > 0 ? `${wonAuctions.length} subastas ganadas` : undefined} />
 
       {/* Status filter cards */}

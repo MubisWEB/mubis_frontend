@@ -61,7 +61,7 @@ export default function Movimientos() {
   const ventas = movements.filter(m => m.kind === 'sold').length;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <Header title="Movimientos" subtitle={`${movements.length} transacciones`} />
 
       <div className="px-4 py-4 space-y-4">
