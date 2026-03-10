@@ -334,19 +334,28 @@ export default function MisSubastas() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
-        <div className="flex gap-2">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue placeholder="Sección" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="activas">Activas</SelectItem>
-              <SelectItem value="proceso">En proceso</SelectItem>
-              <SelectItem value="rechazados">Rechazados</SelectItem>
-              <SelectItem value="finalizadas">Finalizadas</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="md:hidden">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar">
+            {[
+              { key: 'activas', label: 'Activas' },
+              { key: 'proceso', label: 'En proceso' },
+              { key: 'rechazados', label: 'Rechazados' },
+              { key: 'finalizadas', label: 'Finalizadas' },
+            ].map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setActiveTab(opt.key)}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex-shrink-0 ${
+                  activeTab === opt.key
+                    ? 'bg-secondary text-secondary-foreground border-secondary shadow-md'
+                    : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="md:hidden flex-shrink-0">
             <SellerFilterSheet filters={filters} setFilters={setFilters} />
           </div>
         </div>
