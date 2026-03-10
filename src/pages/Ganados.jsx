@@ -70,7 +70,7 @@ function GanadosFilterSheet({ filters, setFilters }) {
   const [open, setOpen] = useState(false);
   const hasFilters = Object.values(filters).some(v => v);
   const handleApply = () => { setFilters(local); setOpen(false); };
-  const handleReset = () => { const e = { brand: '', status: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
+  const handleReset = () => { const e = { brand: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -80,7 +80,7 @@ function GanadosFilterSheet({ filters, setFilters }) {
           {hasFilters && <span className="ml-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{Object.values(filters).filter(v => v).length}</span>}
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
+      <SheetContent side="bottom" className="h-[50vh] rounded-t-3xl">
         <SheetHeader className="text-center pb-4"><SheetTitle className="text-xl font-bold font-sans text-foreground">Filtros</SheetTitle></SheetHeader>
         <div className="space-y-5 px-1">
           <div>
@@ -88,16 +88,6 @@ function GanadosFilterSheet({ filters, setFilters }) {
             <Select value={local.brand} onValueChange={(v) => setLocal({ ...local, brand: v })}>
               <SelectTrigger className="rounded-xl border-border h-11"><SelectValue placeholder="Todas" /></SelectTrigger>
               <SelectContent>{brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-foreground font-semibold text-sm mb-2 block">Estado</Label>
-            <Select value={local.status} onValueChange={(v) => setLocal({ ...local, status: v })}>
-              <SelectTrigger className="rounded-xl border-border h-11"><SelectValue placeholder="Todos" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">En proceso</SelectItem>
-                <SelectItem value="completed">Completado</SelectItem>
-              </SelectContent>
             </Select>
           </div>
           <div>
