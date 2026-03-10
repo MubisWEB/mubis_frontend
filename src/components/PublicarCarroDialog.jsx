@@ -29,6 +29,12 @@ const BRANDS = [
 const CITIES = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Bucaramanga', 'Pereira', 'Otra'];
 const FUELS = ['Gasolina', 'Diesel', 'Híbrido', 'Eléctrico'];
 const TRACTIONS = ['4x2', '4x4', 'AWD', 'FWD', 'RWD'];
+const TRANSMISSIONS = ['Manual', 'Automática', 'CVT'];
+const BODY_TYPES = ['Sedán', 'SUV', 'Hatchback', 'Pick-up', 'Coupé'];
+const DOORS = ['2', '3', '4', '5'];
+const PASSENGERS = ['2', '4', '5', '7'];
+const STEERINGS = ['Hidráulica', 'Eléctrica'];
+const AC_OPTIONS = ['Sí', 'No'];
 
 const STEPS = [
   { icon: Car, label: 'Vehículo' },
