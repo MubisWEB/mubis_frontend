@@ -143,13 +143,21 @@ export default function DetalleSubastaVendedor() {
         <Card className="p-4 border border-border shadow-sm rounded-xl">
           <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Settings2 className="w-4 h-4 text-secondary" />Especificaciones</p>
           <div className="grid grid-cols-2 gap-3">
-            {specs.map((spec, i) => (
+            {visibleSpecs.map((spec, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center"><spec.icon className="w-4 h-4 text-muted-foreground" /></div>
                 <div><p className="text-xs text-muted-foreground">{spec.label}</p><p className="text-sm font-medium text-foreground">{spec.value}</p></div>
               </div>
             ))}
           </div>
+          {hasMoreSpecs && (
+            <button
+              onClick={() => setShowAllSpecs(!showAllSpecs)}
+              className="flex items-center gap-1 text-sm font-medium text-secondary hover:text-secondary/80 mt-3 transition-colors"
+            >
+              {showAllSpecs ? <><ChevronUp className="w-4 h-4" />Ver menos</> : <><ChevronDown className="w-4 h-4" />Ver más</>}
+            </button>
+          )}
         </Card>
 
         <Card className="p-4 border border-border shadow-sm space-y-3 rounded-xl">
