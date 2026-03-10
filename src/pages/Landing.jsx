@@ -12,6 +12,7 @@ const Index = () => {
       <MainNav />
       <main className="flex-1">
         <HeroSection />
+        <AlliesSection />
         <HowItWorks />
       </main>
       <Footer />
