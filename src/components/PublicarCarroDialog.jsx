@@ -29,6 +29,12 @@ const BRANDS = [
 const CITIES = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Bucaramanga', 'Pereira', 'Otra'];
 const FUELS = ['Gasolina', 'Diesel', 'Híbrido', 'Eléctrico'];
 const TRACTIONS = ['4x2', '4x4', 'AWD', 'FWD', 'RWD'];
+const TRANSMISSIONS = ['Manual', 'Automática', 'CVT'];
+const BODY_TYPES = ['Sedán', 'SUV', 'Hatchback', 'Pick-up', 'Coupé'];
+const DOORS = ['2', '3', '4', '5'];
+const PASSENGERS = ['2', '4', '5', '7'];
+const STEERINGS = ['Hidráulica', 'Eléctrica'];
+const AC_OPTIONS = ['Sí', 'No'];
 
 const STEPS = [
   { icon: Car, label: 'Vehículo' },
@@ -41,6 +47,7 @@ const initialForm = {
   suggested_price: '',
   placa: '', brand: '', model: '', year: '', mileage: '', color: '',
   traction: '', cilindraje: '', fuel_type: '', ubicacion: '',
+  transmission: '', body_type: '', doors: '', passengers: '', steering: '', air_conditioning: '',
   cedula: '', nombre_completo: '', email: '', telefono: '',
   tarjeta_propiedad: null,
   photos: [],
@@ -130,6 +137,15 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   };
 
   const handleSubmitRequest = () => {
+    // Build specs object from form
+    const specs = {};
+    if (form.transmission) specs.transmission = form.transmission;
+    if (form.body_type) specs.body_type = form.body_type;
+    if (form.doors) specs.doors = parseInt(form.doors);
+    if (form.passengers) specs.passengers = parseInt(form.passengers);
+    if (form.steering) specs.steering = form.steering;
+    if (form.air_conditioning) specs.air_conditioning = form.air_conditioning === 'Sí';
+
     // Create vehicle in store
     const vehicle = addVehicle({
       brand: form.brand, model: form.model, year: +form.year,
@@ -137,6 +153,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
       traction: form.traction, cilindraje: form.cilindraje,
       fuel_type: form.fuel_type, placa: form.placa,
       ubicacion: form.ubicacion,
+      specs: Object.keys(specs).length > 0 ? specs : null,
       seller: { cedula: form.cedula, nombre: form.nombre_completo, email: form.email, telefono: form.telefono },
       tarjeta_propiedad: form.tarjeta_propiedad,
       photos: form.photos,
@@ -243,7 +260,12 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                   <div><Label className="text-xs font-medium">Cilindraje *</Label><Input className="mt-1 rounded-xl" placeholder="Ej: 2000cc" value={form.cilindraje} onChange={e => set('cilindraje', e.target.value)} />{fieldError('cilindraje')}</div>
                   <div><Label className="text-xs font-medium">Combustible *</Label><Select value={form.fuel_type} onValueChange={v => set('fuel_type', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{FUELS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent></Select>{fieldError('fuel_type')}</div>
                   <div><Label className="text-xs font-medium">Ubicación / Sucursal *</Label><Select value={form.ubicacion} onValueChange={v => set('ubicacion', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{CITIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>{fieldError('ubicacion')}</div>
-                </div>
+                  <div><Label className="text-xs font-medium">Transmisión</Label><Select value={form.transmission} onValueChange={v => set('transmission', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{TRANSMISSIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-xs font-medium">Tipo de carrocería</Label><Select value={form.body_type} onValueChange={v => set('body_type', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{BODY_TYPES.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-xs font-medium">Número de puertas</Label><Select value={form.doors} onValueChange={v => set('doors', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{DOORS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-xs font-medium">Número de pasajeros</Label><Select value={form.passengers} onValueChange={v => set('passengers', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{PASSENGERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-xs font-medium">Dirección</Label><Select value={form.steering} onValueChange={v => set('steering', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{STEERINGS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-xs font-medium">Aire acondicionado</Label><Select value={form.air_conditioning} onValueChange={v => set('air_conditioning', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{AC_OPTIONS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></div>
               </div>
               <div>
                 <SectionTitle>Datos personales del vendedor</SectionTitle>
@@ -349,6 +371,12 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                   <div><span className="text-muted-foreground">Color:</span> <span className="font-medium text-foreground">{form.color}</span></div>
                   <div><span className="text-muted-foreground">Precio:</span> <span className="font-bold text-primary">{formatCOP(form.suggested_price)}</span></div>
                   <div><span className="text-muted-foreground">Fotos:</span> <span className="font-medium text-foreground">{form.photos.length}</span></div>
+                  {form.transmission && <div><span className="text-muted-foreground">Transmisión:</span> <span className="font-medium text-foreground">{form.transmission}</span></div>}
+                  {form.body_type && <div><span className="text-muted-foreground">Carrocería:</span> <span className="font-medium text-foreground">{form.body_type}</span></div>}
+                  {form.doors && <div><span className="text-muted-foreground">Puertas:</span> <span className="font-medium text-foreground">{form.doors}</span></div>}
+                  {form.passengers && <div><span className="text-muted-foreground">Pasajeros:</span> <span className="font-medium text-foreground">{form.passengers}</span></div>}
+                  {form.steering && <div><span className="text-muted-foreground">Dirección:</span> <span className="font-medium text-foreground">{form.steering}</span></div>}
+                  {form.air_conditioning && <div><span className="text-muted-foreground">A/C:</span> <span className="font-medium text-foreground">{form.air_conditioning}</span></div>}
                 </div>
               </Card>
 

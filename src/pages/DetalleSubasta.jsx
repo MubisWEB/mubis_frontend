@@ -4,7 +4,7 @@ import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap, CalendarPlus, Flag, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap, CalendarPlus, Flag, MessageCircle, ChevronDown, ChevronUp, Car, Wind } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
@@ -136,20 +136,38 @@ export default function DetalleSubasta() {
   }
 
   const images = vehicle.photos || [];
-  const specs = [
-    { icon: Calendar, label: 'Año', value: vehicle.year },
-    { icon: Gauge, label: 'Kilometraje', value: `${Number(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km` },
-    { icon: Settings2, label: 'Transmisión', value: vehicle.transmission || vehicle.traction || '' },
-    { icon: Fuel, label: 'Combustible', value: vehicle.fuel_type || vehicle.combustible || '' },
-    { icon: Palette, label: 'Color', value: vehicle.color || '' },
-    { icon: MapPin, label: 'Ciudad', value: vehicle.city || '' },
-  ];
-
   const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);
   const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
+
+  const vehSpecs = vehicle.specs || vehData?.specs || {};
+
+  // Build full specs list — first 9 always visible, rest behind "Ver más"
+  const allSpecs = [
+    { icon: Car, label: 'Marca', value: vehicle.brand },
+    { icon: Car, label: 'Modelo', value: vehicle.model },
+    { icon: Calendar, label: 'Año', value: vehicle.year },
+    { icon: Gauge, label: 'Kilometraje', value: `${Number(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km` },
+    { icon: Fuel, label: 'Combustible', value: vehicle.fuel_type || vehicle.combustible || '' },
+    { icon: Settings2, label: 'Cilindraje', value: vehicle.cilindraje || '' },
+    { icon: Settings2, label: 'Tracción', value: vehicle.traction || vehicle.transmission || '' },
+    { icon: Settings2, label: 'Transmisión', value: vehSpecs.transmission || '' },
+    { icon: Palette, label: 'Color', value: vehicle.color || '' },
+    // Extended specs (shown on "Ver más")
+    { icon: Car, label: 'Carrocería', value: vehSpecs.body_type || '' },
+    { icon: Settings2, label: 'Puertas', value: vehSpecs.doors || '' },
+    { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers || '' },
+    { icon: Settings2, label: 'Dirección', value: vehSpecs.steering || '' },
+    { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning != null ? (vehSpecs.air_conditioning ? 'Sí' : 'No') : '' },
+    { icon: MapPin, label: 'Ubicación', value: vehicle.city || vehicle.dealerBranch || '' },
+  ].filter(s => s.value); // Only show specs that have values
+
+  const INITIAL_SPECS_COUNT = 9;
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
+  const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
+  const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
   const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
@@ -276,13 +294,21 @@ export default function DetalleSubasta() {
         <Card className="p-4 border border-border shadow-sm rounded-xl">
           <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Settings2 className="w-4 h-4 text-secondary" />Especificaciones</p>
           <div className="grid grid-cols-2 gap-3">
-            {specs.map((spec, i) => (
+            {visibleSpecs.map((spec, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center"><spec.icon className="w-4 h-4 text-muted-foreground" /></div>
                 <div><p className="text-xs text-muted-foreground">{spec.label}</p><p className="text-sm font-medium text-foreground">{spec.value}</p></div>
               </div>
             ))}
           </div>
+          {hasMoreSpecs && (
+            <button
+              onClick={() => setShowAllSpecs(!showAllSpecs)}
+              className="flex items-center gap-1 text-sm font-medium text-secondary hover:text-secondary/80 mt-3 transition-colors"
+            >
+              {showAllSpecs ? <><ChevronUp className="w-4 h-4" />Ver menos</> : <><ChevronDown className="w-4 h-4" />Ver más</>}
+            </button>
+          )}
         </Card>
 
         {inspection && inspection.status === 'COMPLETED' && (
