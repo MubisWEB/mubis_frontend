@@ -70,6 +70,22 @@ const CAR_DATA = [
   { brand: 'Audi', model: 'Q3', year: 2021, km: 35000, city: 'Bogotá', placa: 'KLM789', color: 'Gris', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc' },
   { brand: 'Toyota', model: 'RAV4', year: 2023, km: 9000, city: 'Cali', placa: 'NOP012', color: 'Verde', combustible: 'Híbrido', transmision: '4x4', cilindraje: '2500cc' },
   { brand: 'Mazda', model: 'CX-5', year: 2022, km: 28000, city: 'Medellín', placa: 'QRS345', color: 'Rojo', combustible: 'Gasolina', transmision: '4x2', cilindraje: '2000cc' },
+  // Extended pool for auto-replenishment
+  { brand: 'Chevrolet', model: 'Onix', year: 2023, km: 11000, city: 'Bogotá', placa: 'TUV678', color: 'Blanco', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1000cc' },
+  { brand: 'Renault', model: 'Koleos', year: 2022, km: 19000, city: 'Medellín', placa: 'WXY901', color: 'Negro', combustible: 'Gasolina', transmision: '4x4', cilindraje: '2500cc' },
+  { brand: 'Hyundai', model: 'Creta', year: 2023, km: 7500, city: 'Cali', placa: 'ZAB234', color: 'Azul', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc' },
+  { brand: 'Kia', model: 'Seltos', year: 2022, km: 21000, city: 'Bogotá', placa: 'CDE567', color: 'Gris', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '1600cc' },
+  { brand: 'Toyota', model: 'Hilux', year: 2021, km: 55000, city: 'Barranquilla', placa: 'FGH890', color: 'Blanco', combustible: 'Diésel', transmision: '4x4', cilindraje: '2800cc' },
+  { brand: 'Ford', model: 'Bronco Sport', year: 2023, km: 4200, city: 'Bogotá', placa: 'IJK123', color: 'Verde', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc' },
+  { brand: 'Mazda', model: 'CX-30', year: 2023, km: 9800, city: 'Medellín', placa: 'LMN456', color: 'Rojo', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '2000cc' },
+  { brand: 'Nissan', model: 'Qashqai', year: 2022, km: 16000, city: 'Cali', placa: 'OPQ789', color: 'Plata', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '2000cc' },
+  { brand: 'Volkswagen', model: 'T-Cross', year: 2023, km: 6500, city: 'Bogotá', placa: 'RST012', color: 'Blanco', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1000cc' },
+  { brand: 'Subaru', model: 'Forester', year: 2022, km: 24000, city: 'Bogotá', placa: 'UVW345', color: 'Azul', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2500cc' },
+  { brand: 'Jeep', model: 'Renegade', year: 2021, km: 38000, city: 'Medellín', placa: 'XYZ678', color: 'Negro', combustible: 'Gasolina', transmision: '4x4', cilindraje: '1800cc' },
+  { brand: 'Peugeot', model: '2008', year: 2023, km: 5500, city: 'Bogotá', placa: 'AAB901', color: 'Gris', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1200cc' },
+  { brand: 'Chevrolet', model: 'Captiva', year: 2022, km: 29000, city: 'Cali', placa: 'BBC234', color: 'Plata', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc' },
+  { brand: 'Hyundai', model: 'Santa Fe', year: 2023, km: 8500, city: 'Barranquilla', placa: 'CCD567', color: 'Blanco', combustible: 'Diésel', transmision: '4x4', cilindraje: '2200cc' },
+  { brand: 'Kia', model: 'Sorento', year: 2022, km: 31000, city: 'Bogotá', placa: 'DDE890', color: 'Negro', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2500cc' },
 ];
 
 function generateDocumentation(i) {
