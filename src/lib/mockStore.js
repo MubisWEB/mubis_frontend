@@ -199,15 +199,15 @@ function buildSeedInspections(vehicles) {
 
 function buildSeedAuctions(vehicles) {
   const readyVehicles = vehicles.filter(v => v.status === 'READY_FOR_AUCTION');
-  // Distribution: 0-11 active, 12-15 pending_decision, 16-23 ended
+  // Distribution: 0-14 active (15), 15-23 pending_decision (9), 24-35 ended (12)
   const winners = ['u-recomprador-1', 'u-recomprador-2', 'u-recomprador-3', 'u-dealer-1', 'u-dealer-2', 'u-dealer-3'];
   return readyVehicles.map((v, i) => {
     const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
     const bidsCount = 3 + Math.floor(Math.random() * 15);
     const currentBid = basePrice + bidsCount * 100000;
-    const isActive = i < 12;
-    const isPendingDecision = i >= 12 && i < 16;
-    const isEnded = i >= 16;
+    const isActive = i < 15;
+    const isPendingDecision = i >= 15 && i < 24;
+    const isEnded = i >= 24;
     let status = 'active';
     let winnerId = null;
     let ends_at;
