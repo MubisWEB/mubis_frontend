@@ -12,7 +12,7 @@ import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ExtensionModal from '@/components/ExtensionModal';
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction, addSupportCase } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction, addSupportCase, getSupportCasesByUserId } from '@/lib/mockStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
