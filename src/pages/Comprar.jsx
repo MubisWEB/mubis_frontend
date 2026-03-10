@@ -28,6 +28,7 @@ export default function Comprar() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [bidModalOpen, setBidModalOpen] = useState(false);
   const [activityItems, setActivityItems] = useState([]);
+  const [viewMode, setViewMode] = useState('grid');
   const [activityIdx, setActivityIdx] = useState(0);
 
   const loadActivity = useCallback(() => {
