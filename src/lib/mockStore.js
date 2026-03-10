@@ -971,3 +971,101 @@ export function updateSupportCase(id, updates) {
   save(KEYS.supportCases, list);
   return list.find(c => c.id === id);
 }
+
+// ── Publications (credits) ──
+const PUBLICATION_PRICE_PER_UNIT = 1000; // 1000 COP per publication
+
+function getPublicationsData() { return load(KEYS.publications) || {}; }
+function savePublicationsData(data) { save(KEYS.publications, data); }
+
+function ensurePublicationsSeeded() {
+  const data = getPublicationsData();
+  // Seed all dealers with 500 publications if not already set
+  const dealers = getUsers().filter(u => u.role === 'dealer');
+  let changed = false;
+  dealers.forEach(d => {
+    if (data[d.id] === undefined) {
+      data[d.id] = 500;
+      changed = true;
+    }
+  });
+  if (changed) savePublicationsData(data);
+}
+
+export function getPublicationsBalance(userId) {
+  ensurePublicationsSeeded();
+  const data = getPublicationsData();
+  return data[userId] || 0;
+}
+
+export function deductPublication(userId) {
+  const data = getPublicationsData();
+  if ((data[userId] || 0) < 1) return false;
+  data[userId] = (data[userId] || 0) - 1;
+  savePublicationsData(data);
+  return true;
+}
+
+export function rechargePublications(userId, quantity) {
+  const data = getPublicationsData();
+  data[userId] = (data[userId] || 0) + quantity;
+  savePublicationsData(data);
+  addAuditEvent({ entityType: 'user', entityId: userId, type: 'publications_recharged', message: `Recarga de ${quantity} publicaciones`, actorUserId: userId, actorRole: 'dealer' });
+  return data[userId];
+}
+
+export function getPublicationPrice(quantity) {
+  return quantity * PUBLICATION_PRICE_PER_UNIT;
+}
+
+// ── Auction Decision Flow ──
+// Statuses: active -> pending_decision (30min expired, seller has 30min to decide) -> accepted / rejected_extended (48h extension)
+export function acceptHighestBid(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (!auction) return null;
+  const bids = getBidsByAuctionId(auctionId).sort((a, b) => b.amount - a.amount);
+  const winnerId = bids.length > 0 ? bids[0].userId : null;
+  const updated = updateAuction(auctionId, { status: 'ended', winnerId, decidedAt: new Date().toISOString() });
+  if (winnerId) {
+    addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${auction.brand} ${auction.model} ${auction.year}.` });
+    addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_accepted', message: `Vendedor aceptó la puja más alta`, actorUserId: auction.dealerId, actorRole: 'dealer' });
+  }
+  if (auction.dealerId) {
+    addNotification({ userId: auction.dealerId, type: 'auction_ended', title: 'Puja aceptada', body: `Aceptaste la puja más alta de ${auction.brand} ${auction.model}.` });
+  }
+  return updated;
+}
+
+export function rejectHighestBid(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (!auction) return null;
+  const bids = getBidsByAuctionId(auctionId).sort((a, b) => b.amount - a.amount);
+  const rejectedBidId = bids.length > 0 ? bids[0].id : null;
+  const rejectedBidAmount = bids.length > 0 ? bids[0].amount : 0;
+  // Extend 48 hours from now
+  const newEndsAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  const updated = updateAuction(auctionId, {
+    status: 'active',
+    ends_at: newEndsAt,
+    rejectedBidId,
+    rejectedBidAmount,
+    extendedAt: new Date().toISOString(),
+    isExtended48h: true,
+  });
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_rejected', message: `Vendedor rechazó la puja más alta. Subasta extendida 48h.`, actorUserId: auction.dealerId, actorRole: 'dealer' });
+  addNotification({ userId: auction.dealerId, type: 'auction_extended', title: 'Subasta extendida', body: `Rechazaste la puja. La subasta de ${auction.brand} ${auction.model} se extendió 48 horas.` });
+  return updated;
+}
+
+export function acceptPreviousBid(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (!auction) return null;
+  const bids = getBidsByAuctionId(auctionId).sort((a, b) => b.amount - a.amount);
+  // Find the highest bid that isn't the rejected one
+  const previousBid = bids.find(b => b.id !== auction.rejectedBidId);
+  if (!previousBid) return null;
+  const updated = updateAuction(auctionId, { status: 'ended', winnerId: previousBid.userId, decidedAt: new Date().toISOString() });
+  addNotification({ userId: previousBid.userId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${auction.brand} ${auction.model} ${auction.year}.` });
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'previous_bid_accepted', message: `Vendedor aceptó oferta anterior`, actorUserId: auction.dealerId, actorRole: 'dealer' });
+  return updated;
+}
