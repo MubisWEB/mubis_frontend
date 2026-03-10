@@ -126,7 +126,7 @@ export function WonAuctionMobileCard({ auction, formatPrice, navigate, isComplet
         </div>
         <div className="flex flex-col items-end justify-between">
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          {canExtend && (
+          {canExtend && !isCancelled && (
             <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
               onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
               <CalendarPlus className="w-3 h-3 mr-1" />Extensión
