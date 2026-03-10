@@ -186,6 +186,7 @@ function AuctionCard({ auction, navigate }) {
     return <Badge className={`text-[10px] font-semibold ${insp.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : 'bg-purple-100 text-purple-800'}`}><FileCheck className="w-3 h-3 mr-0.5" />{insp.scoreGlobal}/100</Badge>;
   })();
   const isEnded = auction.status === 'ended' || auction.status === 'closed';
+  const isPending = auction.status === 'pending_decision';
 
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
@@ -194,8 +195,10 @@ function AuctionCard({ auction, navigate }) {
           {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
           {isEnded ? (
             auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
+          ) : isPending ? (
+            <Badge className="absolute top-1 left-1 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">⏳ Decidir</Badge>
           ) : (
-            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">Activa</Badge>
+            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
           )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
