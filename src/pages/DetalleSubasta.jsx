@@ -106,9 +106,11 @@ export default function DetalleSubasta() {
   // Respect mockWonStatus for mock data
   const mockStatus = vehicle?.mockWonStatus;
   const isMockCompleted = mockStatus === 'completado';
+  const isMockCancelled = mockStatus === 'cancelado';
+  const isInProcess = !isMockCompleted && !isMockCancelled;
 
   const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? totalWindowMs - (Date.now() - endTime) : 0);
-  const completionExpired = isMockCompleted || completionRemaining <= 0;
+  const completionExpired = isMockCompleted || isMockCancelled || completionRemaining <= 0;
 
   useEffect(() => {
     if (!isWonByMe || !endTime) return;
