@@ -135,6 +135,13 @@ export default function DetalleSubasta() {
     );
   }
 
+  const images = vehicle.photos || [];
+  const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
+  const bids = getBidsByAuctionId(vehicle.id);
+  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
+  const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
+  const docs = vehicle.documentation || vehData?.documentation || null;
+
   const vehSpecs = vehicle.specs || vehData?.specs || {};
 
   // Build full specs list — first 9 always visible, rest behind "Ver más"
@@ -161,12 +168,6 @@ export default function DetalleSubasta() {
   const [showAllSpecs, setShowAllSpecs] = useState(false);
   const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
   const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
-
-  const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
-  const bids = getBidsByAuctionId(vehicle.id);
-  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
-  const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
-  const docs = vehicle.documentation || vehData?.documentation || null;
 
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
   const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
