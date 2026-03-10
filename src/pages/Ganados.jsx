@@ -322,7 +322,17 @@ export default function Ganados() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-bold text-foreground font-sans">Ganados</p>
-            <span className="text-sm text-muted-foreground">{filteredAuctions.length} vehículos</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{filteredAuctions.length} vehículos</span>
+              <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
+                <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <LayoutList className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
           {filteredAuctions.length === 0 ? (
