@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, MapPin, CheckCircle, Clock, ChevronRight, CalendarPlus } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
