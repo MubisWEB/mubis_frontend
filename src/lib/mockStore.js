@@ -220,10 +220,10 @@ function buildSeedAuctions(vehicles) {
     } else {
       status = 'ended';
       // Assign winners: avoid assigning the auction's own dealer as winner
-      let w = winners[(i - 16) % winners.length];
-      if (w === v.dealerId) w = winners[((i - 16) + 1) % winners.length];
+      let w = winners[(i - 24) % winners.length];
+      if (w === v.dealerId) w = winners[((i - 24) + 1) % winners.length];
       winnerId = w;
-      ends_at = new Date(Date.now() - (i - 15) * 86400000).toISOString();
+      ends_at = new Date(Date.now() - (i - 23) * 86400000).toISOString();
     }
     return {
       id: `auc-seed-${i + 1}`,
