@@ -19,6 +19,7 @@ export default function DetalleSubastaVendedor() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
   const [auditEvents, setAuditEvents] = useState([]);
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
 
   const loadAuditEvents = (a) => {
     const ae = getAuditEventsByEntity('auction', a.id);
