@@ -347,7 +347,7 @@ export default function MisSubastas() {
 
         <div className="flex-1 min-w-0">
           {/* View toggle */}
-          <div className="flex items-center justify-end mb-3">
+          <div className="hidden md:flex items-center justify-end mb-3">
             <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
               <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                 <LayoutGrid className="w-4 h-4" />
