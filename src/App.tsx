@@ -37,6 +37,7 @@ import AdminAnaliticas from './pages/AdminAnaliticas';
 import PeritajesPendientes from './pages/PeritajesPendientes';
 import PeritajeDetalle from './pages/PeritajeDetalle';
 import SoporteCasos, { SoporteCasoDetalle } from './pages/SoporteCasos';
+import AdminCasos, { AdminCasoDetalle } from './pages/AdminCasos';
 
 const queryClient = new QueryClient();
 
