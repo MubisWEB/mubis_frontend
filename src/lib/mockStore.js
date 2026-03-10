@@ -424,6 +424,122 @@ export function getActiveAuctions() {
   });
 }
 
+const MIN_ACTIVE_AUCTIONS = 8;
+let _spawnCounter = 0;
+
+function spawnNewAuction() {
+  const dealers = ['u-dealer-1', 'u-dealer-2', 'u-dealer-3'];
+  const branches = { 'u-dealer-1': 'Bogotá Norte', 'u-dealer-2': 'Medellín Centro', 'u-dealer-3': 'Bogotá Norte' };
+  const companies = { 'u-dealer-1': 'Autonal', 'u-dealer-2': 'Los Coches', 'u-dealer-3': 'Motor Uno' };
+
+  const carIdx = _spawnCounter % CAR_DATA.length;
+  const car = CAR_DATA[carIdx];
+  const dealerId = dealers[_spawnCounter % dealers.length];
+  const ts = Date.now();
+  const uid = `${ts}-${Math.random().toString(36).slice(2, 6)}`;
+  _spawnCounter++;
+
+  // Create vehicle
+  const vehicle = {
+    id: `v-auto-${uid}`,
+    ...car,
+    km: car.km + Math.floor(Math.random() * 5000),
+    mileage: car.km + Math.floor(Math.random() * 5000),
+    transmission: car.transmision,
+    fuel_type: car.combustible,
+    traction: car.transmision,
+    dealerId,
+    dealerBranch: branches[dealerId],
+    dealerCompany: companies[dealerId],
+    photos: [PHOTOS[carIdx % PHOTOS.length], PHOTOS[(carIdx + 4) % PHOTOS.length]],
+    documentation: generateDocumentation(carIdx),
+    status: 'READY_FOR_AUCTION',
+    createdAt: new Date().toISOString(),
+  };
+  const vehicles = getVehicles();
+  vehicles.unshift(vehicle);
+  save(KEYS.vehicles, vehicles);
+
+  // Create inspection
+  const peritoId = vehicle.dealerBranch === 'Bogotá Norte' ? 'u-perito-1' : 'u-perito-2';
+  const inspection = {
+    id: `insp-auto-${uid}`,
+    vehicleId: vehicle.id,
+    dealerBranch: vehicle.dealerBranch,
+    dealerCompany: vehicle.dealerCompany,
+    peritoId,
+    lockedByPeritoId: peritoId,
+    status: 'COMPLETED',
+    scoreGlobal: 70 + Math.floor(Math.random() * 25),
+    scores: { motor: 80, transmision: 75, suspension: 82, frenos: 78, carroceria: 85, interior: 90, electrica: 77, llantas: 72 },
+    comments: 'Vehículo en buen estado general.',
+    createdAt: new Date(ts - 86400000).toISOString(),
+    completedAt: new Date(ts - 3600000).toISOString(),
+  };
+  const inspections = getInspections();
+  inspections.unshift(inspection);
+  save(KEYS.inspections, inspections);
+
+  // Create auction with random duration 15-55 min
+  const durationMin = 15 + Math.floor(Math.random() * 40);
+  const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
+  const bidsCount = 2 + Math.floor(Math.random() * 6);
+  const currentBid = basePrice + bidsCount * 100000;
+
+  const auction = {
+    id: `auc-auto-${uid}`,
+    vehicleId: vehicle.id,
+    dealerId,
+    brand: car.brand,
+    model: car.model,
+    year: car.year,
+    km: vehicle.km,
+    mileage: vehicle.mileage,
+    city: car.city,
+    color: car.color,
+    combustible: car.combustible,
+    transmission: car.transmision,
+    traction: car.transmision,
+    fuel_type: car.combustible,
+    cilindraje: car.cilindraje,
+    placa: car.placa,
+    photos: vehicle.photos,
+    documentation: vehicle.documentation,
+    dealerCompany: vehicle.dealerCompany,
+    dealerBranch: vehicle.dealerBranch,
+    starting_price: basePrice,
+    current_bid: currentBid,
+    bids_count: bidsCount,
+    views: 5 + Math.floor(Math.random() * 50),
+    status: 'active',
+    winnerId: null,
+    ends_at: new Date(ts + durationMin * 60000).toISOString(),
+    createdAt: new Date().toISOString(),
+  };
+
+  const auctions = getAuctions();
+  auctions.unshift(auction);
+  save(KEYS.auctions, auctions);
+
+  // Seed some bids for it
+  const bidders = ['u-recomprador-1', 'u-recomprador-2', 'u-recomprador-3', 'u-dealer-1', 'u-dealer-2'];
+  const bids = getBids();
+  for (let j = 0; j < bidsCount; j++) {
+    const bidderId = bidders[(j + carIdx) % bidders.length];
+    if (bidderId === dealerId) continue;
+    bids.unshift({
+      id: `bid-auto-${uid}-${j}`,
+      auctionId: auction.id,
+      userId: bidderId,
+      amount: basePrice + (j + 1) * 100000,
+      createdAt: new Date(ts - (bidsCount - j) * 120000).toISOString(),
+    });
+  }
+  save(KEYS.bids, bids);
+
+  return auction;
+}
+
 export function reconcileAuctionStatuses() {
   const auctions = getAuctions();
   let changed = false;
@@ -432,7 +548,6 @@ export function reconcileAuctionStatuses() {
   const updated = auctions.map(a => {
     if (a.status === 'active' && new Date(a.ends_at) < now) {
       changed = true;
-      // Find highest bidder to assign as winner
       const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
       const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
       const ended = { ...a, status: 'ended', winnerId };
@@ -449,6 +564,15 @@ export function reconcileAuctionStatuses() {
     return a;
   });
   if (changed) save(KEYS.auctions, updated);
+
+  // Auto-replenish: ensure there are always enough active auctions
+  const activeCount = (changed ? updated : auctions).filter(a => a.status === 'active' && new Date(a.ends_at) > now).length;
+  if (activeCount < MIN_ACTIVE_AUCTIONS) {
+    const toCreate = MIN_ACTIVE_AUCTIONS - activeCount;
+    for (let i = 0; i < toCreate; i++) {
+      spawnNewAuction();
+    }
+  }
 }
 
 // ── Bids ──
