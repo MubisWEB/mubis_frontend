@@ -147,6 +147,7 @@ export default function DetalleSubasta() {
 
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
   const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+  const existingCase = (isWonByMe && currentUser) ? getSupportCasesByUserId(currentUser.id).find(c => c.auctionId === vehicle.id) : null;
 
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
