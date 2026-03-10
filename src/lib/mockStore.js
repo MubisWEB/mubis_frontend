@@ -314,7 +314,7 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v10') {
+  if (seedVersion !== 'v11') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem('mubis_store_publications');
     localStorage.setItem('mubis_seed_version', 'v10');
