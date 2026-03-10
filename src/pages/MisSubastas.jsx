@@ -297,7 +297,7 @@ export default function MisSubastas() {
 
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-32 md:pb-12">
       <Header />
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-5 pb-2">
         <div className="flex items-center justify-between mb-4">
@@ -334,8 +334,21 @@ export default function MisSubastas() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
-        <div className="md:hidden">
-          <SellerFilterSheet filters={filters} setFilters={setFilters} />
+        <div className="flex gap-2">
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
+              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue placeholder="Sección" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="activas">Activas</SelectItem>
+              <SelectItem value="proceso">En proceso</SelectItem>
+              <SelectItem value="rechazados">Rechazados</SelectItem>
+              <SelectItem value="finalizadas">Finalizadas</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="md:hidden">
+            <SellerFilterSheet filters={filters} setFilters={setFilters} />
+          </div>
         </div>
       </div>
 
