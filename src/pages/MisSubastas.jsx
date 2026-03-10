@@ -409,6 +409,19 @@ export default function MisSubastas() {
             )
           )}
 
+          {activeTab === 'decision' && (
+            pendienteDecision.length === 0 ? <EmptyState text="Sin subastas pendientes de decisión" /> : (
+              <>
+                <div className="space-y-3 md:hidden">{pendienteDecision.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                ) : (
+                  <div className="hidden md:flex md:flex-col gap-4">{pendienteDecision.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                )}
+              </>
+            )
+          )}
+
           {activeTab === 'finalizadas' && (
             finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
               <>
