@@ -181,13 +181,32 @@ function buildSeedInspections(vehicles) {
 
 function buildSeedAuctions(vehicles) {
   const readyVehicles = vehicles.filter(v => v.status === 'READY_FOR_AUCTION');
+  // Distribution: 0-11 active, 12-15 pending_decision, 16-23 ended
+  const winners = ['u-recomprador-1', 'u-recomprador-2', 'u-recomprador-3', 'u-dealer-1', 'u-dealer-2', 'u-dealer-3'];
   return readyVehicles.map((v, i) => {
     const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
     const bidsCount = 3 + Math.floor(Math.random() * 15);
     const currentBid = basePrice + bidsCount * 100000;
-    // Stagger active auctions across the next 60 minutes so they expire at different times
-    const isActive = i < 10;
-    const isEnded = !isActive;
+    const isActive = i < 12;
+    const isPendingDecision = i >= 12 && i < 16;
+    const isEnded = i >= 16;
+    let status = 'active';
+    let winnerId = null;
+    let ends_at;
+    if (isActive) {
+      status = 'active';
+      ends_at = new Date(Date.now() + (3 + i * 5) * 60000).toISOString();
+    } else if (isPendingDecision) {
+      status = 'pending_decision';
+      ends_at = new Date(Date.now() - (i - 11) * 60000).toISOString();
+    } else {
+      status = 'ended';
+      // Assign winners: avoid assigning the auction's own dealer as winner
+      let w = winners[(i - 16) % winners.length];
+      if (w === v.dealerId) w = winners[((i - 16) + 1) % winners.length];
+      winnerId = w;
+      ends_at = new Date(Date.now() - (i - 15) * 86400000).toISOString();
+    }
     return {
       id: `auc-seed-${i + 1}`,
       vehicleId: v.id,
@@ -212,13 +231,13 @@ function buildSeedAuctions(vehicles) {
       specs: v.specs || null,
       starting_price: basePrice,
       current_bid: currentBid,
+      highestBidAmount: currentBid,
       bids_count: bidsCount,
       views: 20 + Math.floor(Math.random() * 200),
-      status: isActive ? 'active' : 'ended',
-      winnerId: isEnded ? (i % 2 === 0 ? 'u-recomprador-1' : 'u-recomprador-2') : null,
-      ends_at: isActive
-        ? new Date(Date.now() + (3 + i * 7) * 60000).toISOString()  // stagger 3-66 min
-        : new Date(Date.now() - (i - 9) * 86400000).toISOString(),
+      status,
+      winnerId,
+      decisionDeadline: isPendingDecision ? new Date(Date.now() + 30 * 60000).toISOString() : null,
+      ends_at,
       createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
     };
   });
