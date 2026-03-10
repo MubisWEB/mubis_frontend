@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X } from 'lucide-react';
+import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -97,12 +97,12 @@ function SellerFilterSheet({ filters, setFilters }) {
 }
 
 // ── Card components ──
-function VehicleProcessCard({ v }) {
+function VehicleProcessCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
     if (v.status === 'IN_PROGRESS' || (insp && insp.status === 'IN_PROGRESS')) return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente de peritaje</Badge>;
+    if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   const docs = v.documentation;
@@ -112,24 +112,27 @@ function VehicleProcessCard({ v }) {
   const docsOk = docs && soatOk && tecnoOk && multasOk;
 
   return (
-    <Card className="overflow-hidden border border-border/60 rounded-xl">
+    <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${insp?.id || v.id}`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
+        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
           {v.photos?.[0] && <img src={v.photos[0]} alt="" className="w-full h-full object-cover" />}
-          {getStatusBadge() && <div className="absolute top-1 left-1">{getStatusBadge()}</div>}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
             <p className="font-bold text-foreground text-base leading-tight">{v.brand} {v.model}</p>
             <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
           </div>
-          <div className="mt-1">
+          <div className="flex items-center gap-2 mt-1">
             {docs && (
               <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
-                {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs incompletos</>}
+                {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
               </Badge>
             )}
           </div>
+        </div>
+        <div className="flex flex-col items-end justify-between flex-shrink-0">
+          {getStatusBadge()}
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </div>
     </Card>
@@ -263,6 +266,7 @@ export default function MisSubastas() {
   const [auctions, setAuctions] = useState([]);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
+  const [activeTab, setActiveTab] = useState('activas');
   const currentUser = getCurrentUser();
 
   const loadData = useCallback(() => {
@@ -315,18 +319,18 @@ export default function MisSubastas() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="text-center p-3 bg-secondary/10 rounded-xl">
+          <button onClick={() => setActiveTab('activas')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'activas' ? 'bg-secondary/20 ring-2 ring-secondary' : 'bg-secondary/10 hover:bg-secondary/15'}`}>
             <p className="text-2xl font-bold text-secondary">{auctions.filter(a => a.status === 'active').length}</p>
             <p className="text-muted-foreground text-xs">En subasta</p>
-          </div>
-          <div className="text-center p-3 bg-accent/10 rounded-xl">
+          </button>
+          <button onClick={() => setActiveTab('proceso')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'proceso' ? 'bg-accent/20 ring-2 ring-secondary' : 'bg-accent/10 hover:bg-accent/15'}`}>
             <p className="text-2xl font-bold text-secondary">{vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length}</p>
             <p className="text-muted-foreground text-xs">En proceso</p>
-          </div>
-          <div className="text-center p-3 bg-primary/10 rounded-xl">
-            <p className="text-2xl font-bold text-primary">{vehicles.length}</p>
+          </button>
+          <button onClick={() => setActiveTab('finalizadas')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'finalizadas' ? 'bg-primary/20 ring-2 ring-primary' : 'bg-primary/10 hover:bg-primary/15'}`}>
+            <p className="text-2xl font-bold text-primary">{auctions.filter(a => a.status === 'ended' || a.status === 'closed').length + vehicles.length}</p>
             <p className="text-muted-foreground text-xs">Total</p>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -348,7 +352,7 @@ export default function MisSubastas() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          <Tabs defaultValue="proceso" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-4 bg-muted/50 p-1 rounded-xl mb-4">
               {tabs.map(t => (
                 <TabsTrigger key={t.key} value={t.key} className="text-[11px] whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-1.5 py-1.5">
@@ -360,7 +364,7 @@ export default function MisSubastas() {
             <TabsContent value="proceso">
               {enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> : (
                 <>
-                  <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} />)}</div>
+                  <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
                   <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
                 </>
               )}
@@ -369,7 +373,7 @@ export default function MisSubastas() {
             <TabsContent value="rechazados">
               {rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> : (
                 <>
-                  <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} />)}</div>
+                  <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
                   <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
                 </>
               )}

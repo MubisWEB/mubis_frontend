@@ -119,7 +119,7 @@ function buildSeedVehicles() {
       dealerCompany: companies[dealerId],
       photos: [PHOTOS[i % PHOTOS.length], PHOTOS[(i + 3) % PHOTOS.length]],
       documentation: generateDocumentation(i),
-      status: i < 12 ? 'READY_FOR_AUCTION' : 'PENDING_INSPECTION',
+      status: i < 12 ? 'READY_FOR_AUCTION' : i < 15 ? 'IN_PROGRESS' : i < 17 ? 'INSPECTION_REJECTED' : 'PENDING_INSPECTION',
       createdAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
     };
   });
@@ -146,13 +146,26 @@ function buildSeedInspections(vehicles) {
       });
     } else if (v.status === 'PENDING_INSPECTION') {
       inspections.push({
-        id: `insp-seed-${i + 1}`,
-        vehicleId: v.id,
-        dealerBranch: v.dealerBranch,
-        dealerCompany: v.dealerCompany,
-        status: 'PENDING',
-        lockedByPeritoId: null,
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        id: `insp-seed-${i + 1}`, vehicleId: v.id, dealerBranch: v.dealerBranch, dealerCompany: v.dealerCompany,
+        status: 'PENDING', lockedByPeritoId: null, createdAt: new Date(Date.now() - 86400000).toISOString(),
+        brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
+      });
+    } else if (v.status === 'IN_PROGRESS') {
+      const peritoId = v.dealerBranch === 'Bogotá Norte' ? 'u-perito-1' : 'u-perito-2';
+      inspections.push({
+        id: `insp-seed-${i + 1}`, vehicleId: v.id, dealerBranch: v.dealerBranch, dealerCompany: v.dealerCompany,
+        peritoId, lockedByPeritoId: peritoId, status: 'IN_PROGRESS',
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
+      });
+    } else if (v.status === 'INSPECTION_REJECTED') {
+      const peritoId = v.dealerBranch === 'Bogotá Norte' ? 'u-perito-1' : 'u-perito-2';
+      inspections.push({
+        id: `insp-seed-${i + 1}`, vehicleId: v.id, dealerBranch: v.dealerBranch, dealerCompany: v.dealerCompany,
+        peritoId, lockedByPeritoId: peritoId, status: 'REJECTED',
+        scoreGlobal: 30 + Math.floor(Math.random() * 20),
+        comments: 'Vehículo con daños estructurales significativos.',
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
         brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
       });
     }
@@ -275,9 +288,9 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v8') {
+  if (seedVersion !== 'v9') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v8');
+    localStorage.setItem('mubis_seed_version', 'v9');
   }
 
   if (!load(KEYS.users)) {
