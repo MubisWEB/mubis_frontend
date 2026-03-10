@@ -11,7 +11,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
-import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId, reconcileAuctionStatuses } from '@/lib/mockStore';
+import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId, reconcileAuctionStatuses, getPublicationsBalance } from '@/lib/mockStore';
 
 const brands = ['Toyota', 'Chevrolet', 'Mazda', 'Renault', 'Kia', 'Hyundai', 'Volkswagen', 'Ford', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi'];
 
@@ -186,6 +186,7 @@ function AuctionCard({ auction, navigate }) {
     return <Badge className={`text-[10px] font-semibold ${insp.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : 'bg-purple-100 text-purple-800'}`}><FileCheck className="w-3 h-3 mr-0.5" />{insp.scoreGlobal}/100</Badge>;
   })();
   const isEnded = auction.status === 'ended' || auction.status === 'closed';
+  const isPending = auction.status === 'pending_decision';
 
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
@@ -194,8 +195,10 @@ function AuctionCard({ auction, navigate }) {
           {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
           {isEnded ? (
             auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
+          ) : isPending ? (
+            <Badge className="absolute top-1 left-1 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">⏳ Decidir</Badge>
           ) : (
-            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">Activa</Badge>
+            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
           )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -267,12 +270,14 @@ export default function MisSubastas() {
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
   const [activeTab, setActiveTab] = useState('activas');
   const [viewMode, setViewMode] = useState('grid');
+  const [pubBalance, setPubBalance] = useState(0);
   const currentUser = getCurrentUser();
 
   const loadData = useCallback(() => {
     reconcileAuctionStatuses();
     setVehicles(getVehicles().filter(v => v.dealerId === currentUser?.id));
     setAuctions(getAuctions().filter(a => a.dealerId === currentUser?.id));
+    if (currentUser?.id) setPubBalance(getPublicationsBalance(currentUser.id));
   }, [currentUser?.id]);
 
   useEffect(() => {
@@ -293,6 +298,7 @@ export default function MisSubastas() {
   const enProceso = useMemo(() => applyFilters(vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status))), [vehicles, search, filters]);
   const rechazados = useMemo(() => applyFilters(vehicles.filter(v => v.status === 'INSPECTION_REJECTED')), [vehicles, search, filters]);
   const activas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'active')), [auctions, search, filters]);
+  const pendienteDecision = useMemo(() => applyFilters(auctions.filter(a => a.status === 'pending_decision')), [auctions, search, filters]);
   const finalizadas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
 
 
@@ -305,24 +311,31 @@ export default function MisSubastas() {
             <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Publicaciones y subastas</p>
           </div>
-          <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-            <Plus className="w-4 h-4" /> Publicar carro
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Publicaciones</p>
+              <p className="text-lg font-bold text-secondary">{pubBalance}</p>
+            </div>
+            <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
+              <Plus className="w-4 h-4" /> Publicar carro
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
-        <div className="grid grid-cols-4 gap-2 mb-4">
+        <div className="grid grid-cols-5 gap-2 mb-4">
           {[
             { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+            { key: 'decision', label: 'Decisión', count: auctions.filter(a => a.status === 'pending_decision').length, colorClass: 'text-accent-foreground', activeBg: 'bg-accent/15 border-accent' },
             { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
             { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
             { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' },
           ].map(stat => (
             <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-              className={`text-center p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
-              <p className={`text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
-              <p className={`text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
+              className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
+              <p className={`text-xl md:text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
+              <p className={`text-[9px] md:text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
             </button>
           ))}
         </div>
@@ -394,6 +407,19 @@ export default function MisSubastas() {
                   <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
                 ) : (
                   <div className="hidden md:flex md:flex-col gap-4">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                )}
+              </>
+            )
+          )}
+
+          {activeTab === 'decision' && (
+            pendienteDecision.length === 0 ? <EmptyState text="Sin subastas pendientes de decisión" /> : (
+              <>
+                <div className="space-y-3 md:hidden">{pendienteDecision.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                ) : (
+                  <div className="hidden md:flex md:flex-col gap-4">{pendienteDecision.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
                 )}
               </>
             )

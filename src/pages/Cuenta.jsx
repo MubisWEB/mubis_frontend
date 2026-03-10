@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead } from '@/lib/mockStore';
+import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead, getPublicationsBalance, rechargePublications, getPublicationPrice } from '@/lib/mockStore';
 import { toast } from 'sonner';
+import { Slider } from '@/components/ui/slider';
 
 const ROLE_LABELS = { dealer: 'Dealer', recomprador: 'Recomprador', perito: 'Perito', admin: 'Administrador' };
 const ROLE_BADGE_CLASS = { dealer: 'bg-secondary/10 text-secondary', recomprador: 'bg-primary/10 text-primary', perito: 'bg-secondary/10 text-secondary', admin: 'bg-destructive/10 text-destructive' };
@@ -46,11 +47,15 @@ export default function Cuenta() {
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pubBalance, setPubBalance] = useState(0);
+  const [rechargeQty, setRechargeQty] = useState(10);
+  const [rechargeOpen, setRechargeOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
       setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
       setUnreadCount(getUnreadCount(user.id));
+      setPubBalance(getPublicationsBalance(user.id));
     }
   }, []);
 
@@ -83,6 +88,17 @@ export default function Cuenta() {
       setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
       setUnreadCount(getUnreadCount(user.id));
     }
+  };
+
+  const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
+
+  const handleRecharge = () => {
+    if (!user) return;
+    const newBalance = rechargePublications(user.id, rechargeQty);
+    setPubBalance(newBalance);
+    toast.success(`¡Recarga exitosa!`, { description: `${rechargeQty} publicaciones añadidas. Balance: ${newBalance}` });
+    setRechargeOpen(false);
+    setRechargeQty(10);
   };
 
   const menuItems = [
@@ -163,6 +179,55 @@ export default function Cuenta() {
             )}
           </Card>
         </motion.div>
+
+        {/* Recharge Publications (dealer only) */}
+        {(role === 'dealer') && (
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}>
+            <div className="flex items-center gap-2 mb-2 px-1">
+              <Package className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recargar publicaciones</p>
+            </div>
+            <Card className="border border-border shadow-sm rounded-xl p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Disponibles:</p>
+                <p className="text-2xl font-bold text-secondary">{pubBalance}</p>
+              </div>
+              {!rechargeOpen ? (
+                <Button onClick={() => setRechargeOpen(true)} className="w-full rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold">
+                  Comprar publicaciones
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm font-medium">Cantidad</Label>
+                      <span className="text-lg font-bold text-foreground">{rechargeQty}</span>
+                    </div>
+                    <Slider
+                      value={[rechargeQty]}
+                      onValueChange={([v]) => setRechargeQty(v)}
+                      min={10}
+                      max={500}
+                      step={10}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      <span>10</span><span>500</span>
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-xl p-3 text-center">
+                    <p className="text-xs text-muted-foreground">Total a pagar</p>
+                    <p className="text-xl font-bold text-foreground">{formatCOP(getPublicationPrice(rechargeQty))}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" onClick={() => setRechargeOpen(false)} className="rounded-xl">Cancelar</Button>
+                    <Button onClick={handleRecharge} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">Pagar</Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
 
         {/* Menu */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { addVehicle, addInspection, getCurrentUser } from '@/lib/mockStore';
+import { addVehicle, addInspection, getCurrentUser, getPublicationsBalance, deductPublication } from '@/lib/mockStore';
 
 const BRANDS = [
   'Mazda', 'Kia', 'Chevrolet', 'Renault', 'Toyota', 'Nissan', 'Hyundai',
@@ -137,6 +137,11 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   };
 
   const handleSubmitRequest = () => {
+    // Check publications balance
+    if (!currentUser?.id || getPublicationsBalance(currentUser.id) < 1) {
+      toast.error('Sin publicaciones disponibles', { description: 'Recarga publicaciones desde tu cuenta para poder publicar.' });
+      return;
+    }
     // Build specs object from form
     const specs = {};
     if (form.transmission) specs.transmission = form.transmission;
@@ -179,6 +184,9 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
       status: 'PENDING',
       lockedByPeritoId: null,
     });
+
+    // Deduct publication
+    deductPublication(currentUser.id);
 
     toast.success('Solicitud de peritaje enviada', {
       description: `${vehicle.brand} ${vehicle.model} · Un perito de tu sucursal realizará la inspección`,

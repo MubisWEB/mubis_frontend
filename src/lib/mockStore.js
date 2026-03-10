@@ -13,6 +13,7 @@ const KEYS = {
   supportTickets: 'mubis_store_support_tickets',
   auditEvents: 'mubis_store_audit_events',
   supportCases: 'mubis_store_support_cases',
+  publications: 'mubis_store_publications',
 };
 
 // ── Admin whitelist ──
@@ -294,9 +295,10 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v9') {
+  if (seedVersion !== 'v10') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('mubis_seed_version', 'v9');
+    localStorage.removeItem('mubis_store_publications');
+    localStorage.setItem('mubis_seed_version', 'v10');
   }
 
   if (!load(KEYS.users)) {
@@ -499,8 +501,8 @@ function spawnNewAuction() {
   inspections.unshift(inspection);
   save(KEYS.inspections, inspections);
 
-  // Create auction with random duration 15-55 min
-  const durationMin = 15 + Math.floor(Math.random() * 40);
+  // Create auction with 30 min duration
+  const durationMin = 30;
   const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
   const bidsCount = 2 + Math.floor(Math.random() * 6);
   const currentBid = basePrice + bidsCount * 100000;
@@ -566,20 +568,41 @@ export function reconcileAuctionStatuses() {
   const now = new Date();
   const allBids = getBids();
   const updated = auctions.map(a => {
-    if (a.status === 'active' && new Date(a.ends_at) < now) {
+    // Active auction expired -> move to pending_decision (seller has 30min to accept/reject)
+    if (a.status === 'active' && new Date(a.ends_at) < now && !a.isExtended48h) {
+      changed = true;
+      const decisionDeadline = new Date(new Date(a.ends_at).getTime() + 30 * 60000).toISOString();
+      const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
+      addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_pending_decision', message: `Subasta finalizada. Vendedor tiene 30 min para decidir.`, actorUserId: '', actorRole: 'system' });
+      if (a.dealerId) {
+        addNotification({ userId: a.dealerId, type: 'pending_decision', title: 'Decide sobre tu subasta', body: `Tu ${a.brand} ${a.model} finalizó. Acepta o rechaza la puja más alta.` });
+      }
+      return { ...a, status: 'pending_decision', decisionDeadline, highestBidAmount: auctionBids[0]?.amount || 0, highestBidderId: auctionBids[0]?.userId || null };
+    }
+    // Extended 48h auction expired -> auto-end
+    if (a.status === 'active' && a.isExtended48h && new Date(a.ends_at) < now) {
       changed = true;
       const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
       const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
-      const ended = { ...a, status: 'ended', winnerId };
-      addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta finalizada: ${a.brand} ${a.model} ${a.year}`, actorUserId: '', actorRole: 'system' });
+      addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta extendida finalizada`, actorUserId: '', actorRole: 'system' });
       if (winnerId) {
-        addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'winner_set', message: `Ganador asignado`, actorUserId: winnerId, actorRole: 'recomprador' });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+      }
+      return { ...a, status: 'ended', winnerId };
+    }
+    // Pending decision expired (30min passed) -> auto-accept highest bid
+    if (a.status === 'pending_decision' && a.decisionDeadline && new Date(a.decisionDeadline) < now) {
+      changed = true;
+      const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
+      const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
+      addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_auto_accepted', message: `Puja aceptada automáticamente (tiempo agotado)`, actorUserId: '', actorRole: 'system' });
+      if (winnerId) {
         addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
         if (a.dealerId) {
-          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta finalizada', body: `Tu ${a.brand} ${a.model} ${a.year} fue vendido.` });
+          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta cerrada automáticamente', body: `La puja más alta de tu ${a.brand} ${a.model} fue aceptada automáticamente.` });
         }
       }
-      return ended;
+      return { ...a, status: 'ended', winnerId };
     }
     return a;
   });
@@ -968,4 +991,102 @@ export function updateSupportCase(id, updates) {
   const list = getSupportCases().map(c => c.id === id ? { ...c, ...updates } : c);
   save(KEYS.supportCases, list);
   return list.find(c => c.id === id);
+}
+
+// ── Publications (credits) ──
+const PUBLICATION_PRICE_PER_UNIT = 1000; // 1000 COP per publication
+
+function getPublicationsData() { return load(KEYS.publications) || {}; }
+function savePublicationsData(data) { save(KEYS.publications, data); }
+
+function ensurePublicationsSeeded() {
+  const data = getPublicationsData();
+  // Seed all dealers with 500 publications if not already set
+  const dealers = getUsers().filter(u => u.role === 'dealer');
+  let changed = false;
+  dealers.forEach(d => {
+    if (data[d.id] === undefined) {
+      data[d.id] = 500;
+      changed = true;
+    }
+  });
+  if (changed) savePublicationsData(data);
+}
+
+export function getPublicationsBalance(userId) {
+  ensurePublicationsSeeded();
+  const data = getPublicationsData();
+  return data[userId] || 0;
+}
+
+export function deductPublication(userId) {
+  const data = getPublicationsData();
+  if ((data[userId] || 0) < 1) return false;
+  data[userId] = (data[userId] || 0) - 1;
+  savePublicationsData(data);
+  return true;
+}
+
+export function rechargePublications(userId, quantity) {
+  const data = getPublicationsData();
+  data[userId] = (data[userId] || 0) + quantity;
+  savePublicationsData(data);
+  addAuditEvent({ entityType: 'user', entityId: userId, type: 'publications_recharged', message: `Recarga de ${quantity} publicaciones`, actorUserId: userId, actorRole: 'dealer' });
+  return data[userId];
+}
+
+export function getPublicationPrice(quantity) {
+  return quantity * PUBLICATION_PRICE_PER_UNIT;
+}
+
+// ── Auction Decision Flow ──
+// Statuses: active -> pending_decision (30min expired, seller has 30min to decide) -> accepted / rejected_extended (48h extension)
+export function acceptHighestBid(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (!auction) return null;
+  const bids = getBidsByAuctionId(auctionId).sort((a, b) => b.amount - a.amount);
+  const winnerId = bids.length > 0 ? bids[0].userId : null;
+  const updated = updateAuction(auctionId, { status: 'ended', winnerId, decidedAt: new Date().toISOString() });
+  if (winnerId) {
+    addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${auction.brand} ${auction.model} ${auction.year}.` });
+    addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_accepted', message: `Vendedor aceptó la puja más alta`, actorUserId: auction.dealerId, actorRole: 'dealer' });
+  }
+  if (auction.dealerId) {
+    addNotification({ userId: auction.dealerId, type: 'auction_ended', title: 'Puja aceptada', body: `Aceptaste la puja más alta de ${auction.brand} ${auction.model}.` });
+  }
+  return updated;
+}
+
+export function rejectHighestBid(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (!auction) return null;
+  const bids = getBidsByAuctionId(auctionId).sort((a, b) => b.amount - a.amount);
+  const rejectedBidId = bids.length > 0 ? bids[0].id : null;
+  const rejectedBidAmount = bids.length > 0 ? bids[0].amount : 0;
+  // Extend 48 hours from now
+  const newEndsAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  const updated = updateAuction(auctionId, {
+    status: 'active',
+    ends_at: newEndsAt,
+    rejectedBidId,
+    rejectedBidAmount,
+    extendedAt: new Date().toISOString(),
+    isExtended48h: true,
+  });
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_rejected', message: `Vendedor rechazó la puja más alta. Subasta extendida 48h.`, actorUserId: auction.dealerId, actorRole: 'dealer' });
+  addNotification({ userId: auction.dealerId, type: 'auction_extended', title: 'Subasta extendida', body: `Rechazaste la puja. La subasta de ${auction.brand} ${auction.model} se extendió 48 horas.` });
+  return updated;
+}
+
+export function acceptPreviousBid(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (!auction) return null;
+  const bids = getBidsByAuctionId(auctionId).sort((a, b) => b.amount - a.amount);
+  // Find the highest bid that isn't the rejected one
+  const previousBid = bids.find(b => b.id !== auction.rejectedBidId);
+  if (!previousBid) return null;
+  const updated = updateAuction(auctionId, { status: 'ended', winnerId: previousBid.userId, decidedAt: new Date().toISOString() });
+  addNotification({ userId: previousBid.userId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${auction.brand} ${auction.model} ${auction.year}.` });
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'previous_bid_accepted', message: `Vendedor aceptó oferta anterior`, actorUserId: auction.dealerId, actorRole: 'dealer' });
+  return updated;
 }

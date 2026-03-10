@@ -10,7 +10,7 @@ import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import { toast } from 'sonner';
-import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, acceptHighestBid, rejectHighestBid, acceptPreviousBid } from '@/lib/mockStore';
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
@@ -64,6 +64,25 @@ export default function DetalleSubastaVendedor() {
     toast.success('Subasta cerrada', { description: `${auction.brand} ${auction.model}` });
   };
 
+  const handleAcceptBid = () => {
+    if (!auction) return;
+    const updated = acceptHighestBid(auction.id);
+    if (updated) { setAuction(updated); toast.success('Puja aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+  };
+
+  const handleRejectBid = () => {
+    if (!auction) return;
+    const updated = rejectHighestBid(auction.id);
+    if (updated) { setAuction(updated); toast.info('Puja rechazada', { description: 'La subasta se extendió 48 horas para recibir mejores ofertas.' }); }
+  };
+
+  const handleAcceptPreviousBid = () => {
+    if (!auction) return;
+    const updated = acceptPreviousBid(auction.id);
+    if (updated) { setAuction(updated); toast.success('Oferta anterior aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+    else { toast.error('No hay oferta anterior disponible'); }
+  };
+
   if (!auction) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
@@ -76,7 +95,9 @@ export default function DetalleSubastaVendedor() {
   }
 
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
-  const isActive = auction.status === 'active' && new Date(auction.ends_at) > new Date();
+  const isActive = (auction.status === 'active' && new Date(auction.ends_at) > new Date());
+  const isPendingDecision = auction.status === 'pending_decision';
+  const isExtended48h = auction.status === 'active' && auction.isExtended48h;
   const bids = getBidsByAuctionId(auction.id);
   const uniqueBidders = getUniqueBidderCountByAuctionId(auction.id);
   const photos = auction.photos || [];
@@ -121,7 +142,7 @@ export default function DetalleSubastaVendedor() {
             overlay={
               <>
                 <button onClick={() => navigate('/MisSubastas')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white z-10"><ArrowLeft className="w-5 h-5" /></button>
-                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? 'Activa' : 'Cerrada'}</Badge>
+                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : isPendingDecision ? 'bg-accent text-accent-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? (isExtended48h ? 'Extendida 48h' : 'Activa') : isPendingDecision ? 'Decidir' : 'Cerrada'}</Badge>
               </>
             }
           />
@@ -241,13 +262,44 @@ export default function DetalleSubastaVendedor() {
         {/* Activity Timeline */}
         <ActivityTimeline events={auditEvents} />
 
-        {isActive && (
+        {/* Pending Decision: Accept/Reject buttons */}
+        {isPendingDecision && (
+          <Card className="p-4 border-2 border-accent shadow-sm rounded-xl space-y-3">
+            <div className="text-center">
+              <p className="font-bold text-foreground text-lg">¡Tu subasta finalizó!</p>
+              <p className="text-sm text-muted-foreground mt-1">Puja más alta: <span className="font-bold text-foreground">{formatPrice(auction.highestBidAmount || auction.current_bid)}</span></p>
+              {auction.decisionDeadline && (
+                <p className="text-xs text-destructive mt-2">Tienes hasta las {new Date(auction.decisionDeadline).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })} para decidir</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Button onClick={handleAcceptBid} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
+                ✅ Aceptar puja
+              </Button>
+              <Button onClick={handleRejectBid} variant="outline" className="rounded-xl border-destructive text-destructive hover:bg-destructive/5 font-semibold">
+                ❌ Rechazar puja
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Extended 48h: Show accept previous bid button */}
+        {isExtended48h && auction.rejectedBidId && (
+          <Card className="p-4 border border-accent shadow-sm rounded-xl space-y-3">
+            <p className="text-sm text-muted-foreground">Rechazaste la puja de <span className="font-bold text-foreground">{formatPrice(auction.rejectedBidAmount)}</span>. La subasta está extendida 48h para recibir mejores ofertas.</p>
+            <Button onClick={handleAcceptPreviousBid} variant="outline" className="w-full rounded-xl border-secondary text-secondary hover:bg-secondary/5 font-semibold">
+              Aceptar oferta anterior
+            </Button>
+          </Card>
+        )}
+
+        {isActive && !isExtended48h && (
           <Button onClick={handleCloseAuction} variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-2">
             <XCircle className="w-4 h-4" /> Cerrar subasta
           </Button>
         )}
 
-        {!isActive && (
+        {!isActive && !isPendingDecision && (
           <Card className="p-4 border border-border shadow-sm bg-muted/50 text-center rounded-xl">
             <p className="text-sm font-semibold text-muted-foreground">Esta subasta ha sido cerrada</p>
             <p className="text-xs text-muted-foreground mt-1">Puja final: {formatPrice(auction.current_bid)}</p>
