@@ -55,6 +55,7 @@ export default function Cuenta() {
     if (user) {
       setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
       setUnreadCount(getUnreadCount(user.id));
+      setPubBalance(getPublicationsBalance(user.id));
     }
   }, []);
 
