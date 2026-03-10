@@ -96,7 +96,7 @@ export default function DetalleSubastaVendedor() {
     <div className="min-h-screen bg-muted pb-24">
       <TopBar />
       <div className="relative">
-        <div className="relative h-64 bg-muted overflow-hidden">
+        <div className="relative">
           <PhotoGallery
             photos={photos}
             alt={`${auction.brand} ${auction.model}`}
@@ -108,7 +108,6 @@ export default function DetalleSubastaVendedor() {
               </>
             }
           />
-        </div>
 
         <div className="bg-card px-4 py-4 shadow-sm">
           <div className="flex justify-between items-start mb-2">

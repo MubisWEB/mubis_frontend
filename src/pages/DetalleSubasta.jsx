@@ -142,7 +142,7 @@ export default function DetalleSubasta() {
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
       <TopBar />
       <div className="relative">
-        <div className="relative h-64 bg-muted overflow-hidden">
+        <div className="relative">
           <PhotoGallery
             photos={images}
             alt={`${vehicle.brand} ${vehicle.model}`}
@@ -159,7 +159,6 @@ export default function DetalleSubasta() {
               </>
             }
           />
-        </div>
 
         <div className="bg-card px-4 py-4 shadow-sm">
           <div className="flex justify-between items-start mb-2">
