@@ -36,6 +36,7 @@ import AdminMovimientos from './pages/AdminMovimientos';
 import AdminAnaliticas from './pages/AdminAnaliticas';
 import PeritajesPendientes from './pages/PeritajesPendientes';
 import PeritajeDetalle from './pages/PeritajeDetalle';
+import SoporteCasos, { SoporteCasoDetalle } from './pages/SoporteCasos';
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,8 @@ const App = () => (
           <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
           <Route path="/Configuracion" element={<RequireAuth><Configuracion /></RequireAuth>} />
           <Route path="/AyudaSoporte" element={<RequireAuth><AyudaSoporte /></RequireAuth>} />
+          <Route path="/SoporteCasos" element={<RequireRole roles={['dealer','recomprador']}><SoporteCasos /></RequireRole>} />
+          <Route path="/SoporteCasos/:caseId" element={<RequireRole roles={['dealer','recomprador']}><SoporteCasoDetalle /></RequireRole>} />
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />

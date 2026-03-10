@@ -4,7 +4,7 @@ import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap, CalendarPlus } from 'lucide-react';
+import { ArrowLeft, Clock, Users, MapPin, Calendar, Gauge, Fuel, Settings2, Palette, FileCheck, Shield, Camera, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, Trophy, FileText, Phone, Mail, Building2, Zap, CalendarPlus, Flag } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import BidModal from '@/components/BidModal';
@@ -12,7 +12,10 @@ import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ExtensionModal from '@/components/ExtensionModal';
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction, addSupportCase } from '@/lib/mockStore';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from 'sonner';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
@@ -29,6 +32,8 @@ export default function DetalleSubasta() {
   const [isUrgent, setIsUrgent] = useState(false);
   const [auditEvents, setAuditEvents] = useState([]);
   const [extensionModalOpen, setExtensionModalOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportText, setReportText] = useState('');
 
   useEffect(() => {
     if (!auctionId) return;
@@ -364,6 +369,24 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
+        {/* Report problem button — only for won auctions */}
+        {isWonByMe && (
+          <Card className="p-4 border border-destructive/20 shadow-sm rounded-xl bg-destructive/5">
+            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <Flag className="w-4 h-4 text-destructive" />¿Problema con este vehículo?
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Si encontraste un problema con el vehículo, puedes abrir un caso de soporte. Mubis mediará entre comprador y vendedor.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 font-medium"
+              onClick={() => setReportOpen(true)}
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />Reportar problema
+            </Button>
+          </Card>
+        )}
 
         {/* Activity Timeline — only for active auctions */}
         {!isWonByMe && <ActivityTimeline events={auditEvents} />}
@@ -390,6 +413,54 @@ export default function DetalleSubasta() {
         }}
         vehicleName={vehicle ? `${vehicle.brand} ${vehicle.model}` : ''}
       />
+
+      {/* Report Problem Dialog */}
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Reportar problema
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Describe el problema encontrado con el <span className="font-semibold text-foreground">{vehicle?.brand} {vehicle?.model} {vehicle?.year}</span>. Se abrirá un caso entre tú, el vendedor y Mubis como mediador.
+            </p>
+            <Textarea
+              placeholder="Describe el problema con detalle..."
+              value={reportText}
+              onChange={(e) => setReportText(e.target.value)}
+              className="min-h-[120px] resize-none"
+              maxLength={1000}
+            />
+            <p className="text-[10px] text-muted-foreground text-right">{reportText.length}/1000</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setReportOpen(false); setReportText(''); }}>Cancelar</Button>
+            <Button
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              disabled={!reportText.trim()}
+              onClick={() => {
+                if (!reportText.trim() || !currentUser || !vehicle) return;
+                addSupportCase({
+                  buyerId: currentUser.id,
+                  sellerId: vehicle.dealerId || vehicle.sellerId || '',
+                  auctionId: vehicle.id,
+                  vehicleLabel: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+                  description: reportText.trim(),
+                });
+                setReportOpen(false);
+                setReportText('');
+                toast.success('Caso abierto exitosamente', { description: 'Puedes verlo en Mubis Soporte - Casos' });
+              }}
+            >
+              Abrir caso
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <BottomNav />
     </div>
   );
