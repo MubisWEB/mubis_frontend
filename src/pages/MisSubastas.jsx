@@ -204,7 +204,7 @@ function AuctionCard({ auction, navigate }) {
             <p className="text-muted-foreground text-xs mt-0.5">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+            <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
             <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{auction.bids_count || 0}</span>
             {!isEnded && <span className="text-muted-foreground text-xs flex items-center"><Clock className="w-3 h-3 mr-0.5" />{getTimeLeft(auction.ends_at)}</span>}
             {peritajeBadge}
