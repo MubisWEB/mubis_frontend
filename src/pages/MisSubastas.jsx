@@ -352,7 +352,7 @@ export default function MisSubastas() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          <Tabs defaultValue="proceso" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-4 bg-muted/50 p-1 rounded-xl mb-4">
               {tabs.map(t => (
                 <TabsTrigger key={t.key} value={t.key} className="text-[11px] whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-1.5 py-1.5">
