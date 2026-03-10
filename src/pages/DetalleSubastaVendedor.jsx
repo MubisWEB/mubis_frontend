@@ -95,7 +95,9 @@ export default function DetalleSubastaVendedor() {
   }
 
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
-  const isActive = auction.status === 'active' && new Date(auction.ends_at) > new Date();
+  const isActive = (auction.status === 'active' && new Date(auction.ends_at) > new Date());
+  const isPendingDecision = auction.status === 'pending_decision';
+  const isExtended48h = auction.status === 'active' && auction.isExtended48h;
   const bids = getBidsByAuctionId(auction.id);
   const uniqueBidders = getUniqueBidderCountByAuctionId(auction.id);
   const photos = auction.photos || [];
