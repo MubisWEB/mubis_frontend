@@ -44,7 +44,7 @@ const MainNav = () => {
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => navigate("/login")} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
-            Log in
+            Ingresar
           </button>
         </div>
         <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
