@@ -137,6 +137,15 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   };
 
   const handleSubmitRequest = () => {
+    // Build specs object from form
+    const specs = {};
+    if (form.transmission) specs.transmission = form.transmission;
+    if (form.body_type) specs.body_type = form.body_type;
+    if (form.doors) specs.doors = parseInt(form.doors);
+    if (form.passengers) specs.passengers = parseInt(form.passengers);
+    if (form.steering) specs.steering = form.steering;
+    if (form.air_conditioning) specs.air_conditioning = form.air_conditioning === 'Sí';
+
     // Create vehicle in store
     const vehicle = addVehicle({
       brand: form.brand, model: form.model, year: +form.year,
@@ -144,6 +153,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
       traction: form.traction, cilindraje: form.cilindraje,
       fuel_type: form.fuel_type, placa: form.placa,
       ubicacion: form.ubicacion,
+      specs: Object.keys(specs).length > 0 ? specs : null,
       seller: { cedula: form.cedula, nombre: form.nombre_completo, email: form.email, telefono: form.telefono },
       tarjeta_propiedad: form.tarjeta_propiedad,
       photos: form.photos,
