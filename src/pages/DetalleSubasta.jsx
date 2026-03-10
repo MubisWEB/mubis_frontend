@@ -252,10 +252,16 @@ export default function DetalleSubasta() {
                 <CalendarPlus className="w-4 h-4 mr-2" />Solicitar extensión de plazo
               </Button>
             )}
-            {isWonByMe && completionExpired && (
+            {isWonByMe && isMockCompleted && (
               <div className="mt-3 bg-primary/10 rounded-lg p-3 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-primary" />
                 <p className="text-xs font-semibold text-foreground">Trato completado por Mubis</p>
+              </div>
+            )}
+            {isWonByMe && isMockCancelled && (
+              <div className="mt-3 bg-destructive/10 rounded-lg p-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+                <p className="text-xs font-semibold text-foreground">Transacción cancelada</p>
               </div>
             )}
           </div>
