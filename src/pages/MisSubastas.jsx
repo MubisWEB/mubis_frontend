@@ -295,12 +295,6 @@ export default function MisSubastas() {
   const activas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'active')), [auctions, search, filters]);
   const finalizadas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
 
-  const tabs = [
-    { key: 'proceso', label: 'En proceso', count: enProceso.length },
-    { key: 'rechazados', label: 'Rechazados', count: rechazados.length },
-    { key: 'activas', label: 'Activas', count: activas.length },
-    { key: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
-  ];
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-8">
