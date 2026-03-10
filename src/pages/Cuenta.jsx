@@ -90,6 +90,17 @@ export default function Cuenta() {
     }
   };
 
+  const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
+
+  const handleRecharge = () => {
+    if (!user) return;
+    const newBalance = rechargePublications(user.id, rechargeQty);
+    setPubBalance(newBalance);
+    toast.success(`¡Recarga exitosa!`, { description: `${rechargeQty} publicaciones añadidas. Balance: ${newBalance}` });
+    setRechargeOpen(false);
+    setRechargeQty(10);
+  };
+
   const menuItems = [
     { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); } },
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
