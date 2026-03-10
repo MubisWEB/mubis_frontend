@@ -246,7 +246,7 @@ function AuctionGridCard({ auction, navigate }) {
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year}{auction.city ? ` · ${auction.city}` : ''}</p>
         <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+          <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-0.5"><Users className="w-3 h-3" />{auction.bids_count || 0}</span>
             <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{auction.views || 0}</span>
