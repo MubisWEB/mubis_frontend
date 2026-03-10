@@ -1,24 +1,28 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
-export default function MubisLogo({ size = 'md', linkTo = null }) {
+export default function MubisLogo({ size = "md", variant = "dark", linkTo = null }) {
+
   const sizes = {
-    sm: 'text-xl',
-    md: 'text-2xl',
-    lg: 'text-3xl',
-    xl: 'text-4xl',
+    sm: "h-10",
+    md: "h-12",
+    lg: "h-16",
+    xl: "h-24",
   };
 
+  const src =
+    variant === "light"
+      ? "/MubisLogoWhite.png"
+      : "/MubisLogo.png";
+  
+
   const logo = (
-  <span className={`${sizes[size]} font-black tracking-tight text-foreground`}>
-    mub
-    <span className="relative">
-      i
-      <span className="absolute left-1/2 -translate-x-1/2 -top-[-0.17em] w-[0.22em] h-[0.19em] rounded-full bg-primary" />
-    </span>
-    s
-  </span>
-);
+    <img
+      src={src}
+      alt="Mubis"
+      className={`${sizes[size]} w-auto`}
+    />
+  );
 
   if (linkTo) {
     return <Link to={linkTo}>{logo}</Link>;
