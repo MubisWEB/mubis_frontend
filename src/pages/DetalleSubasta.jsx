@@ -145,28 +145,29 @@ export default function DetalleSubasta() {
 
   const vehSpecs = vehicle.specs || vehData?.specs || {};
 
-  // Build full specs list — first 9 always visible, rest behind "Ver más"
+  // Build full specs list — first 6 always visible, rest behind "Ver más"
   const allSpecs = [
+    // Top 6 (always visible)
     { icon: Car, label: 'Marca', value: vehicle.brand },
     { icon: Car, label: 'Modelo', value: vehicle.model },
     { icon: Calendar, label: 'Año', value: vehicle.year },
     { icon: Gauge, label: 'Kilometraje', value: `${Number(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km` },
     { icon: Fuel, label: 'Combustible', value: vehicle.fuel_type || vehicle.combustible || '' },
-    { icon: Settings2, label: 'Cilindraje', value: vehicle.cilindraje || '' },
-    { icon: Settings2, label: 'Tracción', value: vehicle.traction || vehicle.transmission || '' },
     { icon: Settings2, label: 'Transmisión', value: vehSpecs.transmission || '' },
+    // Extended (shown on "Ver más") — all remaining from Publicar carro step 1
     { icon: Palette, label: 'Color', value: vehicle.color || '' },
-    // Extended specs (shown on "Ver más")
+    { icon: Settings2, label: 'Cilindraje', value: vehicle.cilindraje || '' },
+    { icon: Settings2, label: 'Tracción', value: vehicle.traction || '' },
     { icon: Car, label: 'Carrocería', value: vehSpecs.body_type || '' },
     { icon: Settings2, label: 'Puertas', value: vehSpecs.doors || '' },
     { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers || '' },
     { icon: Settings2, label: 'Dirección', value: vehSpecs.steering || '' },
     { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning != null ? (vehSpecs.air_conditioning ? 'Sí' : 'No') : '' },
-    { icon: MapPin, label: 'Ubicación', value: vehicle.city || vehicle.dealerBranch || '' },
+    { icon: FileText, label: 'Placa', value: vehicle.placa || '' },
+    { icon: MapPin, label: 'Ubicación', value: vehicle.city || vehicle.ubicacion || vehicle.dealerBranch || '' },
   ].filter(s => s.value); // Only show specs that have values
 
-  const INITIAL_SPECS_COUNT = 9;
-  
+  const INITIAL_SPECS_COUNT = 6;
   const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
   const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
