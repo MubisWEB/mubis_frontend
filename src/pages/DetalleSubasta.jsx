@@ -143,32 +143,22 @@ export default function DetalleSubasta() {
       <TopBar />
       <div className="relative">
         <div className="relative h-64 bg-muted overflow-hidden">
-          {images.length > 0 ? (
-            <AnimatePresence mode="wait">
-              <motion.img key={currentImageIndex} src={images[currentImageIndex]} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            </AnimatePresence>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center"><p className="text-muted-foreground">Sin fotos</p></div>
-          )}
-          {images.length > 1 && (
-            <>
-              <button onClick={() => setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronLeft className="w-5 h-5" /></button>
-              <button onClick={() => setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white"><ChevronRight className="w-5 h-5" /></button>
-            </>
-          )}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {images.map((_, i) => (<div key={i} className={`w-2 h-2 rounded-full transition-all ${i === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`} />))}
-          </div>
-          {images.length > 0 && (
-            <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><Camera className="w-3 h-3" />{currentImageIndex + 1}/{images.length}</div>
-          )}
-          <button onClick={() => navigate(fromGanados ? '/Ganados' : '/Comprar')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white"><ArrowLeft className="w-5 h-5" /></button>
-          {isWonByMe && (
-            <div className="absolute top-4 right-4"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Ganado!</Badge></div>
-          )}
-          {!isWonByMe && vehicle.isLeading && (
-            <div className="absolute top-4 right-4"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
-          )}
+          <PhotoGallery
+            photos={images}
+            alt={`${vehicle.brand} ${vehicle.model}`}
+            height="320px"
+            overlay={
+              <>
+                <button onClick={() => navigate(fromGanados ? '/Ganados' : '/Comprar')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white z-10"><ArrowLeft className="w-5 h-5" /></button>
+                {isWonByMe && (
+                  <div className="absolute top-4 right-4 z-10"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Ganado!</Badge></div>
+                )}
+                {!isWonByMe && vehicle.isLeading && (
+                  <div className="absolute top-4 right-4 z-10"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
+                )}
+              </>
+            }
+          />
         </div>
 
         <div className="bg-card px-4 py-4 shadow-sm">
