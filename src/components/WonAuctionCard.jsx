@@ -15,22 +15,25 @@ function formatCountdown(ms) {
   return `${h}h ${m}m`;
 }
 
-function StatusBadge({ isCompleted, canExtend, remaining }) {
+function StatusBadge({ isCompleted, canExtend, remaining, isCancelled }) {
   const cls = isCompleted
     ? 'bg-primary/80 text-primary-foreground'
-    : canExtend
+    : isCancelled
       ? 'bg-destructive/80 text-destructive-foreground'
-      : 'bg-background/80 text-foreground';
+      : canExtend
+        ? 'bg-destructive/80 text-destructive-foreground'
+        : 'bg-background/80 text-foreground';
+  const label = isCompleted ? 'Completado' : isCancelled ? 'Cancelado' : formatCountdown(remaining);
   return (
     <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${cls}`}>
-      {isCompleted ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-      <span className="font-semibold">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
+      {isCompleted || isCancelled ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+      <span className="font-semibold">{label}</span>
     </div>
   );
 }
 
 /** Grid view card (vertical, single photo) */
-export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
+export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
@@ -39,7 +42,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
           <CheckCircle className="w-3 h-3 mr-1" />Ganado
         </Badge>
         <div className="absolute top-2 right-2">
-          <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} />
+          <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} isCancelled={isCancelled} />
         </div>
       </div>
       <div className="p-3.5">
@@ -47,7 +50,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
         <div className="flex items-center justify-between mt-3">
           <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
-          {canExtend ? (
+          {canExtend && !isCancelled ? (
             <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
               onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
               <CalendarPlus className="w-3 h-3 mr-1" />Extensión
@@ -62,7 +65,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
 }
 
 /** Lateral/list view card (horizontal, single photo) */
-export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
+export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex">
@@ -76,13 +79,13 @@ export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted
           <div>
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-bold text-foreground text-base leading-tight truncate">{auction.brand} {auction.model}</h3>
-              <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} />
+              <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} isCancelled={isCancelled} />
             </div>
             <p className="text-muted-foreground text-xs mt-1">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
           </div>
           <div className="flex items-center justify-between mt-3">
             <span className="font-bold text-xl text-foreground">{formatPrice(auction.current_bid)}</span>
-            {canExtend ? (
+            {canExtend && !isCancelled ? (
               <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
                 onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
                 <CalendarPlus className="w-3 h-3 mr-1" />Extensión
@@ -98,7 +101,7 @@ export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted
 }
 
 /** Mobile compact card (single photo) */
-export function WonAuctionMobileCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
+export function WonAuctionMobileCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex p-3 gap-3">
@@ -115,15 +118,15 @@ export function WonAuctionMobileCard({ auction, formatPrice, navigate, isComplet
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
-            <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
-              {isCompleted ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
-              <span className="font-medium">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
+            <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : isCancelled ? 'bg-destructive/10 text-destructive' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
+              {isCompleted || isCancelled ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
+              <span className="font-medium">{isCompleted ? 'Completado' : isCancelled ? 'Cancelado' : formatCountdown(remaining)}</span>
             </div>
           </div>
         </div>
         <div className="flex flex-col items-end justify-between">
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          {canExtend && (
+          {canExtend && !isCancelled && (
             <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
               onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
               <CalendarPlus className="w-3 h-3 mr-1" />Extensión
