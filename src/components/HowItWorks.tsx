@@ -46,7 +46,7 @@ const HowItWorks = () => {
   return (
     <section className="bg-muted py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-2xl sm:text-3xl font-bold text-secondary mb-4">
+        <h2 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground mb-4">
           Así funciona Mubis
         </h2>
         <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">
