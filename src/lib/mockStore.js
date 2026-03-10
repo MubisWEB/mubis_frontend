@@ -501,8 +501,8 @@ function spawnNewAuction() {
   inspections.unshift(inspection);
   save(KEYS.inspections, inspections);
 
-  // Create auction with random duration 15-55 min
-  const durationMin = 15 + Math.floor(Math.random() * 40);
+  // Create auction with 30 min duration
+  const durationMin = 30;
   const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
   const bidsCount = 2 + Math.floor(Math.random() * 6);
   const currentBid = basePrice + bidsCount * 100000;
