@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight } from 'lucide-react';
@@ -295,12 +295,6 @@ export default function MisSubastas() {
   const activas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'active')), [auctions, search, filters]);
   const finalizadas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
 
-  const tabs = [
-    { key: 'proceso', label: 'En proceso', count: enProceso.length },
-    { key: 'rechazados', label: 'Rechazados', count: rechazados.length },
-    { key: 'activas', label: 'Activas', count: activas.length },
-    { key: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
-  ];
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-8">
@@ -318,19 +312,19 @@ export default function MisSubastas() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <button onClick={() => setActiveTab('activas')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'activas' ? 'bg-secondary/20 ring-2 ring-secondary' : 'bg-secondary/10 hover:bg-secondary/15'}`}>
-            <p className="text-2xl font-bold text-secondary">{auctions.filter(a => a.status === 'active').length}</p>
-            <p className="text-muted-foreground text-xs">En subasta</p>
-          </button>
-          <button onClick={() => setActiveTab('proceso')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'proceso' ? 'bg-accent/20 ring-2 ring-secondary' : 'bg-accent/10 hover:bg-accent/15'}`}>
-            <p className="text-2xl font-bold text-secondary">{vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length}</p>
-            <p className="text-muted-foreground text-xs">En proceso</p>
-          </button>
-          <button onClick={() => setActiveTab('finalizadas')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'finalizadas' ? 'bg-primary/20 ring-2 ring-primary' : 'bg-primary/10 hover:bg-primary/15'}`}>
-            <p className="text-2xl font-bold text-primary">{auctions.filter(a => a.status === 'ended' || a.status === 'closed').length + vehicles.length}</p>
-            <p className="text-muted-foreground text-xs">Total</p>
-          </button>
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {[
+            { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, color: 'secondary' },
+            { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, color: 'secondary' },
+            { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, color: 'destructive' },
+            { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, color: 'primary' },
+          ].map(stat => (
+            <button key={stat.key} onClick={() => setActiveTab(stat.key)}
+              className={`text-center p-3 rounded-xl transition-all ${activeTab === stat.key ? `bg-${stat.color}/20 ring-2 ring-${stat.color} shadow-sm` : `bg-${stat.color}/10 hover:bg-${stat.color}/15`}`}>
+              <p className={`text-2xl font-bold text-${stat.color}`}>{stat.count}</p>
+              <p className="text-muted-foreground text-[10px]">{stat.label}</p>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -352,51 +346,41 @@ export default function MisSubastas() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-4 bg-muted/50 p-1 rounded-xl mb-4">
-              {tabs.map(t => (
-                <TabsTrigger key={t.key} value={t.key} className="text-[11px] whitespace-nowrap rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-1.5 py-1.5">
-                  {t.label} <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">{t.count}</Badge>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+          {activeTab === 'proceso' && (
+            enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> : (
+              <>
+                <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+              </>
+            )
+          )}
 
-            <TabsContent value="proceso">
-              {enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> : (
-                <>
-                  <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
-                </>
-              )}
-            </TabsContent>
+          {activeTab === 'rechazados' && (
+            rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> : (
+              <>
+                <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+              </>
+            )
+          )}
 
-            <TabsContent value="rechazados">
-              {rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> : (
-                <>
-                  <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
-                </>
-              )}
-            </TabsContent>
+          {activeTab === 'activas' && (
+            activas.length === 0 ? <EmptyState text="Sin subastas activas" /> : (
+              <>
+                <div className="space-y-3 md:hidden">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+              </>
+            )
+          )}
 
-            <TabsContent value="activas">
-              {activas.length === 0 ? <EmptyState text="Sin subastas activas" /> : (
-                <>
-                  <div className="space-y-3 md:hidden">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                </>
-              )}
-            </TabsContent>
-
-            <TabsContent value="finalizadas">
-              {finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
-                <>
-                  <div className="space-y-3 md:hidden">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                </>
-              )}
-            </TabsContent>
-          </Tabs>
+          {activeTab === 'finalizadas' && (
+            finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
+              <>
+                <div className="space-y-3 md:hidden">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+              </>
+            )
+          )}
 
           {vehicles.length === 0 && auctions.length === 0 && (
             <div className="text-center py-16">
