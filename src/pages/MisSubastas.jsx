@@ -274,6 +274,7 @@ export default function MisSubastas() {
     reconcileAuctionStatuses();
     setVehicles(getVehicles().filter(v => v.dealerId === currentUser?.id));
     setAuctions(getAuctions().filter(a => a.dealerId === currentUser?.id));
+    if (currentUser?.id) setPubBalance(getPublicationsBalance(currentUser.id));
   }, [currentUser?.id]);
 
   useEffect(() => {
