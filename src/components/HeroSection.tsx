@@ -175,8 +175,8 @@ const HeroSection = () => {
               Subastas<br />privadas de autos<br />usados
             </h1>
             <p className="mt-5 text-base sm:text-lg text-muted-foreground">
-              Concesionarios compiten por<br />
-              <span className="font-bold text-foreground">inventario verificado.</span>
+               Concesionarios y Compradores Profesionales pujan por<br />
+               <span className="font-bold text-foreground">inventario verificado.</span>
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a
