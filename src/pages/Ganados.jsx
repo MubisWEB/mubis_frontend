@@ -124,17 +124,19 @@ export default function Ganados() {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    let won = getWonAuctionsByUserId(currentUser.id);
-    
-    // Generate mock won auctions if not enough
-    if (won.length < 21) {
-      const allAuctions = getAuctions();
-      const endedNotMine = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
-      
-      const toAssign = endedNotMine.slice(0, Math.max(0, 21 - won.length));
-      toAssign.forEach(a => { updateAuction(a.id, { winnerId: currentUser.id }); });
-      if (toAssign.length > 0) won = getWonAuctionsByUserId(currentUser.id);
 
+    let won = getWonAuctionsByUserId(currentUser.id);
+    const isRecomprador = currentUser.role === 'recomprador';
+    const targetStatuses = isRecomprador
+      ? [
+          'proceso', 'proceso', 'proceso', 'proceso',
+          'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
+          'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
+          'cancelado', 'cancelado', 'cancelado', 'cancelado',
+        ]
+      : [];
+
+    if (isRecomprador && won.length < targetStatuses.length) {
       const mockCars = [
         { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
         { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Medellín', mileage: 12000, current_bid: 98000000 },
@@ -166,71 +168,37 @@ export default function Ganados() {
         'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop',
         'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&h=400&fit=crop',
         'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1542362567-b07e54358753?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&h=400&fit=crop',
       ];
 
-      const now = Date.now();
-      // Status distribution: 4 en proceso, 13 completado, 4 cancelado = 21 total
-      const statusDates = [
-        // 4 En proceso (ended 12h, 24h, 36h, 48h ago)
-        now - 12 * 60 * 60 * 1000,
-        now - 24 * 60 * 60 * 1000,
-        now - 36 * 60 * 60 * 1000,
-        now - 48 * 60 * 60 * 1000,
-        // 13 Completado (ended 5-17 days ago)
-        now - 5 * 24 * 60 * 60 * 1000,
-        now - 6 * 24 * 60 * 60 * 1000,
-        now - 7 * 24 * 60 * 60 * 1000,
-        now - 8 * 24 * 60 * 60 * 1000,
-        now - 9 * 24 * 60 * 60 * 1000,
-        now - 10 * 24 * 60 * 60 * 1000,
-        now - 11 * 24 * 60 * 60 * 1000,
-        now - 12 * 24 * 60 * 60 * 1000,
-        now - 13 * 24 * 60 * 60 * 1000,
-        now - 14 * 24 * 60 * 60 * 1000,
-        now - 15 * 24 * 60 * 60 * 1000,
-        now - 16 * 24 * 60 * 60 * 1000,
-        now - 17 * 24 * 60 * 60 * 1000,
-        // 4 Cancelado (ended ~76h, ~80h, ~84h, ~88h ago)
-        now - 76 * 60 * 60 * 1000,
-        now - 80 * 60 * 60 * 1000,
-        now - 84 * 60 * 60 * 1000,
-        now - 88 * 60 * 60 * 1000,
-      ];
-
-      const needed = 21 - won.length;
+      const needed = targetStatuses.length - won.length;
       for (let i = 0; i < needed; i++) {
-        const carIdx = (won.length + i) % mockCars.length;
-        const car = mockCars[carIdx];
-        const mockAuction = {
+        const nextIndex = won.length;
+        const car = mockCars[nextIndex % mockCars.length];
+        won.push({
           id: `won-mock-${Date.now()}-${i}`,
           ...car,
           status: 'ended',
           winnerId: currentUser.id,
           sellerId: 'u-dealer-1',
-          photos: [photos[(won.length + i) % photos.length]],
-          ends_at: new Date(statusDates[(won.length + i) % statusDates.length]).toISOString(),
+          photos: [photos[nextIndex % photos.length]],
+          ends_at: new Date().toISOString(),
           extensionDays: 0,
-        };
-        won.push(mockAuction);
+          mockWonStatus: targetStatuses[nextIndex],
+        });
       }
     }
+
+    if (isRecomprador) {
+      won = won.slice(0, targetStatuses.length).map((auction, index) => ({
+        ...auction,
+        extensionDays: auction.extensionDays || 0,
+        ends_at: auction.ends_at || new Date().toISOString(),
+        mockWonStatus: targetStatuses[index],
+      }));
+    }
+
     setWonAuctions(won);
-  }, [currentUser?.id]);
+  }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {
     if (wonAuctions.length === 0) return;
