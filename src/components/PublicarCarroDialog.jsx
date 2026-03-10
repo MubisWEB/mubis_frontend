@@ -47,6 +47,7 @@ const initialForm = {
   suggested_price: '',
   placa: '', brand: '', model: '', year: '', mileage: '', color: '',
   traction: '', cilindraje: '', fuel_type: '', ubicacion: '',
+  transmission: '', body_type: '', doors: '', passengers: '', steering: '', air_conditioning: '',
   cedula: '', nombre_completo: '', email: '', telefono: '',
   tarjeta_propiedad: null,
   photos: [],
