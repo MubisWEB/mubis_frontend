@@ -178,7 +178,7 @@ export default function DetalleSubasta() {
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
       <TopBar />
-      <div className="relative">
+      <div className="relative mt-3 md:mt-5">
           <PhotoGallery
             photos={images}
             alt={`${vehicle.brand} ${vehicle.model}`}
