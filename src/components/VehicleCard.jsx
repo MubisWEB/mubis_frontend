@@ -82,7 +82,7 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
           </div>
           <div className="flex items-center justify-between mt-3">
             <div>
-              <span className={`font-bold text-lg ${vehicle.isLeading ? 'text-primary' : 'text-secondary'}`}>{formatPrice(vehicle.current_bid || 0)}</span>
+              <span className="font-bold text-lg text-foreground">{formatPrice(vehicle.current_bid || 0)}</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{vehicle.bids_count || 0} pujas</span>
                 {uniqueBidders > 0 && (
