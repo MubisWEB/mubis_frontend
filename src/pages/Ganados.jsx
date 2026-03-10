@@ -32,7 +32,7 @@ function GanadosFilterPanel({ filters, setFilters }) {
   const [local, setLocal] = useState(filters);
   const hasFilters = Object.values(filters).some(v => v);
   const handleApply = () => setFilters(local);
-  const handleReset = () => { const e = { brand: '', status: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
+  const handleReset = () => { const e = { brand: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
 
   return (
     <div className="bg-card border border-border rounded-2xl p-5 sticky top-4">
@@ -47,16 +47,6 @@ function GanadosFilterPanel({ filters, setFilters }) {
           <Select value={local.brand} onValueChange={(v) => setLocal({ ...local, brand: v })}>
             <SelectTrigger className="rounded-xl border-border h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
             <SelectContent>{brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-foreground font-semibold text-sm mb-2 block">Estado</Label>
-          <Select value={local.status} onValueChange={(v) => setLocal({ ...local, status: v })}>
-            <SelectTrigger className="rounded-xl border-border h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">En proceso</SelectItem>
-              <SelectItem value="completed">Completado</SelectItem>
-            </SelectContent>
           </Select>
         </div>
         <div>
