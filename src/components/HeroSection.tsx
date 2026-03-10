@@ -5,64 +5,64 @@ import auctionCar3 from "@/assets/car-tracker.png";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const auctions = [
-  {
-    id: "MUB-20394",
-    title: "Mazda 3 Sedán 2023",
-    details: "12,400 km · Automático · Bogotá",
-    image: auctionCar,
-    bid: "$78.500.000",
-    bids: 3,
-    dealers: 25,
-    time: { hours: 0, minutes: 47, seconds: 12 },
-  },
-  {
-    id: "MUB-20412",
-    title: "Toyota Corolla 2022",
-    details: "28,100 km · Automático · Medellín",
-    image: auctionCar2,
-    bid: "$65.200.000",
-    bids: 7,
-    dealers: 18,
-    time: { hours: 0, minutes: 18, seconds: 45 },
-  },
-  {
-    id: "MUB-20455",
-    title: "Chevrolet Tracker 2024",
-    details: "3,200 km · Automático · Cali",
-    image: auctionCar3,
-    bid: "$52.800.000",
-    bids: 5,
-    dealers: 12,
-    time: { hours: 0, minutes: 55, seconds: 30 },
-  },
-];
+{
+  id: "MUB-20394",
+  title: "Mazda 3 Sedán 2023",
+  details: "12,400 km · Automático · Bogotá",
+  image: auctionCar,
+  bid: "$78.500.000",
+  bids: 3,
+  dealers: 25,
+  time: { hours: 0, minutes: 47, seconds: 12 }
+},
+{
+  id: "MUB-20412",
+  title: "Toyota Corolla 2022",
+  details: "28,100 km · Automático · Medellín",
+  image: auctionCar2,
+  bid: "$65.200.000",
+  bids: 7,
+  dealers: 18,
+  time: { hours: 0, minutes: 18, seconds: 45 }
+},
+{
+  id: "MUB-20455",
+  title: "Chevrolet Tracker 2024",
+  details: "3,200 km · Automático · Cali",
+  image: auctionCar3,
+  bid: "$52.800.000",
+  bids: 5,
+  dealers: 12,
+  time: { hours: 0, minutes: 55, seconds: 30 }
+}];
+
 
 // position 0 = front, 1 = middle-back, 2 = far-back
 const positionStyles: Record<number, string> = {
   0: "z-30 translate-x-0 translate-y-0 rotate-0 scale-100 opacity-100",
   1: "z-20 translate-x-5 translate-y-3 rotate-2 scale-[0.95] opacity-90",
-  2: "z-10 translate-x-10 translate-y-6 rotate-[4deg] scale-[0.90] opacity-75",
+  2: "z-10 translate-x-10 translate-y-6 rotate-[4deg] scale-[0.90] opacity-75"
 };
 
 const AuctionCard = ({
   auction,
   position,
   onClick,
-  timeLeft,
-}: {
-  auction: (typeof auctions)[0];
-  position: number;
-  onClick: () => void;
-  timeLeft: { hours: number; minutes: number; seconds: number };
-}) => {
+  timeLeft
+
+
+
+
+
+}: {auction: (typeof auctions)[0];position: number;onClick: () => void;timeLeft: {hours: number;minutes: number;seconds: number;};}) => {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return (
     <div
-      onClick={() => { onClick(); window.location.href = '/registro'; }}
+      onClick={() => {onClick();window.location.href = '/registro';}}
       className={`absolute inset-0 w-full bg-background rounded-2xl border border-border shadow-xl overflow-hidden cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${positionStyles[position]}`}
-      style={{ willChange: "transform, opacity" }}
-    >
+      style={{ willChange: "transform, opacity" }}>
+      
       <div className="flex items-center justify-between px-4 py-2.5 bg-secondary/10 border-b border-border">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
@@ -111,8 +111,8 @@ const AuctionCard = ({
           <span className="text-[10px] font-medium">ID: {auction.id}</span>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 const HeroSection = () => {
@@ -125,14 +125,14 @@ const HeroSection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setTimers((prev) =>
-        prev.map((t) => {
-          let { hours, minutes, seconds } = t;
-          seconds--;
-          if (seconds < 0) { seconds = 59; minutes--; }
-          if (minutes < 0) { minutes = 59; hours--; }
-          if (hours < 0) { hours = 0; minutes = 0; seconds = 0; }
-          return { hours, minutes, seconds };
-        })
+      prev.map((t) => {
+        let { hours, minutes, seconds } = t;
+        seconds--;
+        if (seconds < 0) {seconds = 59;minutes--;}
+        if (minutes < 0) {minutes = 59;hours--;}
+        if (hours < 0) {hours = 0;minutes = 0;seconds = 0;}
+        return { hours, minutes, seconds };
+      })
       );
     }, 1000);
     return () => clearInterval(interval);
@@ -151,7 +151,7 @@ const HeroSection = () => {
   useEffect(() => {
     if (paused) return;
     autoRef.current = setInterval(rotate, 8000);
-    return () => { if (autoRef.current) clearInterval(autoRef.current); };
+    return () => {if (autoRef.current) clearInterval(autoRef.current);};
   }, [rotate, paused]);
 
   const handleClick = useCallback((auctionIndex: number) => {
@@ -174,21 +174,21 @@ const HeroSection = () => {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">
               Subastas<br />privadas de autos<br />usados
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-muted-foreground">
-               Concesionarios y Compradores Profesionales pujan por<br />
+            <p className="mt-5 text-base sm:text-lg text-muted-foreground">Concesionarios y Compradores Profesionales pujan porinventario verificado.
+
+              <br />
                <span className="font-bold text-foreground">inventario verificado.</span>
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="/registro"
-                className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity"
-              >
+              <a href="/registro"
+              className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity">
+                
                 Aplicar Ahora <ArrowRight className="w-4 h-4" />
               </a>
               <a
                 href="/como-funciona"
-                className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-              >
+                className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
+                
                 <Play className="w-4 h-4" /> Cómo funciona
               </a>
             </div>
@@ -197,21 +197,21 @@ const HeroSection = () => {
           {/* Stacked auction cards */}
           <div className="relative z-10 flex justify-center">
             <div className="relative w-full max-w-md min-h-[430px]">
-              {order.map((auctionIdx, pos) => (
-                <AuctionCard
-                  key={auctions[auctionIdx].id}
-                  auction={auctions[auctionIdx]}
-                  position={pos}
-                  onClick={() => handleClick(auctionIdx)}
-                  timeLeft={timers[auctionIdx]}
-                />
-              ))}
+              {order.map((auctionIdx, pos) =>
+              <AuctionCard
+                key={auctions[auctionIdx].id}
+                auction={auctions[auctionIdx]}
+                position={pos}
+                onClick={() => handleClick(auctionIdx)}
+                timeLeft={timers[auctionIdx]} />
+
+              )}
             </div>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default HeroSection;
