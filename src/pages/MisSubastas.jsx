@@ -346,11 +346,27 @@ export default function MisSubastas() {
         </aside>
 
         <div className="flex-1 min-w-0">
+          {/* View toggle */}
+          <div className="flex items-center justify-end mb-3">
+            <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
+              <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                <LayoutList className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
           {activeTab === 'proceso' && (
             enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> : (
               <>
                 <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+                ) : (
+                  <div className="hidden md:flex md:flex-col gap-4">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                )}
               </>
             )
           )}
@@ -359,7 +375,11 @@ export default function MisSubastas() {
             rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> : (
               <>
                 <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} />)}</div>
+                ) : (
+                  <div className="hidden md:flex md:flex-col gap-4">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                )}
               </>
             )
           )}
@@ -368,7 +388,11 @@ export default function MisSubastas() {
             activas.length === 0 ? <EmptyState text="Sin subastas activas" /> : (
               <>
                 <div className="space-y-3 md:hidden">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                ) : (
+                  <div className="hidden md:flex md:flex-col gap-4">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                )}
               </>
             )
           )}
@@ -377,7 +401,11 @@ export default function MisSubastas() {
             finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
               <>
                 <div className="space-y-3 md:hidden">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                ) : (
+                  <div className="hidden md:flex md:flex-col gap-4">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                )}
               </>
             )
           )}

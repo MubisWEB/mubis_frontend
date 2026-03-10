@@ -171,7 +171,17 @@ export default function Comprar() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-bold text-foreground font-sans">Subastas</p>
-            <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
+              <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
+                <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <LayoutList className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
           {filteredVehicles.length === 0 ? (
             <div className="py-16 text-center">
@@ -189,12 +199,20 @@ export default function Comprar() {
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
                 ))}
               </div>
-              {/* Desktop: 3-column grid with larger cards */}
-              <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredVehicles.map((vehicle, index) => (
-                  <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
-                ))}
-              </div>
+              {/* Desktop: grid or list */}
+              {viewMode === 'grid' ? (
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredVehicles.map((vehicle, index) => (
+                    <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
+                  ))}
+                </div>
+              ) : (
+                <div className="hidden md:flex md:flex-col gap-4">
+                  {filteredVehicles.map((vehicle, index) => (
+                    <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
