@@ -106,9 +106,11 @@ export default function DetalleSubasta() {
   // Respect mockWonStatus for mock data
   const mockStatus = vehicle?.mockWonStatus;
   const isMockCompleted = mockStatus === 'completado';
+  const isMockCancelled = mockStatus === 'cancelado';
+  const isInProcess = !isMockCompleted && !isMockCancelled;
 
   const [completionRemaining, setCompletionRemaining] = useState(isWonByMe ? totalWindowMs - (Date.now() - endTime) : 0);
-  const completionExpired = isMockCompleted || completionRemaining <= 0;
+  const completionExpired = isMockCompleted || isMockCancelled || completionRemaining <= 0;
 
   useEffect(() => {
     if (!isWonByMe || !endTime) return;
@@ -177,9 +179,11 @@ export default function DetalleSubasta() {
               <p className="text-muted-foreground text-sm flex items-center gap-1"><MapPin className="w-3 h-3" />{vehicle.city} · {vehicle.year}</p>
             </div>
             {isWonByMe ? (
-              completionExpired
-                ? <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
-                : <Badge className="bg-secondary/10 text-secondary font-semibold px-3 py-1.5 rounded-full text-xs"><Clock className="w-3 h-3 mr-1" />Cierre automático</Badge>
+              isMockCancelled
+                ? <Badge className="bg-destructive/10 text-destructive font-semibold px-3 py-1.5 rounded-full text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Cancelado</Badge>
+                : isMockCompleted
+                  ? <Badge className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>
+                  : <Badge className="bg-secondary/10 text-secondary font-semibold px-3 py-1.5 rounded-full text-xs"><Clock className="w-3 h-3 mr-1" />Cierre automático</Badge>
             ) : (
               <div className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-full ${isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
                 <Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span>
@@ -248,10 +252,16 @@ export default function DetalleSubasta() {
                 <CalendarPlus className="w-4 h-4 mr-2" />Solicitar extensión de plazo
               </Button>
             )}
-            {isWonByMe && completionExpired && (
+            {isWonByMe && isMockCompleted && (
               <div className="mt-3 bg-primary/10 rounded-lg p-3 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-primary" />
                 <p className="text-xs font-semibold text-foreground">Trato completado por Mubis</p>
+              </div>
+            )}
+            {isWonByMe && isMockCancelled && (
+              <div className="mt-3 bg-destructive/10 rounded-lg p-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+                <p className="text-xs font-semibold text-foreground">Transacción cancelada</p>
               </div>
             )}
           </div>
@@ -375,44 +385,56 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Report problem button — available for all won auctions */}
-        {isWonByMe && (() => {
-          if (existingCase) {
-            return (
-              <Card className="p-4 border border-border shadow-sm rounded-xl">
-                <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4 text-secondary" />Caso de soporte abierto
-                </p>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Ya tienes un caso abierto para este vehículo. Revisa el estado de tu conversación.
-                </p>
-                <Button
-                  className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
-                  onClick={() => navigate(`/SoporteCasos/${existingCase.id}`)}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />Ir al caso
-                </Button>
-              </Card>
-            );
-          }
-          return (
-            <Card className="p-4 border border-destructive/20 shadow-sm rounded-xl bg-destructive/5">
-              <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                <Flag className="w-4 h-4 text-destructive" />¿Problema con este vehículo?
-              </p>
-              <p className="text-xs text-muted-foreground mb-3">
-                Si encontraste un problema con el vehículo, puedes abrir un caso de soporte. Mubis mediará entre comprador y vendedor.
-              </p>
-              <Button
-                variant="outline"
-                className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 font-medium"
-                onClick={() => setReportOpen(true)}
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />Abrir caso
-              </Button>
-            </Card>
-          );
-        })()}
+        {/* Case button: "Ir al caso" for cancelled, "Abrir caso" for in-process */}
+        {isWonByMe && isMockCancelled && existingCase && (
+          <Card className="p-4 border border-border shadow-sm rounded-xl">
+            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4 text-secondary" />Caso de soporte abierto
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Revisa el estado de tu caso de soporte para este vehículo.
+            </p>
+            <Button
+              className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
+              onClick={() => navigate(`/SoporteCasos/${existingCase.id}`)}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />Ir al caso
+            </Button>
+          </Card>
+        )}
+        {isWonByMe && isInProcess && !existingCase && (
+          <Card className="p-4 border border-destructive/20 shadow-sm rounded-xl bg-destructive/5">
+            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <Flag className="w-4 h-4 text-destructive" />¿Problema con este vehículo?
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Si encontraste un problema con el vehículo, puedes abrir un caso de soporte. Mubis mediará entre comprador y vendedor.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 font-medium"
+              onClick={() => setReportOpen(true)}
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />Abrir caso
+            </Button>
+          </Card>
+        )}
+        {isWonByMe && isInProcess && existingCase && (
+          <Card className="p-4 border border-border shadow-sm rounded-xl">
+            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4 text-secondary" />Caso de soporte abierto
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Ya tienes un caso abierto para este vehículo.
+            </p>
+            <Button
+              className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
+              onClick={() => navigate(`/SoporteCasos/${existingCase.id}`)}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />Ir al caso
+            </Button>
+          </Card>
+        )}
 
         {/* Activity Timeline — only for active auctions */}
         {!isWonByMe && <ActivityTimeline events={auditEvents} />}
