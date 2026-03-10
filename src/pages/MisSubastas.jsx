@@ -327,7 +327,7 @@ export default function MisSubastas() {
         <div className="grid grid-cols-5 gap-2 mb-4">
           {[
             { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-            { key: 'decision', label: 'Decisión', count: auctions.filter(a => a.status === 'pending_decision').length, colorClass: 'text-accent-foreground', activeBg: 'bg-accent/15 border-accent' },
+            { key: 'decision', label: 'Decisión', count: auctions.filter(a => a.status === 'pending_decision').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
             { key: 'proceso', label: 'En proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
             { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
             { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' },
