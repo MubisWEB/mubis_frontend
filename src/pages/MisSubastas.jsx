@@ -319,18 +319,18 @@ export default function MisSubastas() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="text-center p-3 bg-secondary/10 rounded-xl">
+          <button onClick={() => setActiveTab('activas')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'activas' ? 'bg-secondary/20 ring-2 ring-secondary' : 'bg-secondary/10 hover:bg-secondary/15'}`}>
             <p className="text-2xl font-bold text-secondary">{auctions.filter(a => a.status === 'active').length}</p>
             <p className="text-muted-foreground text-xs">En subasta</p>
-          </div>
-          <div className="text-center p-3 bg-accent/10 rounded-xl">
+          </button>
+          <button onClick={() => setActiveTab('proceso')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'proceso' ? 'bg-accent/20 ring-2 ring-secondary' : 'bg-accent/10 hover:bg-accent/15'}`}>
             <p className="text-2xl font-bold text-secondary">{vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length}</p>
             <p className="text-muted-foreground text-xs">En proceso</p>
-          </div>
-          <div className="text-center p-3 bg-primary/10 rounded-xl">
-            <p className="text-2xl font-bold text-primary">{vehicles.length}</p>
+          </button>
+          <button onClick={() => setActiveTab('finalizadas')} className={`text-center p-3 rounded-xl transition-colors ${activeTab === 'finalizadas' ? 'bg-primary/20 ring-2 ring-primary' : 'bg-primary/10 hover:bg-primary/15'}`}>
+            <p className="text-2xl font-bold text-primary">{auctions.filter(a => a.status === 'ended' || a.status === 'closed').length + vehicles.length}</p>
             <p className="text-muted-foreground text-xs">Total</p>
-          </div>
+          </button>
         </div>
       </div>
 
