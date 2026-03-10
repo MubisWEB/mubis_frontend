@@ -241,8 +241,25 @@ export default function Ganados() {
     <div className="min-h-screen bg-background pb-24 md:pb-8">
       <Header title="Mis Ganados" subtitle={wonAuctions.length > 0 ? `${wonAuctions.length} subastas ganadas` : undefined} />
 
+      {/* Status filter cards */}
+      <div className="px-4 md:px-8 pt-3 pb-2">
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {[
+            { key: 'proceso', label: 'En proceso', count: statusCounts.proceso, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+            { key: 'completado', label: 'Completado', count: statusCounts.completado, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' },
+            { key: 'cancelado', label: 'Cancelado', count: statusCounts.cancelado, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
+          ].map(stat => (
+            <button key={stat.key} onClick={() => setActiveTab(activeTab === stat.key ? 'all' : stat.key)}
+              className={`text-center p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
+              <p className={`text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
+              <p className={`text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Search & Sort */}
-      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
+      <div className="bg-background px-4 md:px-8 pb-3">
         <div className="relative mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
