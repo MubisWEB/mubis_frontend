@@ -112,22 +112,24 @@ function VehicleProcessCard({ v }) {
   const docsOk = docs && soatOk && tecnoOk && multasOk;
 
   return (
-    <Card className="p-3 border border-border/60 rounded-xl">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {v.photos?.[0] && <img src={v.photos[0]} alt="" className="w-14 h-10 rounded-lg object-cover" />}
-          <div>
-            <p className="font-bold text-foreground text-sm">{v.brand} {v.model}</p>
-            <p className="text-muted-foreground text-xs">{v.year} · {v.placa}</p>
-          </div>
+    <Card className="overflow-hidden border border-border/60 rounded-xl">
+      <div className="flex p-3 gap-3">
+        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
+          {v.photos?.[0] && <img src={v.photos[0]} alt="" className="w-full h-full object-cover" />}
+          {getStatusBadge() && <div className="absolute top-1 left-1">{getStatusBadge()}</div>}
         </div>
-        <div className="flex flex-col items-end gap-1">
-          {getStatusBadge()}
-          {docs && (
-            <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
-              {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs incompletos</>}
-            </Badge>
-          )}
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
+          <div>
+            <p className="font-bold text-foreground text-base leading-tight">{v.brand} {v.model}</p>
+            <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
+          </div>
+          <div className="mt-1">
+            {docs && (
+              <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
+                {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs incompletos</>}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
     </Card>
