@@ -137,8 +137,11 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   };
 
   const handleSubmitRequest = () => {
-    // Build specs object from form
-    const specs = {};
+    // Check publications balance
+    if (!currentUser?.id || getPublicationsBalance(currentUser.id) < 1) {
+      toast.error('Sin publicaciones disponibles', { description: 'Recarga publicaciones desde tu cuenta para poder publicar.' });
+      return;
+    }
     if (form.transmission) specs.transmission = form.transmission;
     if (form.body_type) specs.body_type = form.body_type;
     if (form.doors) specs.doors = parseInt(form.doors);
