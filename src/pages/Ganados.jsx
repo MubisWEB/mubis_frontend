@@ -128,10 +128,10 @@ export default function Ganados() {
     const supportsWonStates = ['recomprador', 'dealer'].includes(currentUser.role);
     const targetStatuses = supportsWonStates
       ? [
-          'proceso', 'proceso', 'proceso', 'proceso',
+          'proceso', 'proceso', 'proceso', 'proceso', 'proceso',
           'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
-          'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
-          'cancelado', 'cancelado', 'cancelado', 'cancelado',
+          'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
+          'cancelado', 'cancelado', 'cancelado', 'cancelado', 'cancelado', 'cancelado',
         ]
       : [];
     const getAssignedStatus = (index) => targetStatuses[index] || targetStatuses[targetStatuses.length - 1] || 'proceso';
@@ -152,7 +152,7 @@ export default function Ganados() {
       };
     });
 
-    if (currentUser.role === 'recomprador' && won.length < targetStatuses.length) {
+    if (['recomprador', 'dealer'].includes(currentUser.role) && won.length < targetStatuses.length) {
       const mockCars = [
         { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
         { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Medellín', mileage: 12000, current_bid: 98000000 },
@@ -204,7 +204,7 @@ export default function Ganados() {
       }
     }
 
-    setWonAuctions(currentUser.role === 'recomprador' ? won.slice(0, targetStatuses.length) : won);
+    setWonAuctions(supportsWonStates ? won.slice(0, targetStatuses.length) : won);
   }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {

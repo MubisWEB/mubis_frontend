@@ -76,7 +76,7 @@ const CAR_DATA = [
   { brand: 'Audi', model: 'Q3', year: 2021, km: 35000, city: 'Bogotá', placa: 'KLM789', color: 'Gris', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
   { brand: 'Toyota', model: 'RAV4', year: 2023, km: 9000, city: 'Cali', placa: 'NOP012', color: 'Verde', combustible: 'Híbrido', transmision: '4x4', cilindraje: '2500cc', specs: { transmission: 'CVT', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
   { brand: 'Mazda', model: 'CX-5', year: 2022, km: 28000, city: 'Medellín', placa: 'QRS345', color: 'Rojo', combustible: 'Gasolina', transmision: '4x2', cilindraje: '2000cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
-  // Extended pool for auto-replenishment
+  // Extended pool
   { brand: 'Chevrolet', model: 'Onix', year: 2023, km: 11000, city: 'Bogotá', placa: 'TUV678', color: 'Blanco', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1000cc', specs: { transmission: 'Manual', body_type: 'Hatchback', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
   { brand: 'Renault', model: 'Koleos', year: 2022, km: 19000, city: 'Medellín', placa: 'WXY901', color: 'Negro', combustible: 'Gasolina', transmision: '4x4', cilindraje: '2500cc', specs: { transmission: 'CVT', body_type: 'SUV', doors: 5, passengers: 7, steering: 'Eléctrica', air_conditioning: true } },
   { brand: 'Hyundai', model: 'Creta', year: 2023, km: 7500, city: 'Cali', placa: 'ZAB234', color: 'Azul', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
@@ -92,6 +92,24 @@ const CAR_DATA = [
   { brand: 'Chevrolet', model: 'Captiva', year: 2022, km: 29000, city: 'Cali', placa: 'BBC234', color: 'Plata', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc', specs: { transmission: 'CVT', body_type: 'SUV', doors: 5, passengers: 7, steering: 'Eléctrica', air_conditioning: true } },
   { brand: 'Hyundai', model: 'Santa Fe', year: 2023, km: 8500, city: 'Barranquilla', placa: 'CCD567', color: 'Blanco', combustible: 'Diésel', transmision: '4x4', cilindraje: '2200cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 7, steering: 'Eléctrica', air_conditioning: true } },
   { brand: 'Kia', model: 'Sorento', year: 2022, km: 31000, city: 'Bogotá', placa: 'DDE890', color: 'Negro', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2500cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 7, steering: 'Eléctrica', air_conditioning: true } },
+  // Extra pool for more variety
+  { brand: 'Toyota', model: 'Yaris', year: 2023, km: 6000, city: 'Bogotá', placa: 'EEF123', color: 'Rojo', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc', specs: { transmission: 'Automática', body_type: 'Sedán', doors: 4, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Chevrolet', model: 'Sail', year: 2022, km: 27000, city: 'Medellín', placa: 'FFG456', color: 'Blanco', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1400cc', specs: { transmission: 'Manual', body_type: 'Sedán', doors: 4, passengers: 5, steering: 'Hidráulica', air_conditioning: true } },
+  { brand: 'Renault', model: 'Stepway', year: 2023, km: 9500, city: 'Cali', placa: 'GGH789', color: 'Naranja', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1600cc', specs: { transmission: 'CVT', body_type: 'Hatchback', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Mazda', model: '2', year: 2022, km: 14000, city: 'Bogotá', placa: 'HHI012', color: 'Azul', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc', specs: { transmission: 'Automática', body_type: 'Sedán', doors: 4, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Kia', model: 'Cerato', year: 2023, km: 5200, city: 'Medellín', placa: 'IIJ345', color: 'Gris', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '2000cc', specs: { transmission: 'Automática', body_type: 'Sedán', doors: 4, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Hyundai', model: 'Venue', year: 2022, km: 18500, city: 'Cali', placa: 'JJK678', color: 'Verde', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1600cc', specs: { transmission: 'CVT', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Nissan', model: 'Versa', year: 2023, km: 8200, city: 'Bogotá', placa: 'KKL901', color: 'Plata', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1600cc', specs: { transmission: 'CVT', body_type: 'Sedán', doors: 4, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Ford', model: 'Territory', year: 2022, km: 22000, city: 'Medellín', placa: 'LLM234', color: 'Negro', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc', specs: { transmission: 'CVT', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Volkswagen', model: 'Nivus', year: 2023, km: 4800, city: 'Cali', placa: 'MMN567', color: 'Blanco', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1000cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Suzuki', model: 'Swift', year: 2022, km: 15000, city: 'Bogotá', placa: 'NNO890', color: 'Rojo', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1200cc', specs: { transmission: 'Automática', body_type: 'Hatchback', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'BMW', model: 'X3', year: 2022, km: 20000, city: 'Medellín', placa: 'OOP123', color: 'Azul', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Mercedes-Benz', model: 'CLA', year: 2023, km: 7000, city: 'Bogotá', placa: 'PPQ456', color: 'Negro', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1300cc', specs: { transmission: 'Automática', body_type: 'Coupé', doors: 4, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Audi', model: 'A3', year: 2022, km: 19000, city: 'Cali', placa: 'QQR789', color: 'Gris', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1500cc', specs: { transmission: 'Automática', body_type: 'Sedán', doors: 4, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Jeep', model: 'Compass', year: 2023, km: 6500, city: 'Bogotá', placa: 'RRS012', color: 'Blanco', combustible: 'Gasolina', transmision: '4x4', cilindraje: '2000cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Peugeot', model: '3008', year: 2022, km: 17000, city: 'Medellín', placa: 'SST345', color: 'Azul', combustible: 'Gasolina', transmision: 'FWD', cilindraje: '1600cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Subaru', model: 'XV', year: 2023, km: 5000, city: 'Bogotá', placa: 'TTU678', color: 'Naranja', combustible: 'Gasolina', transmision: 'AWD', cilindraje: '2000cc', specs: { transmission: 'CVT', body_type: 'SUV', doors: 5, passengers: 5, steering: 'Eléctrica', air_conditioning: true } },
+  { brand: 'Toyota', model: 'Fortuner', year: 2021, km: 42000, city: 'Barranquilla', placa: 'UUV901', color: 'Gris', combustible: 'Diésel', transmision: '4x4', cilindraje: '2800cc', specs: { transmission: 'Automática', body_type: 'SUV', doors: 5, passengers: 7, steering: 'Hidráulica', air_conditioning: true } },
 ];
 
 function generateDocumentation(i) {
@@ -125,7 +143,7 @@ function buildSeedVehicles() {
       dealerCompany: companies[dealerId],
       photos: [PHOTOS[i % PHOTOS.length], PHOTOS[(i + 3) % PHOTOS.length]],
       documentation: generateDocumentation(i),
-      status: i < 24 ? 'READY_FOR_AUCTION' : i < 28 ? 'IN_PROGRESS' : i < 32 ? 'INSPECTION_REJECTED' : 'PENDING_INSPECTION',
+      status: i < 36 ? 'READY_FOR_AUCTION' : i < 45 ? 'IN_PROGRESS' : 'INSPECTION_REJECTED',
       createdAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
     };
   });
@@ -181,15 +199,15 @@ function buildSeedInspections(vehicles) {
 
 function buildSeedAuctions(vehicles) {
   const readyVehicles = vehicles.filter(v => v.status === 'READY_FOR_AUCTION');
-  // Distribution: 0-11 active, 12-15 pending_decision, 16-23 ended
+  // Distribution: 0-14 active (15), 15-23 pending_decision (9), 24-35 ended (12)
   const winners = ['u-recomprador-1', 'u-recomprador-2', 'u-recomprador-3', 'u-dealer-1', 'u-dealer-2', 'u-dealer-3'];
   return readyVehicles.map((v, i) => {
     const basePrice = 30000000 + Math.floor(Math.random() * 70000000);
     const bidsCount = 3 + Math.floor(Math.random() * 15);
     const currentBid = basePrice + bidsCount * 100000;
-    const isActive = i < 12;
-    const isPendingDecision = i >= 12 && i < 16;
-    const isEnded = i >= 16;
+    const isActive = i < 15;
+    const isPendingDecision = i >= 15 && i < 24;
+    const isEnded = i >= 24;
     let status = 'active';
     let winnerId = null;
     let ends_at;
@@ -202,10 +220,10 @@ function buildSeedAuctions(vehicles) {
     } else {
       status = 'ended';
       // Assign winners: avoid assigning the auction's own dealer as winner
-      let w = winners[(i - 16) % winners.length];
-      if (w === v.dealerId) w = winners[((i - 16) + 1) % winners.length];
+      let w = winners[(i - 24) % winners.length];
+      if (w === v.dealerId) w = winners[((i - 24) + 1) % winners.length];
       winnerId = w;
-      ends_at = new Date(Date.now() - (i - 15) * 86400000).toISOString();
+      ends_at = new Date(Date.now() - (i - 23) * 86400000).toISOString();
     }
     return {
       id: `auc-seed-${i + 1}`,
@@ -314,10 +332,10 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v11') {
+  if (seedVersion !== 'v12') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem('mubis_store_publications');
-    localStorage.setItem('mubis_seed_version', 'v11');
+    localStorage.setItem('mubis_seed_version', 'v12');
   }
 
   if (!load(KEYS.users)) {
