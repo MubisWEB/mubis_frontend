@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, MapPin, CheckCircle, Clock, ChevronRight, CalendarPlus } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -86,62 +86,54 @@ export default function Ganados() {
             <p className="text-muted-foreground">Participa en las subastas activas<br />para ganar vehículos</p>
           </motion.div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {wonAuctions.map((auction, index) => {
               const endTime = new Date(auction.ends_at).getTime();
               const windowMs = getCompletionWindow(auction);
               const remaining = windowMs - (Date.now() - endTime);
               const isCompleted = remaining <= 0;
               const canExtend = !isCompleted && remaining < ONE_DAY_MS;
+              const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
 
               return (
                 <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-                  <Card className="overflow-hidden border border-border shadow-sm rounded-2xl bg-card cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
-                    <div className="relative h-36">
-                      {auction.photos?.[0] && <img src={auction.photos[0]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />}
-                      <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground font-semibold px-2.5 py-1 rounded-full text-xs"><CheckCircle className="w-3 h-3 mr-1" />Ganado</Badge>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
+                  <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
+                    <div className="flex p-3 gap-3">
+                      <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
+                        <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
+                        <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
+                          <CheckCircle className="w-2.5 h-2.5 mr-0.5" />Ganado
+                        </Badge>
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
-                          <h3 className="text-lg font-bold text-foreground font-sans">{auction.brand} {auction.model}</h3>
-                          <p className="text-muted-foreground text-sm">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km</p>
+                          <h3 className="font-bold text-foreground text-base leading-tight truncate">{auction.brand} {auction.model}</h3>
+                          <p className="text-muted-foreground text-xs">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Precio final</p>
-                          <p className="text-xl font-bold text-primary">{formatPrice(auction.current_bid)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
-                        <MapPin className="w-4 h-4" /><span>{auction.city}</span>
-                      </div>
-
-                      {/* Completion status */}
-                      <div className={`rounded-xl p-3 flex items-center justify-between ${isCompleted ? 'bg-primary/10 border border-primary/20' : canExtend ? 'bg-destructive/10 border border-destructive/20' : 'bg-secondary/10 border border-secondary/20'}`}>
-                        <div className="flex items-center gap-2">
-                          {isCompleted ? <CheckCircle className="w-4 h-4 text-primary" /> : <Clock className={`w-4 h-4 ${canExtend ? 'text-destructive' : 'text-secondary'}`} />}
-                          <div>
-                            <p className="text-xs font-semibold text-foreground">{isCompleted ? 'Trato completado' : 'Cierre automático'}</p>
-                            <p className="text-[10px] text-muted-foreground">{isCompleted ? 'Transacción finalizada por Mubis' : `Faltan ${formatCountdown(remaining)}`}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+                          <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
+                            {isCompleted ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
+                            <span className="font-medium">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       </div>
-
-                      {/* Extend button */}
-                      {canExtend && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full mt-3 rounded-xl border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExtensionModal({ open: true, auctionId: auction.id, vehicleName: `${auction.brand} ${auction.model}` });
-                          }}
-                        >
-                          <CalendarPlus className="w-4 h-4 mr-2" />Solicitar extensión de plazo
-                        </Button>
-                      )}
+                      <div className="flex flex-col items-end justify-between">
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        {canExtend && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExtensionModal({ open: true, auctionId: auction.id, vehicleName: `${auction.brand} ${auction.model}` });
+                            }}
+                          >
+                            <CalendarPlus className="w-3 h-3 mr-1" />Extensión
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </Card>
                 </motion.div>
