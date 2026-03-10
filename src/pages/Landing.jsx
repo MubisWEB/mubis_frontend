@@ -1,6 +1,7 @@
 import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import HeroSection from "@/components/HeroSection";
+import AlliesSection from "@/components/AlliesSection";
 import HowItWorks from "@/components/HowItWorks";
 import Footer from "@/components/Footer";
 
