@@ -160,9 +160,9 @@ export default function Comprar() {
       </div>
 
       {/* Main content: sidebar filter (desktop) + grid */}
-      <div className="px-4 lg:px-8 pt-2 pb-4 flex gap-6">
+      <div className="px-4 md:px-8 pt-2 pb-4 md:flex gap-6">
         {/* Desktop sidebar filter */}
-        <aside className="hidden lg:block w-72 flex-shrink-0">
+        <aside className="hidden md:block w-64 flex-shrink-0">
           <FilterPanel filters={filters} setFilters={setFilters} />
         </aside>
 
