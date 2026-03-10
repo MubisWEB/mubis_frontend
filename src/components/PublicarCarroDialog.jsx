@@ -266,6 +266,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                   <div><Label className="text-xs font-medium">Número de pasajeros</Label><Select value={form.passengers} onValueChange={v => set('passengers', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{PASSENGERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
                   <div><Label className="text-xs font-medium">Dirección</Label><Select value={form.steering} onValueChange={v => set('steering', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{STEERINGS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
                   <div><Label className="text-xs font-medium">Aire acondicionado</Label><Select value={form.air_conditioning} onValueChange={v => set('air_conditioning', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{AC_OPTIONS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></div>
+                </div>
               </div>
               <div>
                 <SectionTitle>Datos personales del vendedor</SectionTitle>
