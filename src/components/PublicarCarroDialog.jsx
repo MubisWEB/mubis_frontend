@@ -185,6 +185,9 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
       lockedByPeritoId: null,
     });
 
+    // Deduct publication
+    deductPublication(currentUser.id);
+
     toast.success('Solicitud de peritaje enviada', {
       description: `${vehicle.brand} ${vehicle.model} · Un perito de tu sucursal realizará la inspección`,
     });
