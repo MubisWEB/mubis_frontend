@@ -128,10 +128,10 @@ export default function Ganados() {
     const supportsWonStates = ['recomprador', 'dealer'].includes(currentUser.role);
     const targetStatuses = supportsWonStates
       ? [
-          'proceso', 'proceso', 'proceso', 'proceso',
+          'proceso', 'proceso', 'proceso', 'proceso', 'proceso',
           'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
-          'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
-          'cancelado', 'cancelado', 'cancelado', 'cancelado',
+          'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
+          'cancelado', 'cancelado', 'cancelado', 'cancelado', 'cancelado', 'cancelado',
         ]
       : [];
     const getAssignedStatus = (index) => targetStatuses[index] || targetStatuses[targetStatuses.length - 1] || 'proceso';
