@@ -89,7 +89,7 @@ export default function Comprar() {
       <Header />
 
       {/* Live Activity Banner */}
-      <div className="px-4 lg:px-8 pt-3">
+      <div className="px-4 md:px-8 pt-3">
         <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2.5">
             <div className="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
