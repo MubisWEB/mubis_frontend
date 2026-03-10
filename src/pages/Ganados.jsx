@@ -345,60 +345,41 @@ export default function Ganados() {
             </motion.div>
           ) : (
             <>
-              {/* Mobile: compact list */}
+              {/* Mobile */}
               <div className="space-y-3 md:hidden">
                 {filteredAuctions.map((auction, index) => {
                   const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
-                  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
                   return (
                     <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
-                        <div className="flex p-3 gap-3">
-                          <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
-                            <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
-                            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
-                              <CheckCircle className="w-2.5 h-2.5 mr-0.5" />Ganado
-                            </Badge>
-                          </div>
-                          <div className="flex-1 min-w-0 flex flex-col justify-between">
-                            <div>
-                              <h3 className="font-bold text-foreground text-base leading-tight truncate">{auction.brand} {auction.model}</h3>
-                              <p className="text-muted-foreground text-xs">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
-                              <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
-                                {isCompleted ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
-                                <span className="font-medium">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end justify-between">
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                            {canExtend && (
-                              <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
-                                onClick={(e) => { e.stopPropagation(); openExtension(auction); }}>
-                                <CalendarPlus className="w-3 h-3 mr-1" />Extensión
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
+                      <WonAuctionMobileCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
                     </motion.div>
                   );
                 })}
               </div>
-              {/* Desktop: grid */}
-              <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredAuctions.map((auction, index) => {
-                  const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
-                  return (
-                    <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <WonAuctionGridCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} />
-                    </motion.div>
-                  );
-                })}
-              </div>
+              {/* Desktop: grid or list */}
+              {viewMode === 'grid' ? (
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredAuctions.map((auction, index) => {
+                    const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                    return (
+                      <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+                        <WonAuctionGridCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="hidden md:flex md:flex-col gap-4">
+                  {filteredAuctions.map((auction, index) => {
+                    const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                    return (
+                      <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+                        <WonAuctionListCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
         </div>
