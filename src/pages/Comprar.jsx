@@ -85,11 +85,11 @@ export default function Comprar() {
   const currentActivity = activityItems[activityIdx];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-24 lg:pb-8">
+    <div className="min-h-screen flex flex-col bg-background pb-24 md:pb-8">
       <Header />
 
       {/* Live Activity Banner */}
-      <div className="px-4 lg:px-8 pt-3">
+      <div className="px-4 md:px-8 pt-3">
         <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2.5">
             <div className="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
@@ -126,7 +126,7 @@ export default function Comprar() {
       </div>
 
       {/* Search & Sort bar */}
-      <div className="bg-background px-4 lg:px-8 pt-3 pb-3">
+      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
             <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
@@ -153,16 +153,16 @@ export default function Comprar() {
             </SelectContent>
           </Select>
           {/* Mobile: sheet filter */}
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <FilterSheet filters={filters} setFilters={setFilters} />
           </div>
         </div>
       </div>
 
       {/* Main content: sidebar filter (desktop) + grid */}
-      <div className="px-4 lg:px-8 pt-2 pb-4 flex gap-6">
+      <div className="px-4 md:px-8 pt-2 pb-4 md:flex gap-6">
         {/* Desktop sidebar filter */}
-        <aside className="hidden lg:block w-72 flex-shrink-0">
+        <aside className="hidden md:block w-64 flex-shrink-0">
           <FilterPanel filters={filters} setFilters={setFilters} />
         </aside>
 
@@ -183,13 +183,13 @@ export default function Comprar() {
           ) : (
             <>
               {/* Mobile: compact list */}
-              <div className="space-y-3 lg:hidden">
+              <div className="space-y-3 md:hidden">
                 {filteredVehicles.map((vehicle, index) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
                 ))}
               </div>
               {/* Desktop: 3-column grid with larger cards */}
-              <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+              <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredVehicles.map((vehicle, index) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
                 ))}
