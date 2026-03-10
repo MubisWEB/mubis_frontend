@@ -11,7 +11,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
-import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId, reconcileAuctionStatuses } from '@/lib/mockStore';
+import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId, reconcileAuctionStatuses, getPublicationsBalance } from '@/lib/mockStore';
 
 const brands = ['Toyota', 'Chevrolet', 'Mazda', 'Renault', 'Kia', 'Hyundai', 'Volkswagen', 'Ford', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi'];
 
