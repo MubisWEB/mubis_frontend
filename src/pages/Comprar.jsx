@@ -126,7 +126,7 @@ export default function Comprar() {
       </div>
 
       {/* Search & Sort bar */}
-      <div className="bg-background px-4 lg:px-8 pt-3 pb-3">
+      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
             <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
