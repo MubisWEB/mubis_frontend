@@ -108,38 +108,7 @@ function GanadosFilterSheet({ filters, setFilters }) {
   );
 }
 
-function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
-  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
-  return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">
-          <CheckCircle className="w-3 h-3 mr-1" />Ganado
-        </Badge>
-        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${isCompleted ? 'bg-primary/80 text-primary-foreground' : canExtend ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/80 text-foreground'}`}>
-          {isCompleted ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-          <span className="font-semibold">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
-        </div>
-      </div>
-      <div className="p-3.5">
-        <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
-        <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
-          {canExtend ? (
-            <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
-              onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
-              <CalendarPlus className="w-3 h-3 mr-1" />Extensión
-            </Button>
-          ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
+// Card components extracted to WonAuctionCard.jsx
 
 export default function Ganados() {
   const navigate = useNavigate();
