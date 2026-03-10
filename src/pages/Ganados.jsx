@@ -335,9 +335,10 @@ export default function Ganados() {
               <div className="space-y-3 md:hidden">
                 {filteredAuctions.map((auction, index) => {
                   const { remaining, isCompleted, canExtend } = getAuctionStatus(auction);
+                  const isCancelled = auction.mockWonStatus === 'cancelado';
                   return (
                     <motion.div key={auction.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <WonAuctionMobileCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} index={index} />
+                      <WonAuctionMobileCard auction={auction} formatPrice={formatPrice} navigate={navigate} isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} onExtend={openExtension} isCancelled={isCancelled} index={index} />
                     </motion.div>
                   );
                 })}
