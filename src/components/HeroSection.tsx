@@ -171,9 +171,9 @@ const HeroSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <div className="relative z-10">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">Subastas
-privadas de autos
-usados.<br />privadas de autos<br />usados
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">Subastas privadas de autos usados.
+
+              <br />privadas de autos<br />usados
             </h1>
             <p className="mt-5 text-base sm:text-lg text-muted-foreground">Concesionarios y Compradores Profesionales pujan porinventario verificado.
 
