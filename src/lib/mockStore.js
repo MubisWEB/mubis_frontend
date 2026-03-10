@@ -146,13 +146,26 @@ function buildSeedInspections(vehicles) {
       });
     } else if (v.status === 'PENDING_INSPECTION') {
       inspections.push({
-        id: `insp-seed-${i + 1}`,
-        vehicleId: v.id,
-        dealerBranch: v.dealerBranch,
-        dealerCompany: v.dealerCompany,
-        status: 'PENDING',
-        lockedByPeritoId: null,
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        id: `insp-seed-${i + 1}`, vehicleId: v.id, dealerBranch: v.dealerBranch, dealerCompany: v.dealerCompany,
+        status: 'PENDING', lockedByPeritoId: null, createdAt: new Date(Date.now() - 86400000).toISOString(),
+        brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
+      });
+    } else if (v.status === 'IN_PROGRESS') {
+      const peritoId = v.dealerBranch === 'Bogotá Norte' ? 'u-perito-1' : 'u-perito-2';
+      inspections.push({
+        id: `insp-seed-${i + 1}`, vehicleId: v.id, dealerBranch: v.dealerBranch, dealerCompany: v.dealerCompany,
+        peritoId, lockedByPeritoId: peritoId, status: 'IN_PROGRESS',
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
+      });
+    } else if (v.status === 'INSPECTION_REJECTED') {
+      const peritoId = v.dealerBranch === 'Bogotá Norte' ? 'u-perito-1' : 'u-perito-2';
+      inspections.push({
+        id: `insp-seed-${i + 1}`, vehicleId: v.id, dealerBranch: v.dealerBranch, dealerCompany: v.dealerCompany,
+        peritoId, lockedByPeritoId: peritoId, status: 'REJECTED',
+        scoreGlobal: 30 + Math.floor(Math.random() * 20),
+        comments: 'Vehículo con daños estructurales significativos.',
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
         brand: v.brand, model: v.model, year: v.year, km: v.km, placa: v.placa,
       });
     }
