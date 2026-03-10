@@ -46,7 +46,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
         <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+          <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
           {canExtend ? (
             <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
               onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
@@ -81,7 +81,7 @@ export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted
             <p className="text-muted-foreground text-xs mt-1">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
           </div>
           <div className="flex items-center justify-between mt-3">
-            <span className="font-bold text-xl text-primary">{formatPrice(auction.current_bid)}</span>
+            <span className="font-bold text-xl text-foreground">{formatPrice(auction.current_bid)}</span>
             {canExtend ? (
               <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
                 onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
@@ -114,7 +114,7 @@ export function WonAuctionMobileCard({ auction, formatPrice, navigate, isComplet
             <p className="text-muted-foreground text-xs">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+            <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
             <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
               {isCompleted ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
               <span className="font-medium">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
