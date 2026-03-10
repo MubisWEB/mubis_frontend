@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Flame, Radio, Bookmark } from 'lucide-react';
+import { Search, SlidersHorizontal, Flame, Radio, Bookmark, LayoutGrid, LayoutList } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';

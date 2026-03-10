@@ -114,7 +114,7 @@ export function WonAuctionMobileCard({ auction, formatPrice, navigate, isComplet
             <p className="text-muted-foreground text-xs">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="font-bold text-lg text-primary">{formatPrice(auction.current_bid)}</span>
+            <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
             <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
               {isCompleted ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
               <span className="font-medium">{isCompleted ? 'Completado' : formatCountdown(remaining)}</span>
