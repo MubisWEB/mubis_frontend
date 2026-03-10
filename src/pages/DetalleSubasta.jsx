@@ -147,6 +147,7 @@ export default function DetalleSubasta() {
 
   const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
   const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
+  const existingCase = (isWonByMe && currentUser) ? getSupportCasesByUserId(currentUser.id).find(c => c.auctionId === vehicle.id) : null;
 
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
@@ -374,9 +375,8 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Report problem button — only for won auctions that haven't expired */}
-        {isWonByMe && !completionExpired && (() => {
-          const existingCase = currentUser ? getSupportCasesByUserId(currentUser.id).find(c => c.auctionId === vehicle.id) : null;
+        {/* Report problem button — available for all won auctions */}
+        {isWonByMe && (() => {
           if (existingCase) {
             return (
               <Card className="p-4 border border-border shadow-sm rounded-xl">
@@ -390,7 +390,7 @@ export default function DetalleSubasta() {
                   className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
                   onClick={() => navigate(`/SoporteCasos/${existingCase.id}`)}
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" />Ir a conversación
+                  <MessageCircle className="w-4 h-4 mr-2" />Ir al caso
                 </Button>
               </Card>
             );
@@ -408,7 +408,7 @@ export default function DetalleSubasta() {
                 className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 font-medium"
                 onClick={() => setReportOpen(true)}
               >
-                <AlertTriangle className="w-4 h-4 mr-2" />Reportar problema
+                <AlertTriangle className="w-4 h-4 mr-2" />Abrir caso
               </Button>
             </Card>
           );
