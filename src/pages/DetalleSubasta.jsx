@@ -135,15 +135,32 @@ export default function DetalleSubasta() {
     );
   }
 
-  const images = vehicle.photos || [];
-  const specs = [
+  const vehSpecs = vehicle.specs || vehData?.specs || {};
+
+  // Build full specs list — first 9 always visible, rest behind "Ver más"
+  const allSpecs = [
+    { icon: Car, label: 'Marca', value: vehicle.brand },
+    { icon: Car, label: 'Modelo', value: vehicle.model },
     { icon: Calendar, label: 'Año', value: vehicle.year },
     { icon: Gauge, label: 'Kilometraje', value: `${Number(vehicle.mileage || vehicle.km || 0).toLocaleString('es-CO')} km` },
-    { icon: Settings2, label: 'Transmisión', value: vehicle.transmission || vehicle.traction || '' },
     { icon: Fuel, label: 'Combustible', value: vehicle.fuel_type || vehicle.combustible || '' },
+    { icon: Settings2, label: 'Cilindraje', value: vehicle.cilindraje || '' },
+    { icon: Settings2, label: 'Tracción', value: vehicle.traction || vehicle.transmission || '' },
+    { icon: Settings2, label: 'Transmisión', value: vehSpecs.transmission || '' },
     { icon: Palette, label: 'Color', value: vehicle.color || '' },
-    { icon: MapPin, label: 'Ciudad', value: vehicle.city || '' },
-  ];
+    // Extended specs (shown on "Ver más")
+    { icon: Car, label: 'Carrocería', value: vehSpecs.body_type || '' },
+    { icon: DoorOpen, label: 'Puertas', value: vehSpecs.doors || '' },
+    { icon: Armchair, label: 'Pasajeros', value: vehSpecs.passengers || '' },
+    { icon: CircleDot, label: 'Dirección', value: vehSpecs.steering || '' },
+    { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning != null ? (vehSpecs.air_conditioning ? 'Sí' : 'No') : '' },
+    { icon: MapPin, label: 'Ubicación', value: vehicle.city || vehicle.dealerBranch || '' },
+  ].filter(s => s.value); // Only show specs that have values
+
+  const INITIAL_SPECS_COUNT = 9;
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
+  const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
+  const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
   const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);

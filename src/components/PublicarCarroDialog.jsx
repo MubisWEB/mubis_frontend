@@ -371,6 +371,12 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                   <div><span className="text-muted-foreground">Color:</span> <span className="font-medium text-foreground">{form.color}</span></div>
                   <div><span className="text-muted-foreground">Precio:</span> <span className="font-bold text-primary">{formatCOP(form.suggested_price)}</span></div>
                   <div><span className="text-muted-foreground">Fotos:</span> <span className="font-medium text-foreground">{form.photos.length}</span></div>
+                  {form.transmission && <div><span className="text-muted-foreground">Transmisión:</span> <span className="font-medium text-foreground">{form.transmission}</span></div>}
+                  {form.body_type && <div><span className="text-muted-foreground">Carrocería:</span> <span className="font-medium text-foreground">{form.body_type}</span></div>}
+                  {form.doors && <div><span className="text-muted-foreground">Puertas:</span> <span className="font-medium text-foreground">{form.doors}</span></div>}
+                  {form.passengers && <div><span className="text-muted-foreground">Pasajeros:</span> <span className="font-medium text-foreground">{form.passengers}</span></div>}
+                  {form.steering && <div><span className="text-muted-foreground">Dirección:</span> <span className="font-medium text-foreground">{form.steering}</span></div>}
+                  {form.air_conditioning && <div><span className="text-muted-foreground">A/C:</span> <span className="font-medium text-foreground">{form.air_conditioning}</span></div>}
                 </div>
               </Card>
 
