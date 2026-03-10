@@ -85,7 +85,7 @@ export default function Comprar() {
   const currentActivity = activityItems[activityIdx];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-24 lg:pb-8">
+    <div className="min-h-screen flex flex-col bg-background pb-24 md:pb-8">
       <Header />
 
       {/* Live Activity Banner */}
