@@ -13,6 +13,7 @@ const KEYS = {
   supportTickets: 'mubis_store_support_tickets',
   auditEvents: 'mubis_store_audit_events',
   supportCases: 'mubis_store_support_cases',
+  publications: 'mubis_store_publications',
 };
 
 // ── Admin whitelist ──
