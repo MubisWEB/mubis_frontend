@@ -142,7 +142,7 @@ export default function DetalleSubastaVendedor() {
             overlay={
               <>
                 <button onClick={() => navigate('/MisSubastas')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white z-10"><ArrowLeft className="w-5 h-5" /></button>
-                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? 'Activa' : 'Cerrada'}</Badge>
+                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : isPendingDecision ? 'bg-accent text-accent-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? (isExtended48h ? 'Extendida 48h' : 'Activa') : isPendingDecision ? 'Decidir' : 'Cerrada'}</Badge>
               </>
             }
           />
