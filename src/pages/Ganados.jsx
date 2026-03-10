@@ -200,18 +200,30 @@ export default function Ganados() {
     return { remaining, isCompleted: remaining <= 0, canExtend: remaining > 0 && remaining < ONE_DAY_MS };
   };
 
+  const statusCounts = useMemo(() => {
+    const counts = { proceso: 0, completado: 0, cancelado: 0 };
+    wonAuctions.forEach(a => {
+      const { isCompleted, canExtend } = getAuctionStatus(a);
+      if (isCompleted) counts.completado++;
+      else if (canExtend) counts.cancelado++;
+      else counts.proceso++;
+    });
+    return counts;
+  }, [wonAuctions]);
+
   const filteredAuctions = useMemo(() => {
     let list = [...wonAuctions];
     if (search) { const q = search.toLowerCase(); list = list.filter(a => (`${a.brand} ${a.model}`).toLowerCase().includes(q)); }
     if (filters.brand) list = list.filter(a => a.brand === filters.brand);
     if (filters.yearFrom) list = list.filter(a => a.year >= parseInt(filters.yearFrom));
     if (filters.yearTo) list = list.filter(a => a.year <= parseInt(filters.yearTo));
-    if (filters.status === 'completed') list = list.filter(a => getAuctionStatus(a).isCompleted);
-    if (filters.status === 'pending') list = list.filter(a => !getAuctionStatus(a).isCompleted);
+    if (activeTab === 'proceso') list = list.filter(a => { const s = getAuctionStatus(a); return !s.isCompleted && !s.canExtend; });
+    if (activeTab === 'completado') list = list.filter(a => getAuctionStatus(a).isCompleted);
+    if (activeTab === 'cancelado') list = list.filter(a => { const s = getAuctionStatus(a); return s.canExtend; });
     if (sortBy === 'price_high') list.sort((a, b) => (b.current_bid || 0) - (a.current_bid || 0));
     else if (sortBy === 'price_low') list.sort((a, b) => (a.current_bid || 0) - (b.current_bid || 0));
     return list;
-  }, [wonAuctions, search, filters, sortBy]);
+  }, [wonAuctions, search, filters, sortBy, activeTab]);
 
   const handleExtensionConfirm = ({ days, reason }) => {
     const { auctionId } = extensionModal;
