@@ -154,12 +154,24 @@ export default function Ganados() {
   useEffect(() => {
     if (!currentUser?.id) return;
     let won = getWonAuctionsByUserId(currentUser.id);
-    if (won.length < 5) {
+    if (won.length < 8) {
       const allAuctions = getAuctions();
       const endedNotMine = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
-      const toAssign = endedNotMine.slice(0, 6 - won.length);
-      toAssign.forEach(a => { updateAuction(a.id, { winnerId: currentUser.id }); });
-      if (toAssign.length > 0) won = getWonAuctionsByUserId(currentUser.id);
+      const toAssign = endedNotMine.slice(0, 8 - won.length);
+      toAssign.forEach((a, i) => {
+        const updates = { winnerId: currentUser.id };
+        // Make some completado (ended >5 days ago) and some cancelado (ended ~3.5 days ago, within last 24h of window)
+        if (i < 2) {
+          updates.ends_at = new Date(Date.now() - 6 * ONE_DAY_MS).toISOString(); // completado
+        } else if (i < 4) {
+          updates.ends_at = new Date(Date.now() - 5 * ONE_DAY_MS).toISOString(); // completado
+        } else if (i < 6) {
+          updates.ends_at = new Date(Date.now() - (COMPLETION_WINDOW_MS - 12 * 60 * 60 * 1000)).toISOString(); // cancelado (within last 24h)
+        }
+        // rest stay as-is (en proceso)
+        updateAuction(a.id, updates);
+      });
+      won = getWonAuctionsByUserId(currentUser.id);
     }
     setWonAuctions(won);
   }, [currentUser?.id]);
