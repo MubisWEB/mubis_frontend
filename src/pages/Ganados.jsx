@@ -204,7 +204,7 @@ export default function Ganados() {
       }
     }
 
-    setWonAuctions(currentUser.role === 'recomprador' ? won.slice(0, targetStatuses.length) : won);
+    setWonAuctions(supportsWonStates ? won.slice(0, targetStatuses.length) : won);
   }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {
