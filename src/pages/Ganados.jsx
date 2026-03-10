@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getWonAuctionsByUserId, getCurrentUser, updateAuction } from '@/lib/mockStore';
+import { getWonAuctionsByUserId, getCurrentUser, updateAuction, addAuction, getAuctionById } from '@/lib/mockStore';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 
