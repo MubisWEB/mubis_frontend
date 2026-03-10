@@ -65,7 +65,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
 }
 
 /** Lateral/list view card (horizontal, single photo) */
-export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend }) {
+export function WonAuctionListCard({ auction, formatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex">
