@@ -11,8 +11,7 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-sm font-bold text-secondary-foreground">M</span>
-              <span className="text-lg font-black text-footer-heading">mubis</span>
+              <span className="text-lg font-black text-footer-heading">mub<span className="relative">i<span className="absolute left-1/2 -translate-x-1/2 -top-[0.08em] w-[0.28em] h-[0.28em] rounded-full bg-primary" /></span>s</span>
             </div>
             <p className="text-sm leading-relaxed">
               La forma más rápida y segura de vender tu carro a concesionarios verificados.
