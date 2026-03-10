@@ -138,7 +138,7 @@ function VehicleProcessCard({ v, navigate }) {
   );
 }
 
-function VehicleProcessGridCard({ v }) {
+function VehicleProcessGridCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
