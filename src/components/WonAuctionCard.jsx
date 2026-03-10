@@ -42,7 +42,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
           <CheckCircle className="w-3 h-3 mr-1" />Ganado
         </Badge>
         <div className="absolute top-2 right-2">
-          <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} />
+          <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} isCancelled={isCancelled} />
         </div>
       </div>
       <div className="p-3.5">
@@ -50,7 +50,7 @@ export function WonAuctionGridCard({ auction, formatPrice, navigate, isCompleted
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
         <div className="flex items-center justify-between mt-3">
           <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
-          {canExtend ? (
+          {canExtend && !isCancelled ? (
             <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
               onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
               <CalendarPlus className="w-3 h-3 mr-1" />Extensión
