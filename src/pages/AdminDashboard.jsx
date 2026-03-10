@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, UserCheck, Clock, TrendingUp, ClipboardCheck, FileText } from 'lucide-react';
+import { Users, UserCheck, Clock, TrendingUp, ClipboardCheck, FileText, MessageCircle } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { getAdminStats, getUsers } from '@/lib/mockStore';
+import { getAdminStats, getUsers, getSupportCases } from '@/lib/mockStore';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
