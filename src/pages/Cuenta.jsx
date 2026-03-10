@@ -95,6 +95,7 @@ export default function Cuenta() {
     menuItems.splice(1, 0,
       { icon: DollarSign, label: 'Movimientos', action: () => navigate('/Movimientos') },
       { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
+      { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
     );
   }
 
