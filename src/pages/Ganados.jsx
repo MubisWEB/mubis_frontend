@@ -32,7 +32,7 @@ function GanadosFilterPanel({ filters, setFilters }) {
   const [local, setLocal] = useState(filters);
   const hasFilters = Object.values(filters).some(v => v);
   const handleApply = () => setFilters(local);
-  const handleReset = () => { const e = { brand: '', status: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
+  const handleReset = () => { const e = { brand: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
 
   return (
     <div className="bg-card border border-border rounded-2xl p-5 sticky top-4">
@@ -47,16 +47,6 @@ function GanadosFilterPanel({ filters, setFilters }) {
           <Select value={local.brand} onValueChange={(v) => setLocal({ ...local, brand: v })}>
             <SelectTrigger className="rounded-xl border-border h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
             <SelectContent>{brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-foreground font-semibold text-sm mb-2 block">Estado</Label>
-          <Select value={local.status} onValueChange={(v) => setLocal({ ...local, status: v })}>
-            <SelectTrigger className="rounded-xl border-border h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">En proceso</SelectItem>
-              <SelectItem value="completed">Completado</SelectItem>
-            </SelectContent>
           </Select>
         </div>
         <div>
@@ -80,7 +70,7 @@ function GanadosFilterSheet({ filters, setFilters }) {
   const [open, setOpen] = useState(false);
   const hasFilters = Object.values(filters).some(v => v);
   const handleApply = () => { setFilters(local); setOpen(false); };
-  const handleReset = () => { const e = { brand: '', status: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
+  const handleReset = () => { const e = { brand: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -90,7 +80,7 @@ function GanadosFilterSheet({ filters, setFilters }) {
           {hasFilters && <span className="ml-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{Object.values(filters).filter(v => v).length}</span>}
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
+      <SheetContent side="bottom" className="h-[50vh] rounded-t-3xl">
         <SheetHeader className="text-center pb-4"><SheetTitle className="text-xl font-bold font-sans text-foreground">Filtros</SheetTitle></SheetHeader>
         <div className="space-y-5 px-1">
           <div>
@@ -98,16 +88,6 @@ function GanadosFilterSheet({ filters, setFilters }) {
             <Select value={local.brand} onValueChange={(v) => setLocal({ ...local, brand: v })}>
               <SelectTrigger className="rounded-xl border-border h-11"><SelectValue placeholder="Todas" /></SelectTrigger>
               <SelectContent>{brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-foreground font-semibold text-sm mb-2 block">Estado</Label>
-            <Select value={local.status} onValueChange={(v) => setLocal({ ...local, status: v })}>
-              <SelectTrigger className="rounded-xl border-border h-11"><SelectValue placeholder="Todos" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">En proceso</SelectItem>
-                <SelectItem value="completed">Completado</SelectItem>
-              </SelectContent>
             </Select>
           </div>
           <div>
@@ -168,15 +148,16 @@ export default function Ganados() {
   const [extensionModal, setExtensionModal] = useState({ open: false, auctionId: null, vehicleName: '' });
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('newest');
-  const [filters, setFilters] = useState({ brand: '', status: '', yearFrom: '', yearTo: '' });
+  const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     if (!currentUser?.id) return;
     let won = getWonAuctionsByUserId(currentUser.id);
-    if (won.length === 0) {
+    if (won.length < 5) {
       const allAuctions = getAuctions();
-      const endedWithoutMe = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
-      const toAssign = endedWithoutMe.slice(0, 2);
+      const endedNotMine = allAuctions.filter(a => a.status === 'ended' && a.winnerId && a.winnerId !== currentUser.id);
+      const toAssign = endedNotMine.slice(0, 6 - won.length);
       toAssign.forEach(a => { updateAuction(a.id, { winnerId: currentUser.id }); });
       if (toAssign.length > 0) won = getWonAuctionsByUserId(currentUser.id);
     }
@@ -199,18 +180,30 @@ export default function Ganados() {
     return { remaining, isCompleted: remaining <= 0, canExtend: remaining > 0 && remaining < ONE_DAY_MS };
   };
 
+  const statusCounts = useMemo(() => {
+    const counts = { proceso: 0, completado: 0, cancelado: 0 };
+    wonAuctions.forEach(a => {
+      const { isCompleted, canExtend } = getAuctionStatus(a);
+      if (isCompleted) counts.completado++;
+      else if (canExtend) counts.cancelado++;
+      else counts.proceso++;
+    });
+    return counts;
+  }, [wonAuctions]);
+
   const filteredAuctions = useMemo(() => {
     let list = [...wonAuctions];
     if (search) { const q = search.toLowerCase(); list = list.filter(a => (`${a.brand} ${a.model}`).toLowerCase().includes(q)); }
     if (filters.brand) list = list.filter(a => a.brand === filters.brand);
     if (filters.yearFrom) list = list.filter(a => a.year >= parseInt(filters.yearFrom));
     if (filters.yearTo) list = list.filter(a => a.year <= parseInt(filters.yearTo));
-    if (filters.status === 'completed') list = list.filter(a => getAuctionStatus(a).isCompleted);
-    if (filters.status === 'pending') list = list.filter(a => !getAuctionStatus(a).isCompleted);
+    if (activeTab === 'proceso') list = list.filter(a => { const s = getAuctionStatus(a); return !s.isCompleted && !s.canExtend; });
+    if (activeTab === 'completado') list = list.filter(a => getAuctionStatus(a).isCompleted);
+    if (activeTab === 'cancelado') list = list.filter(a => { const s = getAuctionStatus(a); return s.canExtend; });
     if (sortBy === 'price_high') list.sort((a, b) => (b.current_bid || 0) - (a.current_bid || 0));
     else if (sortBy === 'price_low') list.sort((a, b) => (a.current_bid || 0) - (b.current_bid || 0));
     return list;
-  }, [wonAuctions, search, filters, sortBy]);
+  }, [wonAuctions, search, filters, sortBy, activeTab]);
 
   const handleExtensionConfirm = ({ days, reason }) => {
     const { auctionId } = extensionModal;
@@ -228,8 +221,25 @@ export default function Ganados() {
     <div className="min-h-screen bg-background pb-24 md:pb-8">
       <Header title="Mis Ganados" subtitle={wonAuctions.length > 0 ? `${wonAuctions.length} subastas ganadas` : undefined} />
 
+      {/* Status filter cards */}
+      <div className="px-4 md:px-8 pt-3 pb-2">
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {[
+            { key: 'proceso', label: 'En proceso', count: statusCounts.proceso, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+            { key: 'completado', label: 'Completado', count: statusCounts.completado, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' },
+            { key: 'cancelado', label: 'Cancelado', count: statusCounts.cancelado, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
+          ].map(stat => (
+            <button key={stat.key} onClick={() => setActiveTab(activeTab === stat.key ? 'all' : stat.key)}
+              className={`text-center p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
+              <p className={`text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
+              <p className={`text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Search & Sort */}
-      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
+      <div className="bg-background px-4 md:px-8 pb-3">
         <div className="relative mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
