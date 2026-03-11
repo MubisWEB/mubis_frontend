@@ -79,7 +79,7 @@ const logoComponents = [GMFinancialLogo, InterstateLogo, RentingLogo];
 /* ---------- layout renderers ---------- */
 function LayoutLeftHeavy({ sponsor, Logo, index }) {
   return (
-    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 px-6 sm:px-8 py-5 sm:py-0 sm:h-[100px]">
+    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 px-8 sm:px-12 py-5 sm:py-0 sm:h-[180px]">
       <div className="flex-shrink-0"><Logo /></div>
       <div className="h-8 w-px bg-white/20 hidden sm:block" />
       <p className="flex-1 text-white/90 text-sm sm:text-base font-medium text-center sm:text-left leading-snug">
@@ -92,7 +92,7 @@ function LayoutLeftHeavy({ sponsor, Logo, index }) {
 
 function LayoutCenterSplit({ sponsor, Logo }) {
   return (
-    <div className="relative z-10 flex flex-col items-center justify-center gap-2 px-6 sm:px-8 py-5 sm:py-0 sm:h-[100px]">
+    <div className="relative z-10 flex flex-col items-center justify-center gap-2 px-8 sm:px-12 py-5 sm:py-0 sm:h-[180px]">
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-8 w-full">
         <CTAButton align="left" className="hidden sm:block order-first" />
         <div className="flex flex-col items-center gap-1 flex-1">
@@ -110,7 +110,7 @@ function LayoutCenterSplit({ sponsor, Logo }) {
 
 function LayoutRightHeavy({ sponsor, Logo }) {
   return (
-    <div className="relative z-10 flex flex-col-reverse sm:flex-row items-center gap-3 sm:gap-6 px-6 sm:px-8 py-5 sm:py-0 sm:h-[100px]">
+    <div className="relative z-10 flex flex-col-reverse sm:flex-row items-center gap-3 sm:gap-6 px-8 sm:px-12 py-5 sm:py-0 sm:h-[180px]">
       <CTAButton />
       <p className="flex-1 text-white/90 text-sm sm:text-base font-medium text-center sm:text-right leading-snug">
         {sponsor.tagline}
@@ -170,8 +170,8 @@ export default function SponsorBanner() {
             className="relative overflow-hidden hover:brightness-105 transition-all duration-300"
             style={{
               background: sponsor.gradient,
-              borderRadius: '18px',
-              height: '100px',
+              borderRadius: '90px',
+              height: '180px',
               boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
             }}
           >
