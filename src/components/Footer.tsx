@@ -16,13 +16,6 @@ const Footer = () => {
             <p className="text-sm leading-relaxed">
               La forma más rápida y segura de vender tu carro a concesionarios verificados.
             </p>
-            <div className="flex gap-3 mt-4">
-              {["facebook", "instagram", "twitter", "linkedin"].map((s) => (
-                <a key={s} href="#" className="w-8 h-8 rounded-full border border-footer-foreground/30 flex items-center justify-center text-footer-foreground hover:text-footer-heading hover:border-footer-heading transition-colors text-xs">
-                  {s[0].toUpperCase()}
-                </a>
-              ))}
-            </div>
           </div>
 
           {/* Enlaces rápidos */}
