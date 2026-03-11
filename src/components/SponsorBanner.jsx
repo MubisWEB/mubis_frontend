@@ -110,7 +110,7 @@ function LayoutCenterSplit({ sponsor, Logo }) {
 
 function LayoutRightHeavy({ sponsor, Logo }) {
   return (
-    <div className="relative z-10 flex flex-col-reverse sm:flex-row items-center gap-3 sm:gap-6 px-6 sm:px-8 py-5 sm:py-0 sm:h-[100px]">
+    <div className="relative z-10 flex flex-col-reverse sm:flex-row items-center gap-3 sm:gap-6 px-8 sm:px-12 py-5 sm:py-0 sm:h-[180px]">
       <CTAButton />
       <p className="flex-1 text-white/90 text-sm sm:text-base font-medium text-center sm:text-right leading-snug">
         {sponsor.tagline}
