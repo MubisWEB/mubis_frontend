@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import bannerGM from '@/assets/banner-gm.png';
 import bannerMapfre from '@/assets/banner-mapfre.png';
+import bannerInterstate from '@/assets/banner-interstate.png';
 
 const sponsors = [
   {
@@ -13,6 +14,11 @@ const sponsors = [
     name: 'Mapfre',
     layout: 'image-banner',
     bannerImage: bannerMapfre,
+  },
+  {
+    name: 'Interstate Batteries',
+    layout: 'image-banner',
+    bannerImage: bannerInterstate,
   },
 ];
 
