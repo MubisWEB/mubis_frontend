@@ -498,7 +498,7 @@ export default function DetalleSubasta() {
       {!isWonByMe && (
         <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50 md:static md:bg-transparent md:pt-0 md:pb-0 md:px-0">
           <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 md:h-10 md:w-auto md:px-6 md:text-sm rounded-xl font-bold text-lg md:font-semibold shadow-lg md:shadow-none bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            {vehicle.isLeading ? (<><Trophy className="w-5 h-5 md:w-4 md:h-4 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+            {isLeading ? (<><Trophy className="w-5 h-5 md:w-4 md:h-4 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
           </Button>
         </div>
       )}
