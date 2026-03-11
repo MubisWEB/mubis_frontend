@@ -158,7 +158,7 @@ export default function SponsorBanner() {
   const mirrorClip = 'ellipse(50% 50% at 50% 50%)';
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+    <div className="w-full px-4 sm:px-6 lg:px-8 mt-4 mb-8">
       <div className="max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
@@ -167,11 +167,12 @@ export default function SponsorBanner() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.5 }}
-            className="relative overflow-hidden shadow-lg hover:brightness-105 transition-all duration-300"
+            className="relative overflow-hidden hover:brightness-105 transition-all duration-300"
             style={{
               background: sponsor.gradient,
-              borderRadius: '50% / 40%',
-              minHeight: '96px',
+              borderRadius: '18px',
+              height: '100px',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
             }}
           >
             {/* Light sweep */}
