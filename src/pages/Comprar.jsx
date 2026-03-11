@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import { getActiveAuctions, addBid, updateAuction, getCurrentUser, getRecentAuctionActivity } from '@/lib/mockStore';
+import { getActiveAuctions, addBid, getCurrentUser, getRecentAuctionActivity } from '@/lib/mockStore';
 
 const formatMoneyShort = (n) => `$${(n / 1000000).toFixed(0)}M`;
 
@@ -60,13 +60,18 @@ export default function Comprar() {
 
   const handleBid = (vehicle) => { setSelectedVehicle(vehicle); setBidModalOpen(true); };
 
-  const handleSubmitBid = async (amount) => {
+  const handleSubmitBid = async (maxAmount) => {
     if (!selectedVehicle || !currentUser) return;
-    addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount, userName: 'Postor anónimo' });
-    updateAuction(selectedVehicle.id, { current_bid: amount, bids_count: (selectedVehicle.bids_count || 0) + 1 });
-    setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: amount, bids_count: (v.bids_count || 0) + 1, isLeading: true } : v));
+    const result = addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount: maxAmount, userName: 'Postor anónimo' });
+    if (!result.success) { toast.error(result.message); return result; }
+    setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id } : v));
     loadActivity();
-    toast.success('Listo. Tu puja quedó registrada.', { description: `Puja: ${formatMoneyShort(amount)} · ${selectedVehicle.brand} ${selectedVehicle.model}` });
+    if (result.outbid) {
+      toast.error('No lideras esta subasta', { description: `Ya existe una puja máxima superior. Puja visible: ${formatMoneyShort(result.visibleBid)}` });
+    } else {
+      toast.success('¡Lideras la subasta!', { description: `Puja visible: ${formatMoneyShort(result.visibleBid)} · ${selectedVehicle.brand} ${selectedVehicle.model}` });
+    }
+    return result;
   };
 
   const filteredVehicles = useMemo(() => {
