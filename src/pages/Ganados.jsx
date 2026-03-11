@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus, Search, SlidersHorizontal, Filter, X, LayoutGrid, LayoutList } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus, Search, SlidersHorizontal, Filter, X, LayoutGrid, LayoutList, Route } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, updateAuction, addAuction, getAuctionById } from '@/lib/mockStore';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
+import RouteAssistant from '@/components/RouteAssistant';
 
 const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -121,6 +122,7 @@ export default function Ganados() {
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
+  const [routeOpen, setRouteOpen] = useState(false);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -261,6 +263,13 @@ export default function Ganados() {
     return counts;
   }, [wonAuctions]);
 
+  const inProcessAuctions = useMemo(() => {
+    return wonAuctions.filter(a => {
+      const { isCompleted, canExtend } = getAuctionStatus(a);
+      return !isCompleted && !canExtend;
+    });
+  }, [wonAuctions]);
+
   const filteredAuctions = useMemo(() => {
     let list = [...wonAuctions];
     if (search) { const q = search.toLowerCase(); list = list.filter(a => (`${a.brand} ${a.model}`).toLowerCase().includes(q)); }
@@ -306,6 +315,26 @@ export default function Ganados() {
             </button>
           ))}
         </div>
+
+        {/* Route Assistant button */}
+        {currentUser?.role === 'recomprador' && (
+          <div className="mt-3">
+            <Button
+              onClick={() => setRouteOpen(true)}
+              disabled={inProcessAuctions.length === 0}
+              className="w-full rounded-xl h-11 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold"
+            >
+              <Route className="w-4 h-4 mr-2" />
+              Asistente de ruta
+              {inProcessAuctions.length > 0 && (
+                <Badge className="ml-2 bg-secondary-foreground/20 text-secondary-foreground text-[10px]">{inProcessAuctions.length}</Badge>
+              )}
+            </Button>
+            {inProcessAuctions.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center mt-1">No hay vehículos en proceso para planificar ruta</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Search & Sort */}
@@ -397,6 +426,7 @@ export default function Ganados() {
       </div>
 
       <ExtensionModal open={extensionModal.open} onOpenChange={(open) => setExtensionModal(prev => ({ ...prev, open }))} onConfirm={handleExtensionConfirm} vehicleName={extensionModal.vehicleName} />
+      <RouteAssistant open={routeOpen} onOpenChange={setRouteOpen} inProcessAuctions={inProcessAuctions} />
       <BottomNav />
     </div>
   );
