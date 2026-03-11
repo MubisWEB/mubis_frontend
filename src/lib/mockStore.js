@@ -453,7 +453,7 @@ export function updateInspection(id, updates) {
     }
     if (updates.status === 'REJECTED') {
       if (vehicle?.dealerId) {
-        addNotification({ userId: vehicle.dealerId, type: 'inspection_rejected', title: 'Peritaje rechazado', body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}` });
+        addNotification({ userId: vehicle.dealerId, type: 'inspection_rejected', title: 'Peritaje rechazado', body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}`, vehicleId: updated.vehicleId });
       }
       addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_rejected', message: `Peritaje rechazado${updates.comments ? `: ${updates.comments}` : ''}`, actorUserId: updated.peritoId || '', actorRole: 'perito' });
     }
