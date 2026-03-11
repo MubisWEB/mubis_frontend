@@ -40,7 +40,7 @@ export default function SponsorBanner() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => setIndex(p => (p + 1) % sponsors.length), 5000);
+    const timer = setInterval(() => setIndex(p => (p + 1) % sponsors.length), 2500);
     return () => clearInterval(timer);
   }, []);
 
