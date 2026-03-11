@@ -92,7 +92,7 @@ function LayoutLeftHeavy({ sponsor, Logo, index }) {
 
 function LayoutCenterSplit({ sponsor, Logo }) {
   return (
-    <div className="relative z-10 flex flex-col items-center justify-center gap-2 px-6 sm:px-8 py-5 sm:py-0 sm:h-[100px]">
+    <div className="relative z-10 flex flex-col items-center justify-center gap-2 px-8 sm:px-12 py-5 sm:py-0 sm:h-[180px]">
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-8 w-full">
         <CTAButton align="left" className="hidden sm:block order-first" />
         <div className="flex flex-col items-center gap-1 flex-1">
