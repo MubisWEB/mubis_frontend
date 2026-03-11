@@ -233,6 +233,25 @@ export default function DetalleSubasta() {
                 </div>
               )}
             </div>
+            {/* Mi puja - solo visible para el usuario que ha pujado */}
+            {!isWonByMe && myMaxBid > 0 && (
+              <div className={`mt-3 border-t border-border pt-3 flex items-center justify-between rounded-lg`}>
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isLeading ? 'bg-green-100 dark:bg-green-950/40' : 'bg-destructive/10'}`}>
+                    <Trophy className={`w-4 h-4 ${isLeading ? 'text-green-600' : 'text-destructive'}`} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{isLeading ? 'Vas liderando' : 'Te han superado'}</p>
+                    <p className="text-sm font-bold text-foreground">Mi máximo: {formatPrice(myMaxBid)}</p>
+                  </div>
+                </div>
+                {!isLeading && (
+                  <Button onClick={() => setBidModalOpen(true)} size="sm" variant="outline" className="text-xs font-semibold rounded-full border-destructive/30 text-destructive hover:bg-destructive/10">
+                    Subir puja
+                  </Button>
+                )}
+              </div>
+            )}
             {/* Pronto Pago inside price card */}
             {isWonByMe && (
               <div className="mt-3 border-t border-border pt-3">
