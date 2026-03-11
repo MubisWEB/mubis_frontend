@@ -114,6 +114,8 @@ function GanadosFilterSheet({ filters, setFilters }) {
 export default function Ganados() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const currentRole = (currentUser?.role || localStorage.getItem('mubis_user_role') || '').toLowerCase().trim();
+  const canUseRouteAssistant = currentRole === 'recomprador';
   const [wonAuctions, setWonAuctions] = useState([]);
   const [, setTick] = useState(0);
   const [extensionModal, setExtensionModal] = useState({ open: false, auctionId: null, vehicleName: '' });
