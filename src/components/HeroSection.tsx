@@ -174,7 +174,7 @@ const HeroSection = () => {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">Subastas Privadas de Autos en Bogotá.
 
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-muted-foreground">Concesionarios y Compradores Profesionales pujan por inventario verificado.
+            <p className="mt-5 text-base sm:text-lg text-muted-foreground">
 
               <br />
                <span className="font-bold text-foreground">inventario verificado.</span>
