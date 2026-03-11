@@ -647,9 +647,9 @@ export function reconcileAuctionStatuses() {
       const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_auto_accepted', message: `Puja aceptada automáticamente (tiempo agotado)`, actorUserId: '', actorRole: 'system' });
       if (winnerId) {
-        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.`, auctionId: a.id });
         if (a.dealerId) {
-          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta cerrada automáticamente', body: `La puja más alta de tu ${a.brand} ${a.model} fue aceptada automáticamente.` });
+          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta cerrada automáticamente', body: `La puja más alta de tu ${a.brand} ${a.model} fue aceptada automáticamente.`, auctionId: a.id });
         }
       }
       return { ...a, status: 'ended', winnerId };
