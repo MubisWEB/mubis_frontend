@@ -171,7 +171,7 @@ export default function SponsorBanner() {
             style={{
               background: sponsor.gradient,
               borderRadius: '18px',
-              height: '100px',
+              aspectRatio: '6 / 1',
               boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
             }}
           >
