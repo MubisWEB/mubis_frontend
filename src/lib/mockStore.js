@@ -855,7 +855,7 @@ export function addBid(bid) {
   const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
   const amountStr = `$${(newVisible / 1000000).toFixed(1)}M`;
   if (auction.dealerId && auction.dealerId !== userId) {
-    addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.` });
+    addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.`, auctionId });
   }
   if (outbid) {
     addNotification({ userId, type: 'outbid', title: 'No lideras esta subasta', body: `Tu puja máxima de $${(maxAmount / 1000000).toFixed(1)}M en ${vLabel} no fue suficiente.` });
