@@ -65,7 +65,7 @@ export default function Comprar() {
     if (!selectedVehicle || !currentUser) return;
     const result = addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount: maxAmount, userName: 'Postor anónimo' });
     if (!result.success) { toast.error(result.message); return result; }
-    setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id } : v));
+    setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id, myMaxBid: maxAmount } : v));
     loadActivity();
     if (result.outbid) {
       toast.error('No lideras esta subasta', { description: `Ya existe una puja máxima superior. Puja visible: ${formatMoneyShort(result.visibleBid)}` });
