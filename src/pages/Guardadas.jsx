@@ -21,12 +21,16 @@ export default function Guardadas() {
 
   const handleBid = (vehicle) => { setSelectedVehicle(vehicle); setBidModalOpen(true); };
 
-  const handleSubmitBid = (amount) => {
+  const handleSubmitBid = (maxAmount) => {
     if (!selectedVehicle || !currentUser) return;
-    addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount, userName: 'Postor anónimo' });
-    updateAuction(selectedVehicle.id, { current_bid: amount, bids_count: (selectedVehicle.bids_count || 0) + 1 });
+    const result = addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount: maxAmount, userName: 'Postor anónimo' });
     load();
-    toast.success('Puja registrada');
+    if (result.outbid) {
+      toast.error('No lideras esta subasta', { description: 'Ya existe una puja máxima superior.' });
+    } else {
+      toast.success('¡Lideras la subasta!');
+    }
+    return result;
   };
 
   const handleToggleWatchlist = (vehicle) => {

@@ -81,11 +81,12 @@ export default function DetalleSubasta() {
     return () => clearInterval(interval);
   }, [vehicle?.ends_at]);
 
-  const handleSubmitBid = (amount) => {
+  const handleSubmitBid = (maxAmount) => {
     if (!vehicle || !currentUser) return;
-    addBid({ auctionId: vehicle.id, userId: currentUser.id, amount, userName: 'Postor anónimo' });
-    updateAuction(vehicle.id, { current_bid: amount, bids_count: (vehicle.bids_count || 0) + 1 });
-    setVehicle(prev => ({ ...prev, current_bid: amount, bids_count: (prev.bids_count || 0) + 1, isLeading: true }));
+    const result = addBid({ auctionId: vehicle.id, userId: currentUser.id, amount: maxAmount, userName: 'Postor anónimo' });
+    if (!result.success) return result;
+    setVehicle(prev => ({ ...prev, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id }));
+    return result;
   };
 
   const formatPrice = (price) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);

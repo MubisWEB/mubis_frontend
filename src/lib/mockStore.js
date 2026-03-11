@@ -714,35 +714,127 @@ function spawnTestSnipingAuction() {
 spawnTestSnipingAuction();
 
 // ── Bids ──
+const MIN_INCREMENT = 200000; // $200k COP
+
 export function getBids() { return load(KEYS.bids) || []; }
+
+/**
+ * Get the current highest proxy (max) bid for an auction.
+ * Returns { userId, maxAmount } or null.
+ */
+export function getHighestProxy(auctionId) {
+  const bids = getBids().filter(b => b.auctionId === auctionId && b.maxAmount);
+  if (!bids.length) return null;
+  // Group by user, keep the highest maxAmount per user
+  const byUser = {};
+  bids.forEach(b => {
+    if (!byUser[b.userId] || b.maxAmount > byUser[b.userId].maxAmount) {
+      byUser[b.userId] = b;
+    }
+  });
+  const entries = Object.values(byUser);
+  entries.sort((a, b) => b.maxAmount - a.maxAmount || new Date(a.createdAt) - new Date(b.createdAt));
+  return entries[0]; // highest max, earliest if tied
+}
+
+/**
+ * eBay-style proxy bidding.
+ * User submits a maxAmount (hidden). The system resolves the visible current_bid.
+ * Returns { success, visibleBid, leaderId, outbid, message }
+ */
 export function addBid(bid) {
+  const { auctionId, userId, amount: maxAmount, userName } = bid;
+  const auction = getAuctionById(auctionId);
+  if (!auction) return { success: false, message: 'Subasta no encontrada' };
+
+  const currentVisible = auction.current_bid || auction.starting_price || 0;
+  const currentProxy = getHighestProxy(auctionId);
+
+  // Save the proxy bid record with maxAmount
   const list = getBids();
-  const item = { id: `bid-${Date.now()}`, createdAt: new Date().toISOString(), ...bid };
+  const item = {
+    id: `bid-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    auctionId,
+    userId,
+    maxAmount,
+    amount: 0, // will be set below to visible amount
+    userName,
+  };
+
+  let newVisible = currentVisible;
+  let leaderId = currentProxy?.userId || null;
+  let outbid = false;
+
+  if (!currentProxy || currentProxy.userId === userId) {
+    // No existing proxy, or same user raising their max
+    // Visible stays the same (or goes to min if first bid)
+    if (!currentProxy) {
+      newVisible = Math.max(currentVisible, auction.starting_price || 0) + MIN_INCREMENT;
+      newVisible = Math.min(newVisible, maxAmount); // can't exceed user's max
+    }
+    // If same user, just update max — visible unchanged
+    leaderId = userId;
+  } else {
+    // Different user vs existing proxy holder
+    const existingMax = currentProxy.maxAmount;
+    if (maxAmount > existingMax) {
+      // New user wins — visible goes to existingMax + increment
+      newVisible = existingMax + MIN_INCREMENT;
+      newVisible = Math.min(newVisible, maxAmount);
+      leaderId = userId;
+      // Notify outbid user
+      const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
+      addNotification({ userId: currentProxy.userId, type: 'outbid', title: 'Te han superado', body: `Tu puja máxima en ${vLabel} fue superada.` });
+    } else if (maxAmount === existingMax) {
+      // Tie: existing proxy holder wins (earlier bid), visible goes to maxAmount
+      newVisible = maxAmount;
+      leaderId = currentProxy.userId;
+      outbid = true;
+    } else {
+      // New user loses — visible goes to newMax + increment (capped at existing max)
+      newVisible = maxAmount + MIN_INCREMENT;
+      newVisible = Math.min(newVisible, existingMax);
+      leaderId = currentProxy.userId;
+      outbid = true;
+    }
+  }
+
+  item.amount = newVisible;
   list.unshift(item);
   save(KEYS.bids, list);
 
-  const auction = getAuctionById(bid.auctionId);
-  if (auction) {
-    // Anti-sniping: si quedan ≤15 segundos, extender 30 segundos más
+  // Update auction visible bid + leader
+  const bidsCount = (auction.bids_count || 0) + 1;
+  updateAuction(auctionId, { current_bid: newVisible, bids_count: bidsCount, leaderId });
+
+  // Anti-sniping
+  if (auction.ends_at) {
     const now = new Date();
     const endsAt = new Date(auction.ends_at);
     const secsLeft = (endsAt - now) / 1000;
     if (secsLeft > 0 && secsLeft <= 15) {
       const newEnd = new Date(endsAt.getTime() + 30 * 1000).toISOString();
-      updateAuction(bid.auctionId, { ends_at: newEnd });
+      updateAuction(auctionId, { ends_at: newEnd });
     }
-
-    const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
-    const amountStr = `$${(bid.amount / 1000000).toFixed(1)}M`;
-    if (auction.dealerId && auction.dealerId !== bid.userId) {
-      addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.` });
-    }
-    addNotification({ userId: bid.userId, type: 'bid_placed', title: 'Puja registrada', body: `Pujaste ${amountStr} en ${vLabel}.` });
-    addAuditEvent({ entityType: 'auction', entityId: bid.auctionId, type: 'bid_created', message: `Nueva puja: ${amountStr} en ${vLabel}`, actorUserId: bid.userId, actorRole: 'recomprador' });
   }
 
-  return item;
+  // Notifications
+  const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
+  const amountStr = `$${(newVisible / 1000000).toFixed(1)}M`;
+  if (auction.dealerId && auction.dealerId !== userId) {
+    addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.` });
+  }
+  if (outbid) {
+    addNotification({ userId, type: 'outbid', title: 'No lideras esta subasta', body: `Tu puja máxima de $${(maxAmount / 1000000).toFixed(1)}M en ${vLabel} no fue suficiente.` });
+  } else {
+    addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.` });
+  }
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_created', message: `Nueva puja: ${amountStr} en ${vLabel}`, actorUserId: userId, actorRole: 'recomprador' });
+
+  return { success: true, visibleBid: newVisible, leaderId, outbid, bidsCount, message: outbid ? 'Tu puja no fue suficiente para liderar' : 'Lideras la subasta' };
 }
+
 export function getBidsByAuctionId(auctionId) { return getBids().filter(b => b.auctionId === auctionId); }
 export function getBidsByUserId(userId) { return getBids().filter(b => b.userId === userId); }
 export function getWonAuctionsByUserId(userId) {
