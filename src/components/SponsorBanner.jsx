@@ -141,7 +141,15 @@ function CTAButton({ className = '', align }) {
   );
 }
 
-const layouts = { 'left-heavy': LayoutLeftHeavy, 'center-split': LayoutCenterSplit, 'right-heavy': LayoutRightHeavy };
+function LayoutImageBanner({ sponsor }) {
+  return (
+    <div className="absolute inset-0 w-full h-full">
+      <img src={sponsor.bannerImage} alt={sponsor.name} className="w-full h-full object-cover" />
+    </div>
+  );
+}
+
+const layouts = { 'left-heavy': LayoutLeftHeavy, 'center-split': LayoutCenterSplit, 'right-heavy': LayoutRightHeavy, 'image-banner': LayoutImageBanner };
 
 /* ---------- main component ---------- */
 export default function SponsorBanner() {
