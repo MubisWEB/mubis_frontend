@@ -59,7 +59,7 @@ function InterstateLogo() {
 function RentingLogo() {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[18px] bg-white/20 backdrop-blur flex items-center justify-center">
         <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 17h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z" />
           <path d="M14 17h2a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2z" />
