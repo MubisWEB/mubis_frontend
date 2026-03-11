@@ -141,6 +141,8 @@ export default function DetalleSubasta() {
   const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);
   const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
+  const myMaxBid = currentUser ? getUserMaxBid(vehicle.id, currentUser.id) : 0;
+  const isLeading = currentUser ? getAuctionLeader(vehicle.id) === currentUser.id : false;
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
 
