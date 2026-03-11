@@ -1,5 +1,6 @@
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import SponsorBanner from "@/components/SponsorBanner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const faqs = [
