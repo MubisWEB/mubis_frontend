@@ -1,20 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Bell, Gavel, Car, ClipboardCheck, UserCheck, CheckCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead } from '@/lib/mockStore';
 
 const TYPE_ICONS = {
   auction_published: Car,
   new_bid: Gavel,
   bid_surpassed: Gavel,
+  bid_placed: Gavel,
+  outbid: Gavel,
+  auction_won: Gavel,
+  auction_ended: Gavel,
+  pending_decision: Gavel,
+  pronto_pago: Gavel,
   inspection_taken: ClipboardCheck,
   inspection_completed: ClipboardCheck,
+  inspection_rejected: ClipboardCheck,
   user_approved: UserCheck,
 };
+
+function getNotificationRoute(n) {
+  if (n.auctionId) {
+    // Seller types go to seller detail
+    const sellerTypes = ['new_bid', 'pending_decision', 'auction_ended', 'auction_published'];
+    if (sellerTypes.includes(n.type)) {
+      return `/DetalleSubastaVendedor/${n.auctionId}`;
+    }
+    return `/DetalleSubasta/${n.auctionId}`;
+  }
+  if (n.vehicleId) {
+    return `/PeritajeDetalle/${n.vehicleId}`;
+  }
+  return null;
+}
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -28,6 +50,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Notificaciones() {
+  const navigate = useNavigate();
   const user = getCurrentUser();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -47,12 +70,16 @@ export default function Notificaciones() {
     }
   };
 
-  const handleMarkRead = (id) => {
-    markNotificationRead(id);
-    if (user) {
-      setNotifications(getNotificationsByUserId(user.id));
-      setUnreadCount(getUnreadCount(user.id));
+  const handleNotificationClick = (n) => {
+    if (!n.read) {
+      markNotificationRead(n.id);
+      if (user) {
+        setNotifications(getNotificationsByUserId(user.id));
+        setUnreadCount(getUnreadCount(user.id));
+      }
     }
+    const route = getNotificationRoute(n);
+    if (route) navigate(route);
   };
 
   return (
@@ -74,12 +101,13 @@ export default function Notificaciones() {
           ) : (
             notifications.map((n) => {
               const Icon = TYPE_ICONS[n.type] || Bell;
+              const hasRoute = !!getNotificationRoute(n);
               return (
                 <motion.div
                   key={n.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  onClick={() => !n.read && handleMarkRead(n.id)}
+                  onClick={() => handleNotificationClick(n)}
                   className={`flex items-center gap-3 p-3.5 border-b border-border last:border-0 cursor-pointer transition-colors hover:bg-muted/50 ${!n.read ? 'bg-secondary/5' : ''}`}
                 >
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${!n.read ? 'bg-secondary/10' : 'bg-muted'}`}>
@@ -87,6 +115,7 @@ export default function Notificaciones() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm ${!n.read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>{n.title}</p>
+                    {n.body && <p className="text-xs text-muted-foreground/70 truncate">{n.body}</p>}
                     <p className="text-[10px] text-muted-foreground/60 mt-0.5">{timeAgo(n.createdAt)}</p>
                   </div>
                   {!n.read && <div className="w-2 h-2 rounded-full bg-secondary flex-shrink-0" />}
