@@ -426,6 +426,7 @@ export default function Ganados() {
       </div>
 
       <ExtensionModal open={extensionModal.open} onOpenChange={(open) => setExtensionModal(prev => ({ ...prev, open }))} onConfirm={handleExtensionConfirm} vehicleName={extensionModal.vehicleName} />
+      <RouteAssistant open={routeOpen} onOpenChange={setRouteOpen} inProcessAuctions={inProcessAuctions} />
       <BottomNav />
     </div>
   );
