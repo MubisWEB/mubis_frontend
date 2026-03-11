@@ -192,8 +192,8 @@ export default function DetalleSubasta() {
                 {isWonByMe && (
                   <div className="absolute top-4 right-4 z-10"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Ganado!</Badge></div>
                 )}
-                {!isWonByMe && vehicle.isLeading && (
-                  <div className="absolute top-4 right-4 z-10"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
+                {!isWonByMe && isLeading && (
+                  <div className="absolute top-4 right-4 z-10"><Badge className="bg-green-600 text-white font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
                 )}
               </>
             }
