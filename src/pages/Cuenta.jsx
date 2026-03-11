@@ -137,49 +137,6 @@ export default function Cuenta() {
 
       <div className="px-4 py-4 space-y-4">
 
-        {/* Notifications preview */}
-        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
-          <div className="flex items-center justify-between mb-2 px-1">
-            <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notificaciones</p>
-              {unreadCount > 0 && (
-                <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">{unreadCount}</Badge>
-              )}
-            </div>
-            {unreadCount > 0 && (
-              <button onClick={handleMarkAllRead} className="flex items-center gap-1 text-xs text-secondary hover:underline">
-                <CheckCheck className="w-3 h-3" />Marcar leídas
-              </button>
-            )}
-          </div>
-          <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-            {notifications.length === 0 ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
-            ) : (
-              notifications.map((n, i) => {
-                const Icon = TYPE_ICONS[n.type] || Bell;
-                return (
-                  <div
-                    key={n.id}
-                    onClick={() => !n.read && handleMarkRead(n.id)}
-                    className={`flex items-center gap-3 p-3 border-b border-border last:border-0 cursor-pointer transition-colors hover:bg-muted/50 ${!n.read ? 'bg-secondary/5' : ''}`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${!n.read ? 'bg-secondary/10' : 'bg-muted'}`}>
-                      <Icon className={`w-3.5 h-3.5 ${!n.read ? 'text-secondary' : 'text-muted-foreground'}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm truncate ${!n.read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>{n.title}</p>
-                      <p className="text-[10px] text-muted-foreground/60">{timeAgo(n.createdAt)}</p>
-                    </div>
-                    {!n.read && <div className="w-2 h-2 rounded-full bg-secondary flex-shrink-0" />}
-                  </div>
-                );
-              })
-            )}
-          </Card>
-        </motion.div>
-
         {/* Recharge Publications (dealer only) */}
         {(role === 'dealer') && (
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}>
