@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import bannerGM from '@/assets/banner-gm.png';
+import bannerMapfre from '@/assets/banner-mapfre.png';
 
 const sponsors = [
   {
@@ -24,6 +25,14 @@ const sponsors = [
     tagline: 'La movilidad empresarial más eficiente.',
     gradient: 'linear-gradient(135deg, #00BF6F 0%, #00A85D 50%, #008F4F 100%)',
     layout: 'right-heavy', // text left, logo right
+  },
+  {
+    name: 'Mapfre',
+    subtitle: 'Seguros',
+    tagline: 'Asegura tu rentabilidad. 5% de comisión.',
+    gradient: 'linear-gradient(135deg, #CC0000 0%, #FF0000 100%)',
+    layout: 'image-banner',
+    bannerImage: bannerMapfre,
   },
 ];
 
