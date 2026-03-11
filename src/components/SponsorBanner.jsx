@@ -29,6 +29,7 @@ function LayoutImageBanner({ sponsor }) {
         src={sponsor.bannerImage}
         alt={sponsor.name}
         className="w-full h-full object-cover object-center"
+        style={sponsor.imgStyle || {}}
       />
     </div>
   );
