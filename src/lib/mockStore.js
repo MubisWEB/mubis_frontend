@@ -636,7 +636,7 @@ export function reconcileAuctionStatuses() {
       const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta extendida finalizada`, actorUserId: '', actorRole: 'system' });
       if (winnerId) {
-        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.`, auctionId: a.id });
       }
       return { ...a, status: 'ended', winnerId };
     }
