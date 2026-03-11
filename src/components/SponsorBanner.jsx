@@ -143,9 +143,29 @@ function CTAButton({ className = '', align }) {
 
 function LayoutImageBanner({ sponsor }) {
   return (
-    <div className="absolute inset-0 w-full h-full">
-      <img src={sponsor.bannerImage} alt={sponsor.name} className="w-full h-full object-cover" />
-    </div>
+    <>
+      <img src={sponsor.bannerImage} alt={sponsor.name} className="absolute inset-0 w-full h-full object-cover" />
+      <div className="relative z-10 flex items-center h-full px-8 sm:px-12">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex items-center gap-4"
+        >
+          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg border-2 border-white/40 flex items-center justify-center backdrop-blur-sm bg-white/10">
+            <span className="text-white font-black text-lg sm:text-2xl leading-none">gm</span>
+          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-white text-lg sm:text-2xl font-light tracking-wide"
+          >
+            Financia tu <span className="font-bold">inventario a un click.</span>
+          </motion.p>
+        </motion.div>
+      </div>
+    </>
   );
 }
 
@@ -173,13 +193,13 @@ export default function SponsorBanner() {
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 0.97 }}
+            initial={sponsor.layout === 'image-banner' ? { opacity: 1 } : { opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.5 }}
+            exit={sponsor.layout === 'image-banner' ? { opacity: 1 } : { opacity: 0, scale: 0.97 }}
+            transition={{ duration: sponsor.layout === 'image-banner' ? 0 : 0.5 }}
             className="relative overflow-hidden hover:brightness-105 transition-all duration-300"
             style={{
-              background: sponsor.gradient,
+              background: sponsor.layout === 'image-banner' ? 'transparent' : sponsor.gradient,
               borderRadius: '18px',
               aspectRatio: '6 / 1',
               boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
