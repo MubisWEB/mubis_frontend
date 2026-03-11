@@ -57,11 +57,11 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
   // ── Grid / card variant for desktop ──
   if (variant === 'grid') {
     return (
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-primary' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <Link to={detailUrl} className="block relative aspect-[4/3] bg-muted overflow-hidden">
           <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           {vehicle.isLeading && (
-            <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">
+            <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5">
               <Trophy className="w-3 h-3 mr-1" />LÍDER
             </Badge>
           )}
