@@ -123,11 +123,6 @@ export default function Comprar() {
                 )}
               </AnimatePresence>
             </div>
-            {activityItems.length > 1 && (
-              <Badge variant="outline" className="text-[10px] border-border text-muted-foreground flex-shrink-0">
-                {activityIdx + 1}/{activityItems.length}
-              </Badge>
-            )}
           </div>
         </Card>
       </div>
