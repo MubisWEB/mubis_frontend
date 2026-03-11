@@ -102,6 +102,7 @@ export default function Cuenta() {
   };
 
   const menuItems = [
+    { icon: Bell, label: 'Notificaciones', action: () => navigate('/Notificaciones'), badge: unreadCount > 0 ? unreadCount : null },
     { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); } },
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
     { icon: HelpCircle, label: 'Ayuda y soporte', action: () => navigate('/AyudaSoporte') },
