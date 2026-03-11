@@ -18,23 +18,23 @@ const brands = ['Toyota', 'Chevrolet', 'Mazda', 'Renault', 'Kia', 'Hyundai', 'Vo
 // ── Filter Panel (desktop sidebar) ──
 function SellerFilterPanel({ filters, setFilters }) {
   const [local, setLocal] = useState(filters);
-  const hasFilters = Object.values(filters).some(v => v);
+  const hasFilters = Object.values(filters).some((v) => v);
   const handleApply = () => setFilters(local);
-  const handleReset = () => { const e = { brand: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
+  const handleReset = () => {const e = { brand: '', yearFrom: '', yearTo: '' };setLocal(e);setFilters(e);};
 
   return (
     <div className="bg-card border border-border rounded-2xl p-5 sticky top-4">
       <div className="flex items-center gap-2 mb-5">
         <Filter className="w-4 h-4 text-secondary" />
         <h3 className="text-base font-bold text-foreground">Filtros</h3>
-        {hasFilters && <span className="ml-auto w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{Object.values(filters).filter(v => v).length}</span>}
+        {hasFilters && <span className="ml-auto w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{Object.values(filters).filter((v) => v).length}</span>}
       </div>
       <div className="space-y-4">
         <div>
           <Label className="text-foreground font-semibold text-sm mb-2 block">Marca</Label>
           <Select value={local.brand} onValueChange={(v) => setLocal({ ...local, brand: v })}>
             <SelectTrigger className="rounded-xl border-border h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
-            <SelectContent>{brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+            <SelectContent>{brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div>
@@ -49,23 +49,23 @@ function SellerFilterPanel({ filters, setFilters }) {
         <Button onClick={handleApply} className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold h-10 rounded-full">Aplicar</Button>
         {hasFilters && <Button variant="ghost" onClick={handleReset} className="w-full text-muted-foreground font-medium text-sm"><X className="w-4 h-4 mr-1" />Limpiar</Button>}
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 function SellerFilterSheet({ filters, setFilters }) {
   const [local, setLocal] = useState(filters);
   const [open, setOpen] = useState(false);
-  const hasFilters = Object.values(filters).some(v => v);
-  const handleApply = () => { setFilters(local); setOpen(false); };
-  const handleReset = () => { const e = { brand: '', yearFrom: '', yearTo: '' }; setLocal(e); setFilters(e); };
+  const hasFilters = Object.values(filters).some((v) => v);
+  const handleApply = () => {setFilters(local);setOpen(false);};
+  const handleReset = () => {const e = { brand: '', yearFrom: '', yearTo: '' };setLocal(e);setFilters(e);};
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="rounded-full font-medium h-10 px-4 text-sm border-0 bg-secondary text-secondary-foreground hover:bg-secondary/90">
           <Filter className="w-4 h-4 mr-1" />Filtrar
-          {hasFilters && <span className="ml-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{Object.values(filters).filter(v => v).length}</span>}
+          {hasFilters && <span className="ml-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{Object.values(filters).filter((v) => v).length}</span>}
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[50vh] rounded-t-3xl">
@@ -75,7 +75,7 @@ function SellerFilterSheet({ filters, setFilters }) {
             <Label className="text-foreground font-semibold text-sm mb-2 block">Marca</Label>
             <Select value={local.brand} onValueChange={(v) => setLocal({ ...local, brand: v })}>
               <SelectTrigger className="rounded-xl border-border h-11"><SelectValue placeholder="Todas" /></SelectTrigger>
-              <SelectContent>{brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+              <SelectContent>{brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
@@ -91,17 +91,17 @@ function SellerFilterSheet({ filters, setFilters }) {
           {hasFilters && <Button variant="ghost" onClick={handleReset} className="w-full text-muted-foreground font-medium"><X className="w-4 h-4 mr-1" />Limpiar filtros</Button>}
         </div>
       </SheetContent>
-    </Sheet>
-  );
+    </Sheet>);
+
 }
 
 // ── Card components ──
 function VehicleProcessCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive text-destructive-foreground text-xs">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || (insp && insp.status === 'IN_PROGRESS')) return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || insp && insp.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
+    if (v.status === 'IN_PROGRESS' || insp && insp.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    if (v.status === 'PENDING_INSPECTION' || insp && insp.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   const docs = v.documentation;
@@ -122,11 +122,11 @@ function VehicleProcessCard({ v, navigate }) {
             <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            {docs && (
-              <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
+            {docs &&
+            <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
                 {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
               </Badge>
-            )}
+            }
           </div>
         </div>
         <div className="flex flex-col items-end justify-between flex-shrink-0">
@@ -134,16 +134,16 @@ function VehicleProcessCard({ v, navigate }) {
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
 
 function VehicleProcessGridCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive text-destructive-foreground text-xs">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || (insp && insp.status === 'IN_PROGRESS')) return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || insp && insp.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
+    if (v.status === 'IN_PROGRESS' || insp && insp.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    if (v.status === 'PENDING_INSPECTION' || insp && insp.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   const docs = v.documentation;
@@ -155,20 +155,20 @@ function VehicleProcessGridCard({ v, navigate }) {
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <img src={v.photos?.[0] || defaultImage} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         <div className="absolute top-2 left-2">{getStatusBadge()}</div>
-        {docs && (
-          <div className="absolute top-2 right-2">
+        {docs &&
+        <div className="absolute top-2 right-2">
             <Badge className={`text-[10px] backdrop-blur-sm ${docsOk ? 'bg-primary/80 text-primary-foreground' : 'bg-background/80 text-foreground'}`}>
               {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
             </Badge>
           </div>
-        )}
+        }
       </div>
       <div className="p-3.5">
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{v.brand} {v.model}</h3>
         <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
 
 function AuctionCard({ auction, navigate }) {
@@ -177,7 +177,7 @@ function AuctionCard({ auction, navigate }) {
     const diff = new Date(endDate) - new Date();
     if (diff <= 0) return 'Finalizada';
     const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
   const peritajeBadge = (() => {
@@ -193,13 +193,13 @@ function AuctionCard({ auction, navigate }) {
       <div className="flex p-3 gap-3">
         <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
           {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
-          {isEnded ? (
-            auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
-          ) : isPending ? (
-            <Badge className="absolute top-1 left-1 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">⏳ Decidir</Badge>
-          ) : (
-            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
-          )}
+          {isEnded ?
+          auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge> :
+          isPending ?
+          <Badge className="absolute top-1 left-1 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">⏳ Decidir</Badge> :
+
+          <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
+          }
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
@@ -214,8 +214,8 @@ function AuctionCard({ auction, navigate }) {
           </div>
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
 
 function AuctionGridCard({ auction, navigate }) {
@@ -224,7 +224,7 @@ function AuctionGridCard({ auction, navigate }) {
     const diff = new Date(endDate) - new Date();
     if (diff <= 0) return 'Finalizada';
     const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
   const isEnded = auction.status === 'ended' || auction.status === 'closed';
@@ -234,16 +234,16 @@ function AuctionGridCard({ auction, navigate }) {
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        {isEnded ? (
-          auction.winnerId ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge>
-        ) : (
-          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">Activa</Badge>
-        )}
-        {!isEnded && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-background/80 text-foreground">
+        {isEnded ?
+        auction.winnerId ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge> :
+
+        <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">Activa</Badge>
+        }
+        {!isEnded &&
+        <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-background/80 text-foreground">
             <Clock className="w-3 h-3" /><span className="font-semibold">{getTimeLeft(auction.ends_at)}</span>
           </div>
-        )}
+        }
       </div>
       <div className="p-3.5">
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
@@ -256,8 +256,8 @@ function AuctionGridCard({ auction, navigate }) {
           </div>
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
 
 // ── Main page ──
@@ -275,8 +275,8 @@ export default function MisSubastas() {
 
   const loadData = useCallback(() => {
     reconcileAuctionStatuses();
-    setVehicles(getVehicles().filter(v => v.dealerId === currentUser?.id));
-    setAuctions(getAuctions().filter(a => a.dealerId === currentUser?.id));
+    setVehicles(getVehicles().filter((v) => v.dealerId === currentUser?.id));
+    setAuctions(getAuctions().filter((a) => a.dealerId === currentUser?.id));
     if (currentUser?.id) setPubBalance(getPublicationsBalance(currentUser.id));
   }, [currentUser?.id]);
 
@@ -288,18 +288,18 @@ export default function MisSubastas() {
 
   const applyFilters = (list, isBrandField = 'brand') => {
     let filtered = [...list];
-    if (search) { const q = search.toLowerCase(); filtered = filtered.filter(v => (`${v.brand} ${v.model}`).toLowerCase().includes(q)); }
-    if (filters.brand) filtered = filtered.filter(v => v[isBrandField] === filters.brand);
-    if (filters.yearFrom) filtered = filtered.filter(v => v.year >= parseInt(filters.yearFrom));
-    if (filters.yearTo) filtered = filtered.filter(v => v.year <= parseInt(filters.yearTo));
+    if (search) {const q = search.toLowerCase();filtered = filtered.filter((v) => `${v.brand} ${v.model}`.toLowerCase().includes(q));}
+    if (filters.brand) filtered = filtered.filter((v) => v[isBrandField] === filters.brand);
+    if (filters.yearFrom) filtered = filtered.filter((v) => v.year >= parseInt(filters.yearFrom));
+    if (filters.yearTo) filtered = filtered.filter((v) => v.year <= parseInt(filters.yearTo));
     return filtered;
   };
 
-  const enProceso = useMemo(() => applyFilters(vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status))), [vehicles, search, filters]);
-  const rechazados = useMemo(() => applyFilters(vehicles.filter(v => v.status === 'INSPECTION_REJECTED')), [vehicles, search, filters]);
-  const activas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'active')), [auctions, search, filters]);
-  const pendienteDecision = useMemo(() => applyFilters(auctions.filter(a => a.status === 'pending_decision')), [auctions, search, filters]);
-  const finalizadas = useMemo(() => applyFilters(auctions.filter(a => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
+  const enProceso = useMemo(() => applyFilters(vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status))), [vehicles, search, filters]);
+  const rechazados = useMemo(() => applyFilters(vehicles.filter((v) => v.status === 'INSPECTION_REJECTED')), [vehicles, search, filters]);
+  const activas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'active')), [auctions, search, filters]);
+  const pendienteDecision = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'pending_decision')), [auctions, search, filters]);
+  const finalizadas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
 
 
   return (
@@ -309,7 +309,7 @@ export default function MisSubastas() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Publicaciones y subastas</p>
+            
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
@@ -326,18 +326,18 @@ export default function MisSubastas() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
         <div className="grid grid-cols-5 gap-2 mb-4">
           {[
-            { key: 'activas', label: 'Activas', count: auctions.filter(a => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-            { key: 'decision', label: 'Decisión', count: auctions.filter(a => a.status === 'pending_decision').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-            { key: 'proceso', label: 'Proceso', count: vehicles.filter(v => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-            { key: 'rechazados', label: 'Rechazados', count: vehicles.filter(v => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
-            { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter(a => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' },
-          ].map(stat => (
-            <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-              className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
+          { key: 'activas', label: 'Activas', count: auctions.filter((a) => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+          { key: 'decision', label: 'Decisión', count: auctions.filter((a) => a.status === 'pending_decision').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+          { key: 'proceso', label: 'En proceso', count: vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+          { key: 'rechazados', label: 'Rechazados', count: vehicles.filter((v) => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
+          { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter((a) => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' }].
+          map((stat) =>
+          <button key={stat.key} onClick={() => setActiveTab(stat.key)}
+          className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
               <p className={`text-xl md:text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
               <p className={`text-[9px] md:text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
             </button>
-          ))}
+          )}
         </div>
       </div>
 
@@ -374,92 +374,92 @@ export default function MisSubastas() {
           </div>
 
           {activeTab === 'proceso' && (
-            enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> : (
-              <>
-                <div className="space-y-2 md:hidden">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map(v => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div>
-                ) : (
-                  <div className="hidden md:flex md:flex-col gap-4">{enProceso.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                )}
-              </>
-            )
-          )}
+          enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> :
+          <>
+                <div className="space-y-2 md:hidden">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ?
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div> :
+
+            <div className="hidden md:flex md:flex-col gap-4">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+            }
+              </>)
+
+          }
 
           {activeTab === 'rechazados' && (
-            rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> : (
-              <>
-                <div className="space-y-2 md:hidden">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map(v => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div>
-                ) : (
-                  <div className="hidden md:flex md:flex-col gap-4">{rechazados.map(v => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
-                )}
-              </>
-            )
-          )}
+          rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> :
+          <>
+                <div className="space-y-2 md:hidden">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ?
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div> :
+
+            <div className="hidden md:flex md:flex-col gap-4">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+            }
+              </>)
+
+          }
 
           {activeTab === 'activas' && (
-            activas.length === 0 ? <EmptyState text="Sin subastas activas" /> : (
-              <>
-                <div className="space-y-3 md:hidden">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                ) : (
-                  <div className="hidden md:flex md:flex-col gap-4">{activas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                )}
-              </>
-            )
-          )}
+          activas.length === 0 ? <EmptyState text="Sin subastas activas" /> :
+          <>
+                <div className="space-y-3 md:hidden">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ?
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
+
+            <div className="hidden md:flex md:flex-col gap-4">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+            }
+              </>)
+
+          }
 
           {activeTab === 'decision' && (
-            pendienteDecision.length === 0 ? <EmptyState text="Sin subastas pendientes de decisión" /> : (
-              <>
-                <div className="space-y-3 md:hidden">{pendienteDecision.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                ) : (
-                  <div className="hidden md:flex md:flex-col gap-4">{pendienteDecision.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                )}
-              </>
-            )
-          )}
+          pendienteDecision.length === 0 ? <EmptyState text="Sin subastas pendientes de decisión" /> :
+          <>
+                <div className="space-y-3 md:hidden">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ?
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
+
+            <div className="hidden md:flex md:flex-col gap-4">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+            }
+              </>)
+
+          }
 
           {activeTab === 'finalizadas' && (
-            finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> : (
-              <>
-                <div className="space-y-3 md:hidden">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                {viewMode === 'grid' ? (
-                  <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map(a => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                ) : (
-                  <div className="hidden md:flex md:flex-col gap-4">{finalizadas.map(a => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
-                )}
-              </>
-            )
-          )}
+          finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> :
+          <>
+                <div className="space-y-3 md:hidden">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                {viewMode === 'grid' ?
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
 
-          {vehicles.length === 0 && auctions.length === 0 && (
-            <div className="text-center py-16">
+            <div className="hidden md:flex md:flex-col gap-4">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+            }
+              </>)
+
+          }
+
+          {vehicles.length === 0 && auctions.length === 0 &&
+          <div className="text-center py-16">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes publicaciones</h3>
               <p className="text-muted-foreground text-sm">Usa el botón "Publicar carro" arriba para iniciar</p>
             </div>
-          )}
+          }
         </div>
       </div>
 
       <PublicarCarroDialog open={dialogOpen} onOpenChange={setDialogOpen} onPublished={loadData} />
       <BottomNav />
-    </div>
-  );
+    </div>);
+
 }
 
 function EmptyState({ text }) {
   return (
     <div className="text-center py-8">
       <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
+    </div>);
+
 }
