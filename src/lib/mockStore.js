@@ -265,19 +265,30 @@ function buildSeedBids(auctions) {
   const bidders = ['u-recomprador-1', 'u-recomprador-2', 'u-recomprador-3', 'u-dealer-1', 'u-dealer-2'];
   const bids = [];
   let bidIdx = 0;
+  const MIN_INC = 200000;
   auctions.forEach(a => {
-    const count = a.bids_count || 3;
+    // More bids per auction: 5-10 bids each
+    const baseBidCount = a.bids_count || 3;
+    const count = Math.max(baseBidCount, 5 + Math.floor(Math.random() * 6));
+    let currentVisible = a.starting_price;
     for (let j = 0; j < count; j++) {
       const userId = bidders[(j + auctions.indexOf(a)) % bidders.length];
       if (userId === a.dealerId) continue;
+      const maxBid = currentVisible + MIN_INC + Math.floor(Math.random() * 800000);
+      currentVisible = currentVisible + MIN_INC;
       bids.push({
         id: `bid-seed-${++bidIdx}`,
         auctionId: a.id,
         userId,
-        amount: a.starting_price + (j + 1) * 100000,
-        createdAt: new Date(Date.now() - (count - j) * 3600000).toISOString(),
+        userName: 'Postor anónimo',
+        amount: currentVisible,
+        maxAmount: maxBid,
+        createdAt: new Date(Date.now() - (count - j) * (900000 + Math.floor(Math.random() * 1800000))).toISOString(),
       });
     }
+    // Update auction current_bid to match
+    a.current_bid = currentVisible;
+    a.bids_count = count;
   });
   return bids;
 }
@@ -332,10 +343,10 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v15') {
+  if (seedVersion !== 'v16') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem('mubis_store_publications');
-    localStorage.setItem('mubis_seed_version', 'v15');
+    localStorage.setItem('mubis_seed_version', 'v16');
   }
 
   if (!load(KEYS.users)) {
