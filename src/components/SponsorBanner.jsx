@@ -193,13 +193,13 @@ export default function SponsorBanner() {
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 0.97 }}
+            initial={sponsor.layout === 'image-banner' ? { opacity: 1 } : { opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.5 }}
+            exit={sponsor.layout === 'image-banner' ? { opacity: 1 } : { opacity: 0, scale: 0.97 }}
+            transition={{ duration: sponsor.layout === 'image-banner' ? 0 : 0.5 }}
             className="relative overflow-hidden hover:brightness-105 transition-all duration-300"
             style={{
-              background: sponsor.gradient,
+              background: sponsor.layout === 'image-banner' ? 'transparent' : sponsor.gradient,
               borderRadius: '18px',
               aspectRatio: '6 / 1',
               boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
