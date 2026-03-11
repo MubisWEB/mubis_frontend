@@ -328,7 +328,9 @@ function buildSeedAuditEvents(vehicles, inspections, auctions, bids) {
   bids.slice(0, 30).forEach(b => {
     const a = auctions.find(x => x.id === b.auctionId);
     if (!a) return;
-    events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: b.auctionId, type: 'bid_created', message: `Nueva puja: $${(b.amount / 1000000).toFixed(1)}M en ${a.brand} ${a.model} ${a.year}`, createdAt: b.createdAt, actorUserId: b.userId, actorRole: 'recomprador' });
+    const bidder = SEED_USERS.find(u => u.id === b.userId);
+    const bidderName = bidder ? bidder.company : 'Postor anónimo';
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: b.auctionId, type: 'bid_created', message: `${bidderName} pujó $${(b.amount / 1000000).toFixed(1)}M en ${a.brand} ${a.model} ${a.year}`, createdAt: b.createdAt, actorUserId: b.userId, actorRole: 'recomprador' });
   });
   events.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
   return events;
