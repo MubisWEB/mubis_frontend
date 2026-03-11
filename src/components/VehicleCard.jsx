@@ -130,6 +130,12 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
                 <span className="text-muted-foreground text-[10px] flex items-center"><Flame className="w-2.5 h-2.5 mr-0.5 text-secondary flex-shrink-0" />{uniqueBidders}</span>
               )}
             </div>
+            {vehicle.myMaxBid > 0 && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <Eye className="w-2.5 h-2.5 text-violet-500" />
+                <span className="text-[10px] text-violet-600 dark:text-violet-400 font-semibold">Mi máx: {formatPrice(vehicle.myMaxBid)}</span>
+              </div>
+            )}
           </Link>
           <div className="flex flex-col items-end justify-between">
             <div className="flex items-center gap-1">
