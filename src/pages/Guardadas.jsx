@@ -4,7 +4,7 @@ import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import BidModal from '@/components/BidModal';
 import { Bookmark } from 'lucide-react';
-import { getCurrentUser, getWatchlistByUserId, toggleWatchlist, addBid, updateAuction } from '@/lib/mockStore';
+import { getCurrentUser, getWatchlistByUserId, toggleWatchlist, addBid } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
 export default function Guardadas() {

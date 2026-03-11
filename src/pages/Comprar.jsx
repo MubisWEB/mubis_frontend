@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import { getActiveAuctions, addBid, updateAuction, getCurrentUser, getRecentAuctionActivity } from '@/lib/mockStore';
+import { getActiveAuctions, addBid, getCurrentUser, getRecentAuctionActivity } from '@/lib/mockStore';
 
 const formatMoneyShort = (n) => `$${(n / 1000000).toFixed(0)}M`;
 
