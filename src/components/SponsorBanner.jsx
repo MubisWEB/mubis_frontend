@@ -79,7 +79,7 @@ const logoComponents = [GMFinancialLogo, InterstateLogo, RentingLogo];
 /* ---------- layout renderers ---------- */
 function LayoutLeftHeavy({ sponsor, Logo, index }) {
   return (
-    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 px-6 sm:px-8 py-5 sm:py-0 sm:h-[100px]">
+    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 px-8 sm:px-12 py-5 sm:py-0 sm:h-[180px]">
       <div className="flex-shrink-0"><Logo /></div>
       <div className="h-8 w-px bg-white/20 hidden sm:block" />
       <p className="flex-1 text-white/90 text-sm sm:text-base font-medium text-center sm:text-left leading-snug">
