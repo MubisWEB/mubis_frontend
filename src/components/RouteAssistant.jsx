@@ -114,24 +114,18 @@ export default function RouteAssistant({ open, onOpenChange, inProcessAuctions =
   const userOrigin = { lat: 4.6690, lng: -74.0625, label: 'Tu oficina (Bogotá)' };
 
   const stops = useMemo(() => {
-    return inProcessAuctions.map((a, i) => {
-      const city = a.city || 'Bogotá';
-      const base = CITY_COORDS[city] || CITY_COORDS['Bogotá'];
-      // Add small offset so markers don't overlap
-      const coords = {
-        lat: base.lat + (Math.random() - 0.5) * 0.03,
-        lng: base.lng + (Math.random() - 0.5) * 0.03,
-      };
-      const addresses = MOCK_ADDRESSES[city] || MOCK_ADDRESSES['Bogotá'];
-      const address = addresses[i % addresses.length];
+    // Only Bogotá vehicles for this mockup
+    const bogotaAuctions = inProcessAuctions.filter(a => !a.city || a.city === 'Bogotá');
+    return bogotaAuctions.map((a, i) => {
+      const loc = BOGOTA_LOCATIONS[i % BOGOTA_LOCATIONS.length];
       return {
         id: a.id,
         brand: a.brand,
         model: a.model,
         year: a.year,
-        city,
-        address,
-        coords,
+        city: 'Bogotá',
+        address: loc.address,
+        coords: { lat: loc.lat, lng: loc.lng },
         price: a.current_bid,
       };
     });
