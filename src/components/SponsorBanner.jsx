@@ -45,7 +45,7 @@ export default function SponsorBanner() {
   const sponsor = sponsors[index];
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 mt-4 mb-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 mt-2 mb-2">
       <div className="max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
