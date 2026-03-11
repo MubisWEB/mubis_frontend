@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import bannerGM from '@/assets/banner-gm.png';
 
 const sponsors = [
   {
@@ -7,7 +8,8 @@ const sponsors = [
     subtitle: 'Colombia',
     tagline: 'Impulsando el inventario de los concesionarios líderes.',
     gradient: 'linear-gradient(135deg, #003A8F 0%, #0056D6 100%)',
-    layout: 'left-heavy', // logo big left, text right
+    layout: 'image-banner',
+    bannerImage: bannerGM,
   },
   {
     name: 'Interstate',
