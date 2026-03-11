@@ -1,6 +1,7 @@
 import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import SponsorBanner from "@/components/SponsorBanner";
 import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ export default function Contacto() {
     <div className="min-h-screen flex flex-col bg-background">
       <TopBar />
       <MainNav />
+      <SponsorBanner />
       <main className="flex-1">
         {/* Hero */}
         <section className="bg-background py-16 md:py-24">

@@ -153,7 +153,7 @@ function CTAButton({ className = '', align }) {
 function LayoutImageBanner({ sponsor }) {
   return (
     <div className="absolute inset-0 w-full h-full">
-      <img src={sponsor.bannerImage} alt={sponsor.name} className="w-full h-full object-cover" />
+      <img src={sponsor.bannerImage} alt={sponsor.name} className="w-full h-full object-cover object-right" />
     </div>
   );
 }
