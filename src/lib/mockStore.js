@@ -665,6 +665,15 @@ export function addBid(bid) {
 
   const auction = getAuctionById(bid.auctionId);
   if (auction) {
+    // Anti-sniping: si quedan ≤15 segundos, extender 30 segundos más
+    const now = new Date();
+    const endsAt = new Date(auction.ends_at);
+    const secsLeft = (endsAt - now) / 1000;
+    if (secsLeft > 0 && secsLeft <= 15) {
+      const newEnd = new Date(endsAt.getTime() + 30 * 1000).toISOString();
+      updateAuction(bid.auctionId, { ends_at: newEnd });
+    }
+
     const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
     const amountStr = `$${(bid.amount / 1000000).toFixed(1)}M`;
     if (auction.dealerId && auction.dealerId !== bid.userId) {
