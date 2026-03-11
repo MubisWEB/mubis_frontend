@@ -315,6 +315,26 @@ export default function Ganados() {
             </button>
           ))}
         </div>
+
+        {/* Route Assistant button */}
+        {currentUser?.role === 'recomprador' && (
+          <div className="mt-3">
+            <Button
+              onClick={() => setRouteOpen(true)}
+              disabled={inProcessAuctions.length === 0}
+              className="w-full rounded-xl h-11 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold"
+            >
+              <Route className="w-4 h-4 mr-2" />
+              Asistente de ruta
+              {inProcessAuctions.length > 0 && (
+                <Badge className="ml-2 bg-secondary-foreground/20 text-secondary-foreground text-[10px]">{inProcessAuctions.length}</Badge>
+              )}
+            </Button>
+            {inProcessAuctions.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center mt-1">No hay vehículos en proceso para planificar ruta</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Search & Sort */}
