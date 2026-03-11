@@ -26,6 +26,14 @@ const sponsors = [
     gradient: 'linear-gradient(135deg, #00BF6F 0%, #00A85D 50%, #008F4F 100%)',
     layout: 'right-heavy', // text left, logo right
   },
+  {
+    name: 'Mapfre',
+    subtitle: 'Seguros',
+    tagline: 'Asegura tu rentabilidad. 5% de comisión.',
+    gradient: 'linear-gradient(135deg, #CC0000 0%, #FF0000 100%)',
+    layout: 'image-banner',
+    bannerImage: bannerMapfre,
+  },
 ];
 
 /* ---------- per-sponsor logo renderers ---------- */
