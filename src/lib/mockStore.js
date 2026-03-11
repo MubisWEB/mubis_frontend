@@ -447,7 +447,7 @@ export function updateInspection(id, updates) {
         addNotification({ userId: updated.peritoId, type: 'inspection_completed', title: 'Peritaje finalizado', body: `Finalizaste el peritaje de ${vLabel}.`, vehicleId: updated.vehicleId });
       }
       if (vehicle?.dealerId) {
-        addNotification({ userId: vehicle.dealerId, type: 'auction_published', title: 'Vehículo publicado en subasta', body: `${vLabel} ya está en subasta.` });
+        addNotification({ userId: vehicle.dealerId, type: 'auction_published', title: 'Vehículo publicado en subasta', body: `${vLabel} ya está en subasta.`, vehicleId: updated.vehicleId });
       }
       addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_completed', message: `Peritaje completado — Score: ${updates.scoreGlobal || updated.scoreGlobal || '?'}/100`, actorUserId: updated.peritoId || '', actorRole: 'perito' });
     }
