@@ -439,7 +439,7 @@ export function updateInspection(id, updates) {
     const vLabel = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}` : updated.vehicleId;
 
     if (updates.status === 'IN_PROGRESS' && updated.peritoId) {
-      addNotification({ userId: updated.peritoId, type: 'inspection_taken', title: 'Peritaje tomado', body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.` });
+      addNotification({ userId: updated.peritoId, type: 'inspection_taken', title: 'Peritaje tomado', body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.`, vehicleId: updated.vehicleId });
       addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_taken', message: `Peritaje tomado por perito`, actorUserId: updated.peritoId, actorRole: 'perito' });
     }
     if (updates.status === 'COMPLETED') {
