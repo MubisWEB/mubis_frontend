@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, CheckCheck, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -102,6 +102,7 @@ export default function Cuenta() {
   };
 
   const menuItems = [
+    { icon: Bell, label: 'Notificaciones', action: () => navigate('/Notificaciones'), badge: unreadCount > 0 ? unreadCount : null },
     { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); } },
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
     { icon: HelpCircle, label: 'Ayuda y soporte', action: () => navigate('/AyudaSoporte') },
@@ -136,49 +137,6 @@ export default function Cuenta() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-
-        {/* Notifications preview */}
-        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
-          <div className="flex items-center justify-between mb-2 px-1">
-            <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notificaciones</p>
-              {unreadCount > 0 && (
-                <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">{unreadCount}</Badge>
-              )}
-            </div>
-            {unreadCount > 0 && (
-              <button onClick={handleMarkAllRead} className="flex items-center gap-1 text-xs text-secondary hover:underline">
-                <CheckCheck className="w-3 h-3" />Marcar leídas
-              </button>
-            )}
-          </div>
-          <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-            {notifications.length === 0 ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
-            ) : (
-              notifications.map((n, i) => {
-                const Icon = TYPE_ICONS[n.type] || Bell;
-                return (
-                  <div
-                    key={n.id}
-                    onClick={() => !n.read && handleMarkRead(n.id)}
-                    className={`flex items-center gap-3 p-3 border-b border-border last:border-0 cursor-pointer transition-colors hover:bg-muted/50 ${!n.read ? 'bg-secondary/5' : ''}`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${!n.read ? 'bg-secondary/10' : 'bg-muted'}`}>
-                      <Icon className={`w-3.5 h-3.5 ${!n.read ? 'text-secondary' : 'text-muted-foreground'}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm truncate ${!n.read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>{n.title}</p>
-                      <p className="text-[10px] text-muted-foreground/60">{timeAgo(n.createdAt)}</p>
-                    </div>
-                    {!n.read && <div className="w-2 h-2 rounded-full bg-secondary flex-shrink-0" />}
-                  </div>
-                );
-              })
-            )}
-          </Card>
-        </motion.div>
 
         {/* Recharge Publications (dealer only) */}
         {(role === 'dealer') && (
@@ -237,8 +195,13 @@ export default function Cuenta() {
               return (
                 <button key={i} onClick={item.action} className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border last:border-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
+                    <div className="relative w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
                       <Icon className="w-4 h-4 text-muted-foreground" />
+                      {item.badge && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                          {item.badge}
+                        </span>
+                      )}
                     </div>
                     <span className="font-medium text-foreground/80 text-sm">{item.label}</span>
                   </div>
