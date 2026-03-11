@@ -654,6 +654,48 @@ export function reconcileAuctionStatuses() {
     }
   }
 }
+// ── Subasta de prueba anti-sniping (30 seg) ──
+function spawnTestSnipingAuction() {
+  const testId = 'auc-test-sniping';
+  const existing = getAuctions().find(a => a.id === testId);
+  if (existing && existing.status === 'active') return; // ya existe
+
+  const car = CAR_DATA[0];
+  const ts = Date.now();
+  const vehicle = {
+    id: 'v-test-sniping', ...car, km: car.km, mileage: car.km,
+    transmission: car.transmision, fuel_type: car.combustible,
+    dealerId: 'u-dealer-1', dealerBranch: 'Bogotá Norte', dealerCompany: 'Autonal',
+    photos: [PHOTOS[0], PHOTOS[1]], documentation: generateDocumentation(0),
+    status: 'READY_FOR_AUCTION', createdAt: new Date().toISOString(),
+  };
+  // Ensure vehicle exists
+  const vehicles = getVehicles();
+  const vIdx = vehicles.findIndex(v => v.id === vehicle.id);
+  if (vIdx >= 0) vehicles[vIdx] = vehicle; else vehicles.unshift(vehicle);
+  save(KEYS.vehicles, vehicles);
+
+  const auction = {
+    id: testId, vehicleId: vehicle.id, dealerId: 'u-dealer-1',
+    brand: car.brand, model: car.model, year: car.year,
+    km: vehicle.km, mileage: vehicle.mileage, city: car.city, color: car.color,
+    combustible: car.combustible, transmission: car.transmision,
+    fuel_type: car.combustible, photos: vehicle.photos,
+    documentation: vehicle.documentation,
+    dealerCompany: 'Autonal', dealerBranch: 'Bogotá Norte',
+    specs: car.specs || null,
+    starting_price: 35000000, current_bid: 36000000, bids_count: 3,
+    views: 12, status: 'active', winnerId: null,
+    ends_at: new Date(ts + 30 * 1000).toISOString(), // 30 segundos
+    createdAt: new Date().toISOString(),
+  };
+  const auctions = getAuctions();
+  const aIdx = auctions.findIndex(a => a.id === testId);
+  if (aIdx >= 0) auctions[aIdx] = auction; else auctions.unshift(auction);
+  save(KEYS.auctions, auctions);
+  console.log('🧪 Subasta anti-sniping creada — termina en 30 seg');
+}
+spawnTestSnipingAuction();
 
 // ── Bids ──
 export function getBids() { return load(KEYS.bids) || []; }
