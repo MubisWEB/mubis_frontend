@@ -12,7 +12,7 @@ import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ExtensionModal from '@/components/ExtensionModal';
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction, addSupportCase, getSupportCasesByUserId } from '@/lib/mockStore';
+import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction, addSupportCase, getSupportCasesByUserId, getUserMaxBid, getAuctionLeader } from '@/lib/mockStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
@@ -141,6 +141,8 @@ export default function DetalleSubasta() {
   const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
   const bids = getBidsByAuctionId(vehicle.id);
   const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
+  const myMaxBid = currentUser ? getUserMaxBid(vehicle.id, currentUser.id) : 0;
+  const isLeading = currentUser ? getAuctionLeader(vehicle.id) === currentUser.id : false;
   const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
   const docs = vehicle.documentation || vehData?.documentation || null;
 
@@ -190,8 +192,8 @@ export default function DetalleSubasta() {
                 {isWonByMe && (
                   <div className="absolute top-4 right-4 z-10"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Ganado!</Badge></div>
                 )}
-                {!isWonByMe && vehicle.isLeading && (
-                  <div className="absolute top-4 right-4 z-10"><Badge className="bg-primary text-primary-foreground font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
+                {!isWonByMe && isLeading && (
+                  <div className="absolute top-4 right-4 z-10"><Badge className="bg-green-600 text-white font-bold px-3 py-1"><Trophy className="w-3 h-3 mr-1" />¡Vas liderando!</Badge></div>
                 )}
               </>
             }
@@ -231,6 +233,25 @@ export default function DetalleSubasta() {
                 </div>
               )}
             </div>
+            {/* Mi puja - solo visible para el usuario que ha pujado */}
+            {!isWonByMe && myMaxBid > 0 && (
+              <div className={`mt-3 border-t border-border pt-3 flex items-center justify-between rounded-lg`}>
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isLeading ? 'bg-green-100 dark:bg-green-950/40' : 'bg-destructive/10'}`}>
+                    <Trophy className={`w-4 h-4 ${isLeading ? 'text-green-600' : 'text-destructive'}`} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{isLeading ? 'Vas liderando' : 'Te han superado'}</p>
+                    <p className="text-sm font-bold text-foreground">Mi máximo: {formatPrice(myMaxBid)}</p>
+                  </div>
+                </div>
+                {!isLeading && (
+                  <Button onClick={() => setBidModalOpen(true)} size="sm" variant="outline" className="text-xs font-semibold rounded-full border-destructive/30 text-destructive hover:bg-destructive/10">
+                    Subir puja
+                  </Button>
+                )}
+              </div>
+            )}
             {/* Pronto Pago inside price card */}
             {isWonByMe && (
               <div className="mt-3 border-t border-border pt-3">
@@ -477,7 +498,7 @@ export default function DetalleSubasta() {
       {!isWonByMe && (
         <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50 md:static md:bg-transparent md:pt-0 md:pb-0 md:px-0">
           <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 md:h-10 md:w-auto md:px-6 md:text-sm rounded-xl font-bold text-lg md:font-semibold shadow-lg md:shadow-none bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            {vehicle.isLeading ? (<><Trophy className="w-5 h-5 md:w-4 md:h-4 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+            {isLeading ? (<><Trophy className="w-5 h-5 md:w-4 md:h-4 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
           </Button>
         </div>
       )}
