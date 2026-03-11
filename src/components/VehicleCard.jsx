@@ -108,12 +108,12 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
   // ── Compact variant (mobile default) ──
   return (
     <div>
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-primary' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <div className="flex p-3 gap-3">
           <Link to={detailUrl} className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
             <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
             {vehicle.isLeading && (
-              <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
+              <Badge className="absolute top-1 left-1 bg-green-600 text-white text-[10px] px-1.5 py-0">
                 <Trophy className="w-2.5 h-2.5 mr-0.5" />LIDER
               </Badge>
             )}
