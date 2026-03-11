@@ -675,6 +675,22 @@ function spawnTestSnipingAuction() {
   if (vIdx >= 0) vehicles[vIdx] = vehicle; else vehicles.unshift(vehicle);
   save(KEYS.vehicles, vehicles);
 
+  // Create inspection so getActiveAuctions includes it
+  const inspection = {
+    id: 'insp-test-sniping', vehicleId: vehicle.id,
+    dealerBranch: 'Bogotá Norte', dealerCompany: 'Autonal',
+    peritoId: 'u-perito-1', lockedByPeritoId: 'u-perito-1',
+    status: 'COMPLETED', scoreGlobal: 85,
+    scores: { motor: 80, transmision: 75, suspension: 82, frenos: 78, carroceria: 85, interior: 90, electrica: 77, llantas: 72 },
+    comments: 'Vehículo de prueba anti-sniping.',
+    createdAt: new Date(ts - 86400000).toISOString(),
+    completedAt: new Date(ts - 3600000).toISOString(),
+  };
+  const inspections = getInspections();
+  const iIdx = inspections.findIndex(i => i.id === inspection.id);
+  if (iIdx >= 0) inspections[iIdx] = inspection; else inspections.unshift(inspection);
+  save(KEYS.inspections, inspections);
+
   const auction = {
     id: testId, vehicleId: vehicle.id, dealerId: 'u-dealer-1',
     brand: car.brand, model: car.model, year: car.year,
