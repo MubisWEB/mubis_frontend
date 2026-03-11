@@ -122,6 +122,7 @@ export default function Ganados() {
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
+  const [routeOpen, setRouteOpen] = useState(false);
 
   useEffect(() => {
     if (!currentUser?.id) return;
