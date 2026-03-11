@@ -319,7 +319,7 @@ export default function Ganados() {
         </div>
 
         {/* Route Assistant button */}
-        {currentUser?.role === 'recomprador' && (
+        {canUseRouteAssistant && (
           <div className="mt-3">
             <Button
               onClick={() => setRouteOpen(true)}
