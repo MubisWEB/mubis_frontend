@@ -47,11 +47,16 @@ export default function PeritajesPendientes() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title="Peritajes pendientes" subtitle={`Sucursal: ${currentUser?.branch || 'N/A'}`}>
-        <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
-      </Header>
+      <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4">
+      <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-xl font-bold text-foreground font-sans">Peritajes pendientes</h1>
+            <p className="text-xs text-muted-foreground">Sucursal: {currentUser?.branch || 'N/A'}</p>
+          </div>
+          <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
+        </div>
         {inspections.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">

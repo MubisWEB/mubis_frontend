@@ -305,7 +305,7 @@ export default function MisSubastas() {
   return (
     <div className="min-h-screen bg-background pb-32 md:pb-12">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-5 pb-2">
+      <div className="px-4 md:px-8 pt-5 pb-2">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
@@ -323,7 +323,7 @@ export default function MisSubastas() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-2">
+      <div className="px-4 md:px-8 pt-2 pb-2">
         <div className="grid grid-cols-5 gap-2 mb-4">
           {[
           { key: 'activas', label: 'Activas', count: auctions.filter((a) => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
@@ -342,7 +342,7 @@ export default function MisSubastas() {
       </div>
 
       {/* Search & Sort */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3">
+      <div className="px-4 md:px-8 pb-3">
         <div className="relative mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
@@ -355,7 +355,7 @@ export default function MisSubastas() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-4 md:flex gap-6">
+      <div className="px-4 md:px-8 pb-4 md:flex gap-6">
         <aside className="hidden md:block w-64 flex-shrink-0">
           <SellerFilterPanel filters={filters} setFilters={setFilters} />
         </aside>

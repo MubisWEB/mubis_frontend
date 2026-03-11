@@ -4,9 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Mail, MessageCircle, Gavel, Trophy, ClipboardCheck, Users, Globe } from 'lucide-react';
+import { Bell, Mail, MessageCircle, Gavel, Trophy, ClipboardCheck, Users, Globe, ArrowLeft } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, getUserRole } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
@@ -34,6 +35,7 @@ function saveSettings(userId, settings) {
 }
 
 export default function Configuracion() {
+  const navigate = useNavigate();
   const user = getCurrentUser();
   const role = getUserRole();
   const [settings, setSettings] = useState(() => loadSettings(user?.id));
@@ -59,9 +61,18 @@ export default function Configuracion() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title="Configuración" subtitle="Personaliza tu experiencia" backTo="/Cuenta" />
+      <Header />
 
       <div className="px-4 py-4 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <button onClick={() => navigate('/Cuenta')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-foreground font-sans">Configuración</h1>
+            <p className="text-xs text-muted-foreground">Personaliza tu experiencia</p>
+          </div>
+        </div>
         {/* Channels */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Canales de notificación</p>

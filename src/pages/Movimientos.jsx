@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, ArrowLeft } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
+import { useNavigate } from 'react-router-dom';
 import { getBidsByUserId, getAuctions, getCurrentUser, getUserRole } from '@/lib/mockStore';
 
 export default function Movimientos() {
+  const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const role = getUserRole();
   const [movements, setMovements] = useState([]);
@@ -62,9 +64,18 @@ export default function Movimientos() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <Header title="Movimientos" subtitle={`${movements.length} transacciones`} />
+      <Header />
 
       <div className="px-4 py-4 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-foreground font-sans">Movimientos</h1>
+            <p className="text-xs text-muted-foreground">{movements.length} transacciones</p>
+          </div>
+        </div>
         {/* Métricas */}
         <div className={`grid gap-3 ${role === 'dealer' ? 'grid-cols-2' : 'grid-cols-1'}`}>
           {role === 'dealer' && (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
-import { Bell, Gavel, Car, ClipboardCheck, UserCheck, CheckCheck } from 'lucide-react';
+import { Bell, Gavel, Car, ClipboardCheck, UserCheck, CheckCheck, ArrowLeft } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -84,9 +84,15 @@ export default function Notificaciones() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <Header title="Notificaciones" backTo="/Cuenta" />
+      <Header />
 
       <div className="px-4 py-4">
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => navigate('/Cuenta')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <h1 className="text-xl font-bold text-foreground font-sans">Notificaciones</h1>
+        </div>
         {unreadCount > 0 && (
           <div className="flex justify-end mb-3">
             <button onClick={handleMarkAllRead} className="flex items-center gap-1 text-xs text-secondary hover:underline">

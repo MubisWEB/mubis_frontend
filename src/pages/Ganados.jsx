@@ -304,10 +304,14 @@ export default function Ganados() {
 
   return (
     <div className="min-h-screen bg-background pb-32 md:pb-12">
-      <Header title="Mis Ganados" subtitle={wonAuctions.length > 0 ? `${wonAuctions.length} subastas ganadas` : undefined} />
+      <Header />
 
       {/* Status filter cards */}
       <div className="px-4 md:px-8 pt-3 pb-2">
+        <div className="mb-4">
+          <h1 className="text-xl font-bold text-foreground font-sans">Mis Ganados</h1>
+          {wonAuctions.length > 0 && <p className="text-xs text-muted-foreground">{wonAuctions.length} subastas ganadas</p>}
+        </div>
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
             { key: 'proceso', label: 'En proceso', count: statusCounts.proceso, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },

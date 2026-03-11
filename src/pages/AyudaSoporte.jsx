@@ -8,9 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Mail, Clock, HelpCircle, Send, Inbox, CheckCircle, XCircle } from 'lucide-react';
+import { Mail, Clock, HelpCircle, Send, Inbox, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, getUserRole, addSupportTicket, getSupportTicketsByUserId, updateSupportTicket } from '@/lib/mockStore';
 import { toast } from 'sonner';
 
@@ -76,6 +77,7 @@ function timeAgo(dateStr) {
 }
 
 export default function AyudaSoporte() {
+  const navigate = useNavigate();
   const user = getCurrentUser();
   const role = getUserRole();
   const [caseType, setCaseType] = useState('');
@@ -111,9 +113,18 @@ export default function AyudaSoporte() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title="Ayuda y soporte" subtitle="Preguntas frecuentes y contacto" backTo="/Cuenta" />
+      <Header />
 
       <div className="px-4 py-4 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <button onClick={() => navigate('/Cuenta')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-foreground font-sans">Ayuda y soporte</h1>
+            <p className="text-xs text-muted-foreground">Preguntas frecuentes y contacto</p>
+          </div>
+        </div>
         {/* FAQ */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Preguntas frecuentes</p>
