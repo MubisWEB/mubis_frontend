@@ -1,6 +1,7 @@
 import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import SponsorBanner from "@/components/SponsorBanner";
 import step1Img from "@/assets/step-1.jpg";
 import step2Img from "@/assets/step-2.jpg";
 import step3Img from "@/assets/step-3.jpg";
