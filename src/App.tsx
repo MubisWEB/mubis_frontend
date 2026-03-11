@@ -23,6 +23,7 @@ import MisSubastas from './pages/MisSubastas';
 import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
 import Movimientos from './pages/Movimientos';
 import Cuenta from './pages/Cuenta';
+import Notificaciones from './pages/Notificaciones';
 import Configuracion from './pages/Configuracion';
 import AyudaSoporte from './pages/AyudaSoporte';
 import Ganados from './pages/Ganados';
