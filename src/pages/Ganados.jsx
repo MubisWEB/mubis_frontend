@@ -150,6 +150,7 @@ export default function Ganados() {
 
       return {
         ...auction,
+        city: 'Bogotá',
         extensionDays: auction.extensionDays || 0,
         ends_at: auction.ends_at || new Date().toISOString(),
         mockWonStatus: assignedStatus,
