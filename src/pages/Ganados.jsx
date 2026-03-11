@@ -263,6 +263,13 @@ export default function Ganados() {
     return counts;
   }, [wonAuctions]);
 
+  const inProcessAuctions = useMemo(() => {
+    return wonAuctions.filter(a => {
+      const { isCompleted, canExtend } = getAuctionStatus(a);
+      return !isCompleted && !canExtend;
+    });
+  }, [wonAuctions]);
+
   const filteredAuctions = useMemo(() => {
     let list = [...wonAuctions];
     if (search) { const q = search.toLowerCase(); list = list.filter(a => (`${a.brand} ${a.model}`).toLowerCase().includes(q)); }
