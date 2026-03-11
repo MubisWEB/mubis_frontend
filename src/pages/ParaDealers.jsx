@@ -1,6 +1,7 @@
 import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import SponsorBanner from "@/components/SponsorBanner";
 import { ArrowRight, Car, DollarSign, Shield, BarChart3, Clock, Users } from "lucide-react";
 
 const features = [
