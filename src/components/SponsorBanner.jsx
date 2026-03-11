@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import bannerGM from '@/assets/banner-gm.png';
+import bannerMapfre from '@/assets/banner-mapfre.png';
 
 const sponsors = [
   {
