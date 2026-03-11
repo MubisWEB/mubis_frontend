@@ -195,8 +195,13 @@ export default function Cuenta() {
               return (
                 <button key={i} onClick={item.action} className="w-full flex items-center justify-between p-3.5 hover:bg-muted transition-colors border-b border-border last:border-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
+                    <div className="relative w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
                       <Icon className="w-4 h-4 text-muted-foreground" />
+                      {item.badge && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                          {item.badge}
+                        </span>
+                      )}
                     </div>
                     <span className="font-medium text-foreground/80 text-sm">{item.label}</span>
                   </div>
