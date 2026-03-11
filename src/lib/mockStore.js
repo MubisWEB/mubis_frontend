@@ -862,7 +862,9 @@ export function addBid(bid) {
   } else {
     addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.` });
   }
-  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_created', message: `Nueva puja: ${amountStr} en ${vLabel}`, actorUserId: userId, actorRole: 'recomprador' });
+  const bidderUser = getUserById(userId);
+  const bidderLabel = bidderUser ? (bidderUser.company || bidderUser.nombre) : 'Postor anónimo';
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_created', message: `${bidderLabel} pujó ${amountStr} en ${vLabel}`, actorUserId: userId, actorRole: 'recomprador' });
 
   return { success: true, visibleBid: newVisible, leaderId, outbid, bidsCount, message: outbid ? 'Tu puja no fue suficiente para liderar' : 'Lideras la subasta' };
 }
