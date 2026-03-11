@@ -328,7 +328,9 @@ function buildSeedAuditEvents(vehicles, inspections, auctions, bids) {
   bids.slice(0, 30).forEach(b => {
     const a = auctions.find(x => x.id === b.auctionId);
     if (!a) return;
-    events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: b.auctionId, type: 'bid_created', message: `Nueva puja: $${(b.amount / 1000000).toFixed(1)}M en ${a.brand} ${a.model} ${a.year}`, createdAt: b.createdAt, actorUserId: b.userId, actorRole: 'recomprador' });
+    const bidder = SEED_USERS.find(u => u.id === b.userId);
+    const bidderName = bidder ? bidder.company : 'Postor anónimo';
+    events.push({ id: `audit-seed-${++idx}`, entityType: 'auction', entityId: b.auctionId, type: 'bid_created', message: `${bidderName} pujó $${(b.amount / 1000000).toFixed(1)}M en ${a.brand} ${a.model} ${a.year}`, createdAt: b.createdAt, actorUserId: b.userId, actorRole: 'recomprador' });
   });
   events.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
   return events;
@@ -343,10 +345,10 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v16') {
+  if (seedVersion !== 'v17') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem('mubis_store_publications');
-    localStorage.setItem('mubis_seed_version', 'v16');
+    localStorage.setItem('mubis_seed_version', 'v17');
   }
 
   if (!load(KEYS.users)) {
@@ -860,7 +862,9 @@ export function addBid(bid) {
   } else {
     addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.` });
   }
-  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_created', message: `Nueva puja: ${amountStr} en ${vLabel}`, actorUserId: userId, actorRole: 'recomprador' });
+  const bidderUser = getUserById(userId);
+  const bidderLabel = bidderUser ? (bidderUser.company || bidderUser.nombre) : 'Postor anónimo';
+  addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'bid_created', message: `${bidderLabel} pujó ${amountStr} en ${vLabel}`, actorUserId: userId, actorRole: 'recomprador' });
 
   return { success: true, visibleBid: newVisible, leaderId, outbid, bidsCount, message: outbid ? 'Tu puja no fue suficiente para liderar' : 'Lideras la subasta' };
 }
