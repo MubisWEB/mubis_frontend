@@ -9,6 +9,7 @@ const sponsors = [
     name: 'GM Financial',
     layout: 'image-banner',
     bannerImage: bannerGM,
+    imgStyle: { transform: 'scale(1.45)' },
   },
   {
     name: 'Mapfre',
