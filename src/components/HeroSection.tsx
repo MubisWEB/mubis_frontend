@@ -175,7 +175,7 @@ const HeroSection = () => {
 
               <br />privadas de autos<br />usados
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-muted-foreground">Concesionarios y Compradores Profesionales pujan porinventario verificado.
+            <p className="mt-5 text-base sm:text-lg text-muted-foreground">Concesionarios y Compradores Profesionales pujan por inventario verificado.
 
               <br />
                <span className="font-bold text-foreground">inventario verificado.</span>
