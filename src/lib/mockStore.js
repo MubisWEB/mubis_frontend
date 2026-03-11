@@ -738,6 +738,25 @@ export function getHighestProxy(auctionId) {
 }
 
 /**
+ * Get a specific user's highest max bid for an auction.
+ */
+export function getUserMaxBid(auctionId, userId) {
+  const bids = getBids().filter(b => b.auctionId === auctionId && b.userId === userId && b.maxAmount);
+  if (!bids.length) return 0;
+  return Math.max(...bids.map(b => b.maxAmount));
+}
+
+/**
+ * Get the current leader userId for an auction.
+ */
+export function getAuctionLeader(auctionId) {
+  const auction = getAuctionById(auctionId);
+  if (auction?.leaderId) return auction.leaderId;
+  const proxy = getHighestProxy(auctionId);
+  return proxy?.userId || null;
+}
+
+/**
  * eBay-style proxy bidding.
  * User submits a maxAmount (hidden). The system resolves the visible current_bid.
  * Returns { success, visibleBid, leaderId, outbid, message }

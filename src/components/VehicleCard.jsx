@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Flame, Trophy, Bookmark } from 'lucide-react';
+import { Clock, Users, Flame, Trophy, Bookmark, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getCurrentUser, isInWatchlist, toggleWatchlist, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
 import { toast } from 'sonner';
@@ -57,11 +57,11 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
   // ── Grid / card variant for desktop ──
   if (variant === 'grid') {
     return (
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-primary' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <Link to={detailUrl} className="block relative aspect-[4/3] bg-muted overflow-hidden">
           <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           {vehicle.isLeading && (
-            <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">
+            <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5">
               <Trophy className="w-3 h-3 mr-1" />LÍDER
             </Badge>
           )}
@@ -83,6 +83,12 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
           <div className="flex items-center justify-between mt-3">
             <div>
               <span className="font-bold text-lg text-foreground">{formatPrice(vehicle.current_bid || 0)}</span>
+              {vehicle.myMaxBid > 0 && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Eye className="w-3 h-3 text-violet-500" />
+                  <span className="text-xs text-violet-600 dark:text-violet-400 font-semibold">Mi máx: {formatPrice(vehicle.myMaxBid)}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{vehicle.bids_count || 0} pujas</span>
                 {uniqueBidders > 0 && (
@@ -102,12 +108,12 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
   // ── Compact variant (mobile default) ──
   return (
     <div>
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-primary' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <div className="flex p-3 gap-3">
           <Link to={detailUrl} className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
             <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
             {vehicle.isLeading && (
-              <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
+              <Badge className="absolute top-1 left-1 bg-green-600 text-white text-[10px] px-1.5 py-0">
                 <Trophy className="w-2.5 h-2.5 mr-0.5" />LIDER
               </Badge>
             )}
@@ -124,6 +130,12 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
                 <span className="text-muted-foreground text-[10px] flex items-center"><Flame className="w-2.5 h-2.5 mr-0.5 text-secondary flex-shrink-0" />{uniqueBidders}</span>
               )}
             </div>
+            {vehicle.myMaxBid > 0 && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <Eye className="w-2.5 h-2.5 text-violet-500" />
+                <span className="text-[10px] text-violet-600 dark:text-violet-400 font-semibold">Mi máx: {formatPrice(vehicle.myMaxBid)}</span>
+              </div>
+            )}
           </Link>
           <div className="flex flex-col items-end justify-between">
             <div className="flex items-center gap-1">

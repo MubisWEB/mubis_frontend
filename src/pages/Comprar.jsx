@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import { getActiveAuctions, addBid, getCurrentUser, getRecentAuctionActivity } from '@/lib/mockStore';
+import { getActiveAuctions, addBid, getCurrentUser, getRecentAuctionActivity, getAuctionLeader, getUserMaxBid } from '@/lib/mockStore';
 
 const formatMoneyShort = (n) => `$${(n / 1000000).toFixed(0)}M`;
 
@@ -40,7 +40,8 @@ export default function Comprar() {
       const storeAuctions = getActiveAuctions().map(a => ({
         ...a,
         auction_end: a.ends_at,
-        isLeading: false,
+        isLeading: currentUser ? getAuctionLeader(a.id) === currentUser.id : false,
+        myMaxBid: currentUser ? getUserMaxBid(a.id, currentUser.id) : 0,
       }));
       setVehicles(storeAuctions);
       loadActivity();
@@ -64,7 +65,7 @@ export default function Comprar() {
     if (!selectedVehicle || !currentUser) return;
     const result = addBid({ auctionId: selectedVehicle.id, userId: currentUser.id, amount: maxAmount, userName: 'Postor anónimo' });
     if (!result.success) { toast.error(result.message); return result; }
-    setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id } : v));
+    setVehicles(prev => prev.map(v => v.id === selectedVehicle.id ? { ...v, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id, myMaxBid: maxAmount } : v));
     loadActivity();
     if (result.outbid) {
       toast.error('No lideras esta subasta', { description: `Ya existe una puja máxima superior. Puja visible: ${formatMoneyShort(result.visibleBid)}` });
