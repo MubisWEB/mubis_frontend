@@ -858,9 +858,9 @@ export function addBid(bid) {
     addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.`, auctionId });
   }
   if (outbid) {
-    addNotification({ userId, type: 'outbid', title: 'No lideras esta subasta', body: `Tu puja máxima de $${(maxAmount / 1000000).toFixed(1)}M en ${vLabel} no fue suficiente.` });
+    addNotification({ userId, type: 'outbid', title: 'No lideras esta subasta', body: `Tu puja máxima de $${(maxAmount / 1000000).toFixed(1)}M en ${vLabel} no fue suficiente.`, auctionId });
   } else {
-    addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.` });
+    addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.`, auctionId });
   }
   const bidderUser = getUserById(userId);
   const bidderLabel = bidderUser ? (bidderUser.company || bidderUser.nombre) : 'Postor anónimo';
