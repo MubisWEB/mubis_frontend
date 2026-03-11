@@ -141,7 +141,7 @@ function VehicleProcessCard({ v, navigate }) {
 function VehicleProcessGridCard({ v, navigate }) {
   const insp = getInspectionByVehicleId(v.id);
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || (insp && insp.status === 'REJECTED')) return <Badge className="bg-destructive text-destructive-foreground text-xs">Rechazado</Badge>;
     if (v.status === 'IN_PROGRESS' || (insp && insp.status === 'IN_PROGRESS')) return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
     if (v.status === 'PENDING_INSPECTION' || (insp && insp.status === 'PENDING')) return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
