@@ -817,7 +817,7 @@ export function addBid(bid) {
       leaderId = userId;
       // Notify outbid user
       const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
-      addNotification({ userId: currentProxy.userId, type: 'outbid', title: 'Te han superado', body: `Tu puja máxima en ${vLabel} fue superada.` });
+      addNotification({ userId: currentProxy.userId, type: 'outbid', title: 'Te han superado', body: `Tu puja máxima en ${vLabel} fue superada.`, auctionId });
     } else if (maxAmount === existingMax) {
       // Tie: existing proxy holder wins (earlier bid), visible goes to maxAmount
       newVisible = maxAmount;
