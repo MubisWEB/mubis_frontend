@@ -143,9 +143,29 @@ function CTAButton({ className = '', align }) {
 
 function LayoutImageBanner({ sponsor }) {
   return (
-    <div className="absolute inset-0 w-full h-full">
-      <img src={sponsor.bannerImage} alt={sponsor.name} className="w-full h-full object-cover" />
-    </div>
+    <>
+      <img src={sponsor.bannerImage} alt={sponsor.name} className="absolute inset-0 w-full h-full object-cover" />
+      <div className="relative z-10 flex items-center h-full px-8 sm:px-12">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex items-center gap-4"
+        >
+          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg border-2 border-white/40 flex items-center justify-center backdrop-blur-sm bg-white/10">
+            <span className="text-white font-black text-lg sm:text-2xl leading-none">gm</span>
+          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-white text-lg sm:text-2xl font-light tracking-wide"
+          >
+            Financia tu <span className="font-bold">inventario a un click.</span>
+          </motion.p>
+        </motion.div>
+      </div>
+    </>
   );
 }
 
