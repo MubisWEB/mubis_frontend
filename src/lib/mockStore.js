@@ -335,7 +335,7 @@ function ensureSeeded() {
   if (seedVersion !== 'v15') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem('mubis_store_publications');
-    localStorage.setItem('mubis_seed_version', 'v14');
+    localStorage.setItem('mubis_seed_version', 'v15');
   }
 
   if (!load(KEYS.users)) {
