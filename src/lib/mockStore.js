@@ -1058,7 +1058,7 @@ export function getAuditEventsByEntity(entityType, entityId) {
 
 // ── Live activity feed from audit events ──
 export function getRecentAuctionActivity(limit = 5) {
-  const activityTypes = ['bid_created', 'auction_published', 'inspection_completed', 'inspection_rejected'];
+  const activityTypes = ['bid_created'];
   return getAuditEvents()
     .filter(e => activityTypes.includes(e.type))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
