@@ -1139,7 +1139,7 @@ export function requestProntoPago({ userId, auctionId, requestedAmount, vehicleV
   saveProntoPagoItems(items);
 
   addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'pronto_pago_requested', message: `Pronto Pago solicitado: $${(amount / 1000000).toFixed(1)}M (comisión: $${(commission / 1000000).toFixed(2)}M)`, actorUserId: userId, actorRole: 'recomprador' });
-  addNotification({ userId, type: 'pronto_pago', title: 'Pronto Pago aprobado', body: `Tu adelanto de $${(amount / 1000000).toFixed(1)}M fue aprobado. Recibirás $${((amount - commission) / 1000000).toFixed(1)}M.` });
+  addNotification({ userId, type: 'pronto_pago', title: 'Pronto Pago aprobado', body: `Tu adelanto de $${(amount / 1000000).toFixed(1)}M fue aprobado. Recibirás $${((amount - commission) / 1000000).toFixed(1)}M.`, auctionId });
 
   return item;
 }
