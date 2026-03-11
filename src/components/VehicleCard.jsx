@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Flame, Trophy, Bookmark } from 'lucide-react';
+import { Clock, Users, Flame, Trophy, Bookmark, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getCurrentUser, isInWatchlist, toggleWatchlist, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
 import { toast } from 'sonner';

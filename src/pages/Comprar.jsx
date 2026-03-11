@@ -40,7 +40,8 @@ export default function Comprar() {
       const storeAuctions = getActiveAuctions().map(a => ({
         ...a,
         auction_end: a.ends_at,
-        isLeading: false,
+        isLeading: currentUser ? getAuctionLeader(a.id) === currentUser.id : false,
+        myMaxBid: currentUser ? getUserMaxBid(a.id, currentUser.id) : 0,
       }));
       setVehicles(storeAuctions);
       loadActivity();
