@@ -170,8 +170,8 @@ export default function SponsorBanner() {
             className="relative overflow-hidden hover:brightness-105 transition-all duration-300"
             style={{
               background: sponsor.gradient,
-              borderRadius: '18px',
-              height: '100px',
+              borderRadius: '90px',
+              height: '180px',
               boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
             }}
           >
