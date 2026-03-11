@@ -625,7 +625,7 @@ export function reconcileAuctionStatuses() {
       const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_pending_decision', message: `Subasta finalizada. Vendedor tiene 30 min para decidir.`, actorUserId: '', actorRole: 'system' });
       if (a.dealerId) {
-        addNotification({ userId: a.dealerId, type: 'pending_decision', title: 'Decide sobre tu subasta', body: `Tu ${a.brand} ${a.model} finalizó. Acepta o rechaza la puja más alta.` });
+        addNotification({ userId: a.dealerId, type: 'pending_decision', title: 'Decide sobre tu subasta', body: `Tu ${a.brand} ${a.model} finalizó. Acepta o rechaza la puja más alta.`, auctionId: a.id });
       }
       return { ...a, status: 'pending_decision', decisionDeadline, highestBidAmount: auctionBids[0]?.amount || 0, highestBidderId: auctionBids[0]?.userId || null };
     }
