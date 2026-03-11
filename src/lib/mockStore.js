@@ -439,21 +439,21 @@ export function updateInspection(id, updates) {
     const vLabel = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}` : updated.vehicleId;
 
     if (updates.status === 'IN_PROGRESS' && updated.peritoId) {
-      addNotification({ userId: updated.peritoId, type: 'inspection_taken', title: 'Peritaje tomado', body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.` });
+      addNotification({ userId: updated.peritoId, type: 'inspection_taken', title: 'Peritaje tomado', body: `Tomaste el peritaje de ${vLabel}${vehicle?.placa ? ` (${vehicle.placa})` : ''}.`, vehicleId: updated.vehicleId });
       addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_taken', message: `Peritaje tomado por perito`, actorUserId: updated.peritoId, actorRole: 'perito' });
     }
     if (updates.status === 'COMPLETED') {
       if (updated.peritoId) {
-        addNotification({ userId: updated.peritoId, type: 'inspection_completed', title: 'Peritaje finalizado', body: `Finalizaste el peritaje de ${vLabel}.` });
+        addNotification({ userId: updated.peritoId, type: 'inspection_completed', title: 'Peritaje finalizado', body: `Finalizaste el peritaje de ${vLabel}.`, vehicleId: updated.vehicleId });
       }
       if (vehicle?.dealerId) {
-        addNotification({ userId: vehicle.dealerId, type: 'auction_published', title: 'Vehículo publicado en subasta', body: `${vLabel} ya está en subasta.` });
+        addNotification({ userId: vehicle.dealerId, type: 'auction_published', title: 'Vehículo publicado en subasta', body: `${vLabel} ya está en subasta.`, vehicleId: updated.vehicleId });
       }
       addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_completed', message: `Peritaje completado — Score: ${updates.scoreGlobal || updated.scoreGlobal || '?'}/100`, actorUserId: updated.peritoId || '', actorRole: 'perito' });
     }
     if (updates.status === 'REJECTED') {
       if (vehicle?.dealerId) {
-        addNotification({ userId: vehicle.dealerId, type: 'inspection_rejected', title: 'Peritaje rechazado', body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}` });
+        addNotification({ userId: vehicle.dealerId, type: 'inspection_rejected', title: 'Peritaje rechazado', body: `El peritaje de ${vLabel} fue rechazado.${updates.comments ? ` Razón: ${updates.comments}` : ''}`, vehicleId: updated.vehicleId });
       }
       addAuditEvent({ entityType: 'vehicle', entityId: updated.vehicleId, type: 'inspection_rejected', message: `Peritaje rechazado${updates.comments ? `: ${updates.comments}` : ''}`, actorUserId: updated.peritoId || '', actorRole: 'perito' });
     }
@@ -625,7 +625,7 @@ export function reconcileAuctionStatuses() {
       const auctionBids = allBids.filter(b => b.auctionId === a.id).sort((x, y) => y.amount - x.amount);
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_pending_decision', message: `Subasta finalizada. Vendedor tiene 30 min para decidir.`, actorUserId: '', actorRole: 'system' });
       if (a.dealerId) {
-        addNotification({ userId: a.dealerId, type: 'pending_decision', title: 'Decide sobre tu subasta', body: `Tu ${a.brand} ${a.model} finalizó. Acepta o rechaza la puja más alta.` });
+        addNotification({ userId: a.dealerId, type: 'pending_decision', title: 'Decide sobre tu subasta', body: `Tu ${a.brand} ${a.model} finalizó. Acepta o rechaza la puja más alta.`, auctionId: a.id });
       }
       return { ...a, status: 'pending_decision', decisionDeadline, highestBidAmount: auctionBids[0]?.amount || 0, highestBidderId: auctionBids[0]?.userId || null };
     }
@@ -636,7 +636,7 @@ export function reconcileAuctionStatuses() {
       const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_ended', message: `Subasta extendida finalizada`, actorUserId: '', actorRole: 'system' });
       if (winnerId) {
-        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.`, auctionId: a.id });
       }
       return { ...a, status: 'ended', winnerId };
     }
@@ -647,9 +647,9 @@ export function reconcileAuctionStatuses() {
       const winnerId = auctionBids.length > 0 ? auctionBids[0].userId : null;
       addAuditEvent({ entityType: 'auction', entityId: a.id, type: 'auction_auto_accepted', message: `Puja aceptada automáticamente (tiempo agotado)`, actorUserId: '', actorRole: 'system' });
       if (winnerId) {
-        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.` });
+        addNotification({ userId: winnerId, type: 'auction_won', title: '¡Ganaste una subasta!', body: `Ganaste la subasta de ${a.brand} ${a.model} ${a.year}.`, auctionId: a.id });
         if (a.dealerId) {
-          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta cerrada automáticamente', body: `La puja más alta de tu ${a.brand} ${a.model} fue aceptada automáticamente.` });
+          addNotification({ userId: a.dealerId, type: 'auction_ended', title: 'Subasta cerrada automáticamente', body: `La puja más alta de tu ${a.brand} ${a.model} fue aceptada automáticamente.`, auctionId: a.id });
         }
       }
       return { ...a, status: 'ended', winnerId };
@@ -817,7 +817,7 @@ export function addBid(bid) {
       leaderId = userId;
       // Notify outbid user
       const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
-      addNotification({ userId: currentProxy.userId, type: 'outbid', title: 'Te han superado', body: `Tu puja máxima en ${vLabel} fue superada.` });
+      addNotification({ userId: currentProxy.userId, type: 'outbid', title: 'Te han superado', body: `Tu puja máxima en ${vLabel} fue superada.`, auctionId });
     } else if (maxAmount === existingMax) {
       // Tie: existing proxy holder wins (earlier bid), visible goes to maxAmount
       newVisible = maxAmount;
@@ -855,12 +855,12 @@ export function addBid(bid) {
   const vLabel = `${auction.brand} ${auction.model} ${auction.year}`;
   const amountStr = `$${(newVisible / 1000000).toFixed(1)}M`;
   if (auction.dealerId && auction.dealerId !== userId) {
-    addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.` });
+    addNotification({ userId: auction.dealerId, type: 'new_bid', title: 'Nueva puja en tu subasta', body: `Puja de ${amountStr} en tu ${vLabel}.`, auctionId });
   }
   if (outbid) {
-    addNotification({ userId, type: 'outbid', title: 'No lideras esta subasta', body: `Tu puja máxima de $${(maxAmount / 1000000).toFixed(1)}M en ${vLabel} no fue suficiente.` });
+    addNotification({ userId, type: 'outbid', title: 'No lideras esta subasta', body: `Tu puja máxima de $${(maxAmount / 1000000).toFixed(1)}M en ${vLabel} no fue suficiente.`, auctionId });
   } else {
-    addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.` });
+    addNotification({ userId, type: 'bid_placed', title: 'Puja registrada', body: `Lideras ${vLabel} con puja visible de ${amountStr}.`, auctionId });
   }
   const bidderUser = getUserById(userId);
   const bidderLabel = bidderUser ? (bidderUser.company || bidderUser.nombre) : 'Postor anónimo';
@@ -1139,7 +1139,7 @@ export function requestProntoPago({ userId, auctionId, requestedAmount, vehicleV
   saveProntoPagoItems(items);
 
   addAuditEvent({ entityType: 'auction', entityId: auctionId, type: 'pronto_pago_requested', message: `Pronto Pago solicitado: $${(amount / 1000000).toFixed(1)}M (comisión: $${(commission / 1000000).toFixed(2)}M)`, actorUserId: userId, actorRole: 'recomprador' });
-  addNotification({ userId, type: 'pronto_pago', title: 'Pronto Pago aprobado', body: `Tu adelanto de $${(amount / 1000000).toFixed(1)}M fue aprobado. Recibirás $${((amount - commission) / 1000000).toFixed(1)}M.` });
+  addNotification({ userId, type: 'pronto_pago', title: 'Pronto Pago aprobado', body: `Tu adelanto de $${(amount / 1000000).toFixed(1)}M fue aprobado. Recibirás $${((amount - commission) / 1000000).toFixed(1)}M.`, auctionId });
 
   return item;
 }
