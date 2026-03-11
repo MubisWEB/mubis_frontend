@@ -444,7 +444,7 @@ export function updateInspection(id, updates) {
     }
     if (updates.status === 'COMPLETED') {
       if (updated.peritoId) {
-        addNotification({ userId: updated.peritoId, type: 'inspection_completed', title: 'Peritaje finalizado', body: `Finalizaste el peritaje de ${vLabel}.` });
+        addNotification({ userId: updated.peritoId, type: 'inspection_completed', title: 'Peritaje finalizado', body: `Finalizaste el peritaje de ${vLabel}.`, vehicleId: updated.vehicleId });
       }
       if (vehicle?.dealerId) {
         addNotification({ userId: vehicle.dealerId, type: 'auction_published', title: 'Vehículo publicado en subasta', body: `${vLabel} ya está en subasta.` });
