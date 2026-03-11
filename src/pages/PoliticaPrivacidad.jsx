@@ -6,6 +6,7 @@ export default function PoliticaPrivacidad() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <MainNav />
+      <SponsorBanner />
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <article className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
           <h1 className="text-3xl md:text-4xl font-black text-foreground">Política de Tratamiento de Información y Datos Personales</h1>

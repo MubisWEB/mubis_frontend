@@ -50,6 +50,7 @@ export default function PreguntasFrecuentes() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <MainNav />
+      <SponsorBanner />
       <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <h1 className="text-3xl md:text-4xl font-black text-foreground mb-2">Preguntas Frecuentes</h1>
         <p className="text-muted-foreground mb-10">Encuentra respuestas a las dudas más comunes sobre Mubis.</p>

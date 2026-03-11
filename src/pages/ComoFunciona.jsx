@@ -87,6 +87,7 @@ export default function ComoFunciona() {
     <div className="min-h-screen flex flex-col bg-background">
       <TopBar />
       <MainNav />
+      <SponsorBanner />
       <main className="flex-1">
         {/* Hero */}
         <section className="bg-background py-16 md:py-24">
