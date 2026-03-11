@@ -16,19 +16,23 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Bogotá neighborhoods with realistic coords
-const BOGOTA_LOCATIONS = [
-  { lat: 4.6697, lng: -74.0530, address: 'Cra 7 #72-41, Chapinero' },
-  { lat: 4.7110, lng: -74.0721, address: 'Av Cll 127 #20-78, Usaquén' },
-  { lat: 4.6950, lng: -74.0322, address: 'Cll 85 #15-30, Zona Rosa' },
-  { lat: 4.6260, lng: -74.0660, address: 'Av Cll 26 #59-51, CAN' },
-  { lat: 4.6480, lng: -74.1080, address: 'Cra 68D #37-51, Kennedy' },
-  { lat: 4.7350, lng: -74.0390, address: 'Autopista Norte #183-40, Toberín' },
-  { lat: 4.6100, lng: -74.0820, address: 'Av 1ro de Mayo #30-20, Restrepo' },
-  { lat: 4.6780, lng: -74.0480, address: 'Cll 53 #13-40, Chapinero Central' },
-  { lat: 4.7560, lng: -74.0450, address: 'Cll 200 #18-30, Lijacá' },
-  { lat: 4.6380, lng: -74.1350, address: 'Av Ciudad de Cali #42-50, Fontibón' },
-];
+const CITY_COORDS = {
+  'Bogotá': { lat: 4.7110, lng: -74.0721 },
+  'Medellín': { lat: 6.2476, lng: -75.5658 },
+  'Cali': { lat: 3.4516, lng: -76.5320 },
+  'Barranquilla': { lat: 10.9685, lng: -74.7813 },
+  'Bucaramanga': { lat: 7.1254, lng: -73.1198 },
+  'Pereira': { lat: 4.8087, lng: -75.6906 },
+};
+
+const MOCK_ADDRESSES = {
+  'Bogotá': ['Cra 7 #72-41, Chapinero', 'Av Cll 26 #59-51, Zona Industrial', 'Cll 100 #19-61, Usaquén', 'Cra 15 #93-75, Chicó'],
+  'Medellín': ['Cra 43A #1-50, El Poblado', 'Cll 10 #43F-36, Las Palmas', 'Cra 70 #44-30, Laureles'],
+  'Cali': ['Cra 100 #5-169, Valle del Lili', 'Av 6N #28N-25, Granada', 'Cll 5 #38-25, San Fernando'],
+  'Barranquilla': ['Cra 53 #75-129, Alto Prado', 'Cll 93 #49C-80, Villa Country'],
+  'Bucaramanga': ['Cra 33 #48-30, Cabecera', 'Cll 36 #23-21, Centro'],
+  'Pereira': ['Cra 13 #15-73, Centro', 'Av Circunvalar #12-45'],
+};
 
 function numberIcon(number) {
   return L.divIcon({
@@ -114,18 +118,24 @@ export default function RouteAssistant({ open, onOpenChange, inProcessAuctions =
   const userOrigin = { lat: 4.6690, lng: -74.0625, label: 'Tu oficina (Bogotá)' };
 
   const stops = useMemo(() => {
-    // Only Bogotá vehicles for this mockup
-    const bogotaAuctions = inProcessAuctions.filter(a => !a.city || a.city === 'Bogotá');
-    return bogotaAuctions.map((a, i) => {
-      const loc = BOGOTA_LOCATIONS[i % BOGOTA_LOCATIONS.length];
+    return inProcessAuctions.map((a, i) => {
+      const city = a.city || 'Bogotá';
+      const base = CITY_COORDS[city] || CITY_COORDS['Bogotá'];
+      // Add small offset so markers don't overlap
+      const coords = {
+        lat: base.lat + (Math.random() - 0.5) * 0.03,
+        lng: base.lng + (Math.random() - 0.5) * 0.03,
+      };
+      const addresses = MOCK_ADDRESSES[city] || MOCK_ADDRESSES['Bogotá'];
+      const address = addresses[i % addresses.length];
       return {
         id: a.id,
         brand: a.brand,
         model: a.model,
         year: a.year,
-        city: 'Bogotá',
-        address: loc.address,
-        coords: { lat: loc.lat, lng: loc.lng },
+        city,
+        address,
+        coords,
         price: a.current_bid,
       };
     });
