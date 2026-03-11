@@ -175,9 +175,8 @@ const HeroSection = () => {
 
             </h1>
             <p className="mt-5 text-base sm:text-lg text-muted-foreground">
-
-              <br />
-               <span className="font-bold text-foreground">inventario verificado.</span>
+              Concesionarios y Compradores Profesionales pujan por{" "}
+              <span className="font-bold text-foreground">inventario verificado.</span>
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a href="/registro" className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity">
