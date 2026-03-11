@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus, Search, SlidersHorizontal, Filter, X, LayoutGrid, LayoutList } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, ChevronRight, CalendarPlus, Search, SlidersHorizontal, Filter, X, LayoutGrid, LayoutList, Route } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { getWonAuctionsByUserId, getCurrentUser, updateAuction, addAuction, getAuctionById } from '@/lib/mockStore';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
+import RouteAssistant from '@/components/RouteAssistant';
 
 const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
