@@ -9,7 +9,6 @@ const sponsors = [
     name: 'GM Financial',
     layout: 'image-banner',
     bannerImage: bannerGM,
-    imgStyle: { transform: 'scale(1.45)' },
   },
   {
     name: 'Mapfre',
@@ -29,8 +28,7 @@ function LayoutImageBanner({ sponsor }) {
       <img
         src={sponsor.bannerImage}
         alt={sponsor.name}
-        className="w-full h-full object-cover object-center"
-        style={sponsor.imgStyle || {}}
+        className="w-full h-full object-fill"
       />
     </div>
   );
