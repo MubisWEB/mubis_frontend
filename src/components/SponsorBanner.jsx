@@ -124,7 +124,7 @@ function LayoutRightHeavy({ sponsor, Logo }) {
 function CTAButton({ className = '', align }) {
   return (
     <button
-      className={`flex-shrink-0 rounded-full px-5 py-2 text-xs sm:text-sm font-semibold transition-colors ${className}`}
+      className={`flex-shrink-0 rounded-[18px] px-5 py-2 text-xs sm:text-sm font-semibold transition-colors ${className}`}
       style={{
         background: 'rgba(255,255,255,0.2)',
         color: '#fff',
