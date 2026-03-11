@@ -345,10 +345,10 @@ function save(key, data) {
 
 function ensureSeeded() {
   const seedVersion = localStorage.getItem('mubis_seed_version');
-  if (seedVersion !== 'v16') {
+  if (seedVersion !== 'v17') {
     Object.values(KEYS).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem('mubis_store_publications');
-    localStorage.setItem('mubis_seed_version', 'v16');
+    localStorage.setItem('mubis_seed_version', 'v17');
   }
 
   if (!load(KEYS.users)) {
