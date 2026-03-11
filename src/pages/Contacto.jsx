@@ -1,6 +1,7 @@
 import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import SponsorBanner from "@/components/SponsorBanner";
 import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
