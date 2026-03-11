@@ -196,7 +196,8 @@ export default function Ganados() {
         const car = mockCars[nextIndex % mockCars.length];
         const mockId = `won-mock-${nextIndex}`;
         // Persist in store if not already there
-        if (!getAuctionById(mockId)) {
+        const existing = getAuctionById(mockId);
+        if (!existing) {
           addAuction({
             id: mockId,
             ...car,
@@ -208,6 +209,8 @@ export default function Ganados() {
             bids_count: Math.floor(Math.random() * 15) + 3,
             mileage: car.mileage,
           });
+        } else if (existing.city !== car.city) {
+          updateAuction(mockId, { city: car.city });
         }
         won.push({
           id: mockId,
