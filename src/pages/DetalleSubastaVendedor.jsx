@@ -173,7 +173,7 @@ export default function DetalleSubastaVendedor() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Button onClick={handleAcceptBid} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                ✅ Aceptar puja
+                Aceptar puja
               </Button>
               <Button onClick={handleRejectBid} variant="outline" className="rounded-xl border-destructive text-destructive hover:bg-destructive/5 font-semibold">
                 ❌ Rechazar puja
