@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,8 @@ import { ArrowLeft, MessageCircle, Send, AlertTriangle, CheckCircle, Clock, User
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getSupportCasesByUserId, getSupportCaseById, addMessageToCase, getCurrentUser } from '@/lib/mockStore';
+import { casesApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 
 const STATUS_MAP = {
   OPEN: { label: 'Abierto', color: 'bg-secondary/10 text-secondary' },
@@ -43,11 +45,23 @@ function timeAgo(dateStr) {
 // ── Cases List ──
 export default function SoporteCasos() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [cases, setCases] = useState([]);
 
   useEffect(() => {
-    if (user?.id) setCases(getSupportCasesByUserId(user.id));
+    if (!user?.id) return;
+    const load = async () => {
+      try {
+        const data = await casesApi.getMine();
+        setCases(data || []);
+      } catch (err) {
+        console.error('Error loading cases:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [user?.id]);
 
   return (
@@ -64,7 +78,18 @@ export default function SoporteCasos() {
             <p className="text-xs text-muted-foreground">Casos</p>
           </div>
         </div>
-        {cases.length === 0 ? (
+        {loading ? (
+          [0, 1, 2].map(i => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: '14px 16px', alignItems: 'center' }}>
+              <Skeleton circle width={40} height={40} />
+              <div style={{ flex: 1 }}>
+                <Skeleton width="65%" height={14} />
+                <Skeleton width="40%" height={11} style={{ marginTop: 5 }} />
+              </div>
+              <Skeleton width={50} height={14} />
+            </div>
+          ))
+        ) : cases.length === 0 ? (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="w-8 h-8 text-muted-foreground" />
@@ -75,7 +100,7 @@ export default function SoporteCasos() {
         ) : (
           cases.map((c, i) => {
             const status = STATUS_MAP[c.status] || STATUS_MAP.OPEN;
-            const lastMsg = c.messages[c.messages.length - 1];
+            const lastMsg = c.messages?.[c.messages.length - 1];
             return (
               <motion.div key={c.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <Card
@@ -126,40 +151,42 @@ export default function SoporteCasos() {
 export function SoporteCasoDetalle() {
   const { caseId } = useParams();
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const { user } = useAuth();
   const [caseData, setCaseData] = useState(null);
   const [newMsg, setNewMsg] = useState('');
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (caseId) setCaseData(getSupportCaseById(caseId));
+    if (!caseId) return;
+    const load = async () => {
+      try {
+        const data = await casesApi.getById(caseId);
+        setCaseData(data);
+      } catch (err) {
+        console.error('Error loading case:', err);
+      }
+    };
+    load();
   }, [caseId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [caseData?.messages?.length]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!newMsg.trim() || !user) return;
-    addMessageToCase(caseId, {
-      senderId: user.id,
-      senderRole: 'comprador',
-      senderName: user.nombre || 'Comprador',
-      text: newMsg.trim(),
-    });
-    setNewMsg('');
-    setCaseData(getSupportCaseById(caseId));
-
-    // Simulate Mubis auto-response after 1s
-    setTimeout(() => {
-      addMessageToCase(caseId, {
-        senderId: 'mubis',
-        senderRole: 'mediador',
-        senderName: 'Mubis Soporte',
-        text: 'Gracias por tu mensaje. Estamos analizando tu caso y nos comunicaremos con el vendedor. Te mantendremos informado.',
-      });
-      setCaseData(getSupportCaseById(caseId));
-    }, 1200);
+    try {
+      const updated = await casesApi.sendMessage(caseId, newMsg.trim());
+      setNewMsg('');
+      if (updated) {
+        setCaseData(updated);
+      } else {
+        const fresh = await casesApi.getById(caseId);
+        setCaseData(fresh);
+      }
+    } catch (err) {
+      console.error('Error sending message:', err);
+    }
   };
 
   if (!caseData) return (
@@ -214,7 +241,7 @@ export function SoporteCasoDetalle() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {caseData.messages.map((msg) => {
+        {(caseData.messages || []).map((msg) => {
           const isMe = msg.senderId === user?.id;
           const RoleIcon = ROLE_ICON[msg.senderRole] || User;
           const roleColor = ROLE_COLOR[msg.senderRole] || 'bg-muted text-muted-foreground';

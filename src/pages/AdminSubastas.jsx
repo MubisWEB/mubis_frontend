@@ -9,7 +9,7 @@ import { Gavel, Eye, Search } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getAuctions, reconcileAuctionStatuses, getUsers } from '@/lib/mockStore';
+import { adminApi } from '@/api/services';
 
 export default function AdminSubastas() {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function AdminSubastas() {
   const [branchFilter, setBranchFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
 
-  useEffect(() => { reconcileAuctionStatuses(); setAuctions(getAuctions()); }, []);
+  useEffect(() => { adminApi.getAuctions().then(setAuctions).catch(() => {}); }, []);
 
   const companies = useMemo(() => [...new Set(auctions.map(a => a.dealerCompany).filter(Boolean))], [auctions]);
   const branches = useMemo(() => [...new Set(auctions.map(a => a.dealerBranch).filter(Boolean))], [auctions]);
@@ -47,7 +47,6 @@ export default function AdminSubastas() {
     <div className="min-h-screen bg-muted pb-24">
       <Header title="Subastas" subtitle={`${auctions.length} subastas totales`} backTo="/AdminDashboard" />
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
-        {/* Filters */}
         <Card className="p-3 border border-border shadow-sm rounded-xl">
           <div className="flex flex-wrap gap-2">
             <div className="relative flex-1 min-w-[140px]">

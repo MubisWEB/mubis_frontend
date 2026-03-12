@@ -6,50 +6,57 @@ import { ArrowDownLeft, ArrowUpRight, ArrowLeft } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getBidsByUserId, getAuctions, getCurrentUser, getUserRole } from '@/lib/mockStore';
+import { bidsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
+import Skeleton from 'react-loading-skeleton';
+
+const MovRowSkeleton = () => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px' }}>
+    <Skeleton width={40} height={40} borderRadius={12} />
+    <div style={{ flex: 1 }}>
+      <Skeleton width="60%" height={14} />
+      <Skeleton width="30%" height={11} style={{ marginTop: 4 }} />
+    </div>
+    <Skeleton width={60} height={16} />
+  </div>
+);
 
 export default function Movimientos() {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
-  const role = getUserRole();
+  const { user: currentUser } = useAuth();
+  const role = currentUser?.role;
   const [movements, setMovements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    const myBids = getBidsByUserId(currentUser.id);
-    const allAuctions = getAuctions();
+    const load = async () => {
+      try {
+        setLoading(true);
+        const myBids = await bidsApi.getMine();
 
-    // Build movements from bids
-    const bidMovements = myBids.map(bid => {
-      const auction = allAuctions.find(a => a.id === bid.auctionId);
-      return {
-        id: bid.id,
-        kind: 'bought',
-        vehicle: auction ? `${auction.brand} ${auction.model} ${auction.year}` : 'Vehículo',
-        amount: bid.amount,
-        date: new Date(bid.createdAt),
-        status: 'bid',
-      };
-    });
+        // Build movements from bids
+        const bidMovements = (myBids || []).map(bid => ({
+          id: bid.id,
+          kind: 'bought',
+          vehicle: bid.auction
+            ? `${bid.auction.brand} ${bid.auction.model} ${bid.auction.year}`
+            : (bid.vehicleLabel || 'Vehículo'),
+          amount: bid.amount,
+          date: new Date(bid.createdAt),
+          status: 'bid',
+        }));
 
-    // Build movements from my auctions (if dealer)
-    if (role === 'dealer') {
-      const myAuctions = allAuctions.filter(a => a.dealerId === currentUser.id);
-      myAuctions.forEach(a => {
-        bidMovements.push({
-          id: `sold-${a.id}`,
-          kind: 'sold',
-          vehicle: `${a.brand} ${a.model} ${a.year}`,
-          amount: a.current_bid || a.starting_price || 0,
-          date: new Date(a.createdAt),
-          status: a.status,
-        });
-      });
-    }
-
-    bidMovements.sort((a, b) => b.date - a.date);
-    setMovements(bidMovements);
-  }, [currentUser?.id, role]);
+        bidMovements.sort((a, b) => b.date - a.date);
+        setMovements(bidMovements);
+      } catch (err) {
+        console.error('Error loading movements:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [currentUser?.id]);
 
   const formatShortPrice = (price) => `$${(Math.abs(price) / 1000000).toFixed(0)}M`;
   const formatDate = (date) => {
@@ -93,7 +100,9 @@ export default function Movimientos() {
         </div>
 
         <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
-          {movements.length === 0 ? (
+          {loading ? (
+            <div>{[1,2,3,4,5].map(i => <MovRowSkeleton key={i} />)}</div>
+          ) : movements.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm text-foreground font-medium">Todavía no tienes movimientos</p>
               <p className="text-xs text-muted-foreground mt-1">Cuando compres o subastes carros, se verán acá.</p>

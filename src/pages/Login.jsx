@@ -8,10 +8,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
 import MubisLogo from "@/components/MubisLogo";
-import { loginUser, setCurrentUser, getRedirectForRole } from "@/lib/mockStore";
+import { useAuth, getRedirectForRole } from "@/lib/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,30 +24,20 @@ export default function Login() {
       toast.error("Por favor completa todos los campos");
       return;
     }
-
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-    const user = loginUser(email, password);
-    if (!user) {
-      setLoading(false);
-      toast.error("Credenciales incorrectas");
-      return;
-    }
-
-    setCurrentUser(user);
-    setLoading(false);
-    toast.success("¡Bienvenido de nuevo!");
-
-    // Check verification for non-admin
-    if (user.role !== 'admin' && user.verification_status !== 'VERIFIED') {
-      setTimeout(() => navigate('/PendienteVerificacion'), 300);
-      return;
-    }
-
-    setTimeout(() => {
+    try {
+      const user = await login(email, password);
+      toast.success("¡Bienvenido de nuevo!");
+      if (user.role !== 'admin' && user.verification_status !== 'VERIFIED') {
+        navigate('/PendienteVerificacion');
+        return;
+      }
       navigate(getRedirectForRole(user.role));
-    }, 300);
+    } catch {
+      toast.error("Credenciales incorrectas");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

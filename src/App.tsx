@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { RequireAuth, RequireRole } from "@/components/RequireAuth";
+import { AuthProvider } from "@/lib/AuthContext";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import Login from './pages/Login';
@@ -48,6 +49,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AuthProvider>
         <Routes>
           {/* Public */}
           <Route path="/" element={<Landing />} />
@@ -86,7 +88,7 @@ const App = () => (
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
-          <Route path="/PeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito']}><PeritajeDetalle /></RequireRole>} />
+          <Route path="/PeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito','dealer']}><PeritajeDetalle /></RequireRole>} />
 
           {/* Admin */}
           <Route path="/AdminDashboard" element={<RequireRole roles={['admin']}><AdminDashboard /></RequireRole>} />
@@ -101,6 +103,7 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

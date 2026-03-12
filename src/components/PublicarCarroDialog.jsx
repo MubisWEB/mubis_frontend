@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { addVehicle, addInspection, getCurrentUser, getPublicationsBalance, deductPublication } from '@/lib/mockStore';
+import { useAuth } from '@/lib/AuthContext';
+import { vehiclesApi, publicationsApi } from '@/api/services';
 
 const BRANDS = [
   'Mazda', 'Kia', 'Chevrolet', 'Renault', 'Toyota', 'Nissan', 'Hyundai',
@@ -60,10 +61,11 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(JSON.parse(JSON.stringify(initialForm)));
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const tpInputRef = useRef(null);
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const { user } = useAuth();
 
   const set = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));
@@ -102,7 +104,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
       if (!form.tiene_multas) e.tiene_multas = 'Obligatorio';
       if (form.tiene_multas === 'si' && !form.multas_descripcion.trim()) e.multas_descripcion = 'Describe las multas';
     }
-    // Step 3 (summary) has no validation
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -136,67 +137,56 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
     setForm(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== idx) }));
   };
 
-  const handleSubmitRequest = () => {
-    // Check publications balance
-    if (!currentUser?.id || getPublicationsBalance(currentUser.id) < 1) {
-      toast.error('Sin publicaciones disponibles', { description: 'Recarga publicaciones desde tu cuenta para poder publicar.' });
-      return;
+  const handleSubmitRequest = async () => {
+    setSubmitting(true);
+    try {
+      // Check balance
+      const { balance } = await publicationsApi.getBalance();
+      if (balance < 1) {
+        toast.error('Sin publicaciones disponibles', { description: 'Recarga publicaciones desde tu cuenta para poder publicar.' });
+        return;
+      }
+
+      const specs = {};
+      if (form.transmission) specs.transmission = form.transmission;
+      if (form.body_type) specs.body_type = form.body_type;
+      if (form.doors) specs.doors = parseInt(form.doors);
+      if (form.passengers) specs.passengers = parseInt(form.passengers);
+      if (form.steering) specs.steering = form.steering;
+      if (form.air_conditioning) specs.air_conditioning = form.air_conditioning === 'Sí';
+
+      const vehicle = await vehiclesApi.create({
+        brand: form.brand, model: form.model, year: +form.year,
+        city: form.ubicacion, mileage: +form.mileage, color: form.color,
+        traction: form.traction, cilindraje: form.cilindraje,
+        fuel_type: form.fuel_type, placa: form.placa,
+        specs: Object.keys(specs).length > 0 ? specs : null,
+        seller: { cedula: form.cedula, nombre: form.nombre_completo, email: form.email, telefono: form.telefono },
+        tarjeta_propiedad: form.tarjeta_propiedad,
+        photos: form.photos,
+        suggested_price: +form.suggested_price,
+        documentation: {
+          soat: { status: form.soat_status, fecha: form.soat_fecha },
+          tecno: { status: form.tecno_status, fecha: form.tecno_fecha },
+          multas: { tiene: form.tiene_multas, descripcion: form.multas_descripcion },
+        },
+        status: 'PENDING_INSPECTION',
+      });
+
+      toast.success('Solicitud de peritaje enviada', {
+        description: `${vehicle.brand} ${vehicle.model} · Un perito de tu sucursal realizará la inspección`,
+      });
+
+      onPublished?.(vehicle);
+      setForm(JSON.parse(JSON.stringify(initialForm)));
+      setStep(0);
+      onOpenChange(false);
+      navigate('/MisSubastas');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error al publicar el vehículo');
+    } finally {
+      setSubmitting(false);
     }
-    // Build specs object from form
-    const specs = {};
-    if (form.transmission) specs.transmission = form.transmission;
-    if (form.body_type) specs.body_type = form.body_type;
-    if (form.doors) specs.doors = parseInt(form.doors);
-    if (form.passengers) specs.passengers = parseInt(form.passengers);
-    if (form.steering) specs.steering = form.steering;
-    if (form.air_conditioning) specs.air_conditioning = form.air_conditioning === 'Sí';
-
-    // Create vehicle in store
-    const vehicle = addVehicle({
-      brand: form.brand, model: form.model, year: +form.year,
-      city: form.ubicacion, mileage: +form.mileage, color: form.color,
-      traction: form.traction, cilindraje: form.cilindraje,
-      fuel_type: form.fuel_type, placa: form.placa,
-      ubicacion: form.ubicacion,
-      specs: Object.keys(specs).length > 0 ? specs : null,
-      seller: { cedula: form.cedula, nombre: form.nombre_completo, email: form.email, telefono: form.telefono },
-      tarjeta_propiedad: form.tarjeta_propiedad,
-      photos: form.photos,
-      suggested_price: +form.suggested_price,
-      documentation: {
-        soat: { status: form.soat_status, fecha: form.soat_fecha },
-        tecno: { status: form.tecno_status, fecha: form.tecno_fecha },
-        multas: { tiene: form.tiene_multas, descripcion: form.multas_descripcion },
-      },
-      status: 'PENDING_INSPECTION',
-      dealerId: currentUser?.id,
-      dealerCompany: currentUser?.company,
-      dealerBranch: currentUser?.branch,
-    });
-
-    // Create inspection request
-    addInspection({
-      vehicleId: vehicle.id,
-      dealerId: currentUser?.id,
-      dealerCompany: currentUser?.company || '',
-      dealerBranch: currentUser?.branch || '',
-      requestedAt: new Date().toISOString(),
-      status: 'PENDING',
-      lockedByPeritoId: null,
-    });
-
-    // Deduct publication
-    deductPublication(currentUser.id);
-
-    toast.success('Solicitud de peritaje enviada', {
-      description: `${vehicle.brand} ${vehicle.model} · Un perito de tu sucursal realizará la inspección`,
-    });
-
-    onPublished?.(vehicle);
-    setForm(JSON.parse(JSON.stringify(initialForm)));
-    setStep(0);
-    onOpenChange(false);
-    navigate('/MisSubastas');
   };
 
   const fieldError = (key) => errors[key] ? (
@@ -240,7 +230,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
         </DialogHeader>
 
         <div className="px-6 pb-6 pt-5 space-y-5">
-          {/* STEP 0: Vehicle + Price + Seller */}
           {step === 0 && (
             <div className="space-y-5">
               <div>
@@ -288,7 +277,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
             </div>
           )}
 
-          {/* STEP 1: Photos */}
           {step === 1 && (
             <div className="space-y-6">
               <div>
@@ -333,7 +321,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
             </div>
           )}
 
-          {/* STEP 2: Documentation */}
           {step === 2 && (
             <div className="space-y-5">
               <div className="flex items-start gap-2 bg-muted/50 rounded-xl p-3 border border-border/40">
@@ -366,7 +353,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
             </div>
           )}
 
-          {/* STEP 3: Summary + Solicitar peritaje */}
           {step === 3 && (
             <div className="space-y-5">
               <Card className="p-4 border border-border/60 rounded-xl">
@@ -402,7 +388,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-1">Solicitar peritaje</p>
                   <p className="text-xs text-muted-foreground">
-                    Un perito de tu sucursal ({currentUser?.branch || 'N/A'}) realizará la inspección del vehículo.
+                    Un perito de tu sucursal ({user?.branch || 'N/A'}) realizará la inspección del vehículo.
                     Una vez aprobado el peritaje, el vehículo se publicará automáticamente a subasta.
                   </p>
                 </div>
@@ -410,7 +396,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
             </div>
           )}
 
-          {/* Navigation buttons */}
           <div className="flex items-center justify-between pt-4 border-t border-border/40">
             {step > 0 ? (
               <Button variant="ghost" onClick={back} className="rounded-xl gap-1"><ChevronLeft className="w-4 h-4" /> Atrás</Button>
@@ -420,8 +405,8 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                 Siguiente <ChevronRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button onClick={handleSubmitRequest} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-                <ClipboardCheck className="w-4 h-4" /> Solicitar peritaje
+              <Button onClick={handleSubmitRequest} disabled={submitting} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
+                <ClipboardCheck className="w-4 h-4" /> {submitting ? 'Enviando...' : 'Solicitar peritaje'}
               </Button>
             )}
           </div>

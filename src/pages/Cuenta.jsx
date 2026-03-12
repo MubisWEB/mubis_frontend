@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,8 @@ import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, C
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser, getUserRole, updateUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead, getPublicationsBalance, rechargePublications, getPublicationPrice } from '@/lib/mockStore';
+import { useAuth } from '@/lib/AuthContext';
+import { notificationsApi, publicationsApi, usersApi } from '@/api/services';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
 
@@ -40,8 +42,8 @@ function timeAgo(dateStr) {
 
 export default function Cuenta() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
-  const role = getUserRole();
+  const { user, logout, refreshUser, isLoadingAuth } = useAuth();
+  const role = user?.role;
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState(user?.nombre || '');
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
@@ -53,53 +55,81 @@ export default function Cuenta() {
 
   useEffect(() => {
     if (user) {
-      setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
-      setUnreadCount(getUnreadCount(user.id));
-      setPubBalance(getPublicationsBalance(user.id));
+      const load = async () => {
+        try {
+          const [notifs, balanceData] = await Promise.all([
+            notificationsApi.getAll().catch(() => []),
+            publicationsApi.getBalance().catch(() => null),
+          ]);
+          const notifList = notifs || [];
+          setNotifications(notifList.slice(0, 3));
+          setUnreadCount(notifList.filter(n => !n.read).length);
+          setPubBalance(balanceData?.balance ?? balanceData ?? 0);
+        } catch { /* ignore */ }
+      };
+      load();
     }
-  }, []);
+  }, [user]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
-  const handleLogout = () => { logoutUser(); navigate('/login'); };
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (!editName.trim()) { toast.error('El nombre es obligatorio'); return; }
-    updateUser(user.id, { nombre: editName.trim(), telefono: editPhone.trim() });
-    localStorage.setItem('mubis_user_name', editName.trim());
-    toast.success('Cambios guardados');
-    setEditOpen(false);
+    try {
+      await usersApi.update(user.id, { nombre: editName.trim(), telefono: editPhone.trim() });
+      await refreshUser();
+      toast.success('Cambios guardados');
+      setEditOpen(false);
+    } catch (err) {
+      toast.error('Error al guardar cambios');
+    }
   };
 
-  const handleMarkAllRead = () => {
-    if (user) {
-      markAllNotificationsRead(user.id);
-      setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationsApi.markAllRead();
+      const notifs = await notificationsApi.getAll();
+      setNotifications((notifs || []).slice(0, 3));
       setUnreadCount(0);
-    }
+    } catch { /* ignore */ }
   };
 
-  const handleMarkRead = (id) => {
-    markNotificationRead(id);
-    if (user) {
-      setNotifications(getNotificationsByUserId(user.id).slice(0, 3));
-      setUnreadCount(getUnreadCount(user.id));
-    }
+  const handleMarkRead = async (id) => {
+    try {
+      await notificationsApi.markRead(id);
+      const notifs = await notificationsApi.getAll();
+      const notifList = notifs || [];
+      setNotifications(notifList.slice(0, 3));
+      setUnreadCount(notifList.filter(n => !n.read).length);
+    } catch { /* ignore */ }
   };
 
   const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
 
-  const handleRecharge = () => {
+  const handleRecharge = async () => {
     if (!user) return;
-    const newBalance = rechargePublications(user.id, rechargeQty);
-    setPubBalance(newBalance);
-    toast.success(`¡Recarga exitosa!`, { description: `${rechargeQty} publicaciones añadidas. Balance: ${newBalance}` });
-    setRechargeOpen(false);
-    setRechargeQty(10);
+    try {
+      const result = await publicationsApi.recharge(user.id, rechargeQty);
+      const newBalance = result?.balance ?? (pubBalance + rechargeQty);
+      setPubBalance(newBalance);
+      toast.success(`¡Recarga exitosa!`, { description: `${rechargeQty} publicaciones añadidas. Balance: ${newBalance}` });
+      setRechargeOpen(false);
+      setRechargeQty(10);
+    } catch (err) {
+      toast.error('Error al recargar publicaciones');
+    }
   };
+
+  const PUBLICATION_PRICE_PER_UNIT = 15000;
+  const getPublicationPrice = (qty) => qty * PUBLICATION_PRICE_PER_UNIT;
 
   const menuItems = [
     { icon: Bell, label: 'Notificaciones', action: () => navigate('/Notificaciones'), badge: unreadCount > 0 ? unreadCount : null },
@@ -113,6 +143,36 @@ export default function Cuenta() {
       { icon: DollarSign, label: 'Movimientos', action: () => navigate('/Movimientos') },
       { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+    );
+  }
+
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-background pb-32">
+        <Header />
+        <div className="bg-card px-5 pt-6 pb-5 border-b border-border">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Skeleton circle width={64} height={64} />
+            <div style={{ flex: 1 }}>
+              <Skeleton width="55%" height={20} />
+              <Skeleton width="70%" height={14} style={{ marginTop: 6 }} />
+              <Skeleton width="40%" height={12} style={{ marginTop: 4 }} />
+              <Skeleton width={80} height={20} borderRadius={999} style={{ marginTop: 6 }} />
+            </div>
+          </div>
+        </div>
+        <div className="px-4 py-4 space-y-4">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} style={{ display: 'flex', gap: 12, padding: '14px 16px', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+                <Skeleton circle width={36} height={36} />
+                <Skeleton width="50%" height={14} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <BottomNav />
+      </div>
     );
   }
 

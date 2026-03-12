@@ -3,12 +3,14 @@ import { Card } from "@/components/ui/card";
 import { DollarSign } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { getBids } from '@/lib/mockStore';
+import { adminApi } from '@/api/services';
 
 export default function AdminMovimientos() {
   const [bids, setBids] = useState([]);
 
-  useEffect(() => { setBids(getBids()); }, []);
+  useEffect(() => {
+    adminApi.getMovements().then(setBids).catch(() => {});
+  }, []);
 
   const formatPrice = (p) => `$${(p / 1000000).toFixed(1)}M`;
 

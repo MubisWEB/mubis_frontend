@@ -9,7 +9,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
 import MubisLogo from "@/components/MubisLogo";
-import { registerUser } from "@/lib/mockStore";
+import { authApi } from "@/api/services";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -38,7 +38,6 @@ export default function Registro() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.role) { toast.error("Selecciona tu tipo de cuenta"); return; }
     if (!formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
       toast.error("Por favor completa todos los campos obligatorios"); return;
@@ -48,23 +47,25 @@ export default function Registro() {
     if (!formData.acepta) { toast.error("Debes aceptar los términos y condiciones"); return; }
 
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    registerUser({
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      nombre: formData.contacto,
-      company: formData.negocio,
-      branch: formData.branch,
-      telefono: formData.telefono,
-      ciudad: formData.ciudad,
-      nit: formData.nit,
-    });
-
-    setLoading(false);
-    toast.success("Solicitud enviada. Te contactaremos pronto.");
-    navigate("/registro-confirmacion");
+    try {
+      await authApi.register({
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        nombre: formData.contacto,
+        company: formData.negocio,
+        branch: formData.branch,
+        telefono: formData.telefono,
+        ciudad: formData.ciudad,
+        nit: formData.nit,
+      });
+      toast.success("Solicitud enviada. Te contactaremos pronto.");
+      navigate("/registro-confirmacion");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Error al enviar la solicitud");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass = "h-11 rounded-xl border-border/70 bg-muted/20 px-4 text-sm focus-visible:ring-2 focus-visible:ring-violet-500/25 focus-visible:border-violet-500/40";
@@ -90,7 +91,6 @@ export default function Registro() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Role selection */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Tipo de cuenta *</label>
                   <Select value={formData.role} onValueChange={v => handleChange("role", v)}>

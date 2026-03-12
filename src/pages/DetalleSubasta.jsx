@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
@@ -12,7 +13,8 @@ import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ExtensionModal from '@/components/ExtensionModal';
-import { getAuctionById, updateAuction, addBid, getCurrentUser, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, reconcileAuctionStatuses, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, getUserById, getProntoPagoByUserAndAuction, addSupportCase, getSupportCasesByUserId, getUserMaxBid, getAuctionLeader } from '@/lib/mockStore';
+import { auctionsApi, bidsApi, watchlistApi, casesApi, auditApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
@@ -22,7 +24,8 @@ export default function DetalleSubasta() {
   const [searchParams] = useSearchParams();
   const fromGanados = searchParams.get('from') === 'ganados';
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const { user: currentUser } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [vehicle, setVehicle] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
@@ -35,34 +38,89 @@ export default function DetalleSubasta() {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [showAllSpecs, setShowAllSpecs] = useState(false);
+  const [bids, setBids] = useState([]);
+  const [existingPP, setExistingPP] = useState(null);
+  const [existingCase, setExistingCase] = useState(null);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
 
   useEffect(() => {
     if (!auctionId) return;
-    reconcileAuctionStatuses();
-    const auction = getAuctionById(auctionId);
-    if (auction) {
-      setVehicle(auction);
-      // Merge audit events from both auction and vehicle
-      const auctionEvents = getAuditEventsByEntity('auction', auctionId);
-      const vehicleEvents = auction.vehicleId ? getAuditEventsByEntity('vehicle', auction.vehicleId) : [];
-      const merged = [...auctionEvents, ...vehicleEvents].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const unique = merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i);
-      setAuditEvents(unique);
-    }
+    const load = async () => {
+      try {
+        const auction = await auctionsApi.getById(auctionId);
+        if (auction) {
+          setVehicle(auction);
+          auctionsApi.incrementView(auctionId).catch(() => {});
+        }
+        const [auctionEvents, vehicleEvents] = await Promise.all([
+          auditApi.getByEntity('auction', auctionId).catch(() => []),
+          auction?.vehicleId ? auditApi.getByEntity('vehicle', auction.vehicleId).catch(() => []) : Promise.resolve([]),
+        ]);
+        const merged = [...(auctionEvents || []), ...(vehicleEvents || [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const unique = merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i);
+        setAuditEvents(unique);
+      } catch (err) {
+        console.error('Error loading auction:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [auctionId]);
 
   useEffect(() => {
     if (!auctionId) return;
-    const interval = setInterval(() => {
-      const a = getAuctionById(auctionId);
-      if (a) setVehicle(a);
-      const ae = getAuditEventsByEntity('auction', auctionId);
-      const ve = a?.vehicleId ? getAuditEventsByEntity('vehicle', a.vehicleId) : [];
-      const merged = [...ae, ...ve].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
-      setAuditEvents(merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i));
-    }, 3000);
+    const interval = setInterval(async () => {
+      try {
+        const a = await auctionsApi.getById(auctionId);
+        if (a) setVehicle(a);
+        const [ae, ve] = await Promise.all([
+          auditApi.getByEntity('auction', auctionId).catch(() => []),
+          a?.vehicleId ? auditApi.getByEntity('vehicle', a.vehicleId).catch(() => []) : Promise.resolve([]),
+        ]);
+        const merged = [...(ae || []), ...(ve || [])].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+        setAuditEvents(merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i));
+      } catch { /* ignore */ }
+    }, 15000);
     return () => clearInterval(interval);
   }, [auctionId]);
+
+  useEffect(() => {
+    if (!auctionId) return;
+    const loadBids = async () => {
+      try {
+        const data = await bidsApi.getByAuction(auctionId);
+        setBids(data || []);
+      } catch { /* ignore */ }
+    };
+    loadBids();
+  }, [auctionId]);
+
+  useEffect(() => {
+    if (!auctionId || !currentUser) return;
+    const loadPP = async () => {
+      try {
+        const data = await (await import('@/api/services')).prontoPagoApi.getByAuction(auctionId);
+        setExistingPP(data || null);
+      } catch { setExistingPP(null); }
+    };
+    const loadCase = async () => {
+      try {
+        const cases = await casesApi.getMine();
+        const found = (cases || []).find(c => c.auctionId === auctionId);
+        setExistingCase(found || null);
+      } catch { setExistingCase(null); }
+    };
+    const loadWatchlist = async () => {
+      try {
+        const data = await watchlistApi.check(auctionId);
+        setIsInWatchlist(data?.inWatchlist ?? false);
+      } catch { setIsInWatchlist(false); }
+    };
+    loadPP();
+    loadCase();
+    loadWatchlist();
+  }, [auctionId, currentUser, prontoPagoRefresh]);
 
   useEffect(() => {
     if (!vehicle?.ends_at) return;
@@ -81,12 +139,17 @@ export default function DetalleSubasta() {
     return () => clearInterval(interval);
   }, [vehicle?.ends_at]);
 
-  const handleSubmitBid = (maxAmount) => {
+  const handleSubmitBid = async (maxAmount) => {
     if (!vehicle || !currentUser) return;
-    const result = addBid({ auctionId: vehicle.id, userId: currentUser.id, amount: maxAmount, userName: 'Postor anónimo' });
-    if (!result.success) return result;
-    setVehicle(prev => ({ ...prev, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === currentUser.id }));
-    return result;
+    try {
+      const result = await bidsApi.place(vehicle.id, maxAmount);
+      if (result) {
+        setVehicle(prev => ({ ...prev, current_bid: result.visibleBid ?? result.current_bid ?? prev.current_bid, bids_count: result.bidsCount ?? result.bids_count ?? prev.bids_count }));
+      }
+      return result;
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
   const formatPrice = (price) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
@@ -126,7 +189,30 @@ export default function DetalleSubasta() {
     return () => clearInterval(interval);
   }, [isWonByMe, endTime]);
 
-  if (!vehicle) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted pb-40">
+        <TopBar />
+        <div className="mt-3">
+          <Skeleton height={280} borderRadius={0} />
+          <div className="bg-card px-4 py-4 shadow-sm">
+            <Skeleton width="70%" height={28} />
+            <Skeleton width="45%" height={16} style={{ marginTop: 8 }} />
+            <Skeleton width="55%" height={36} style={{ marginTop: 16 }} />
+          </div>
+        </div>
+        <div className="px-4 py-4 space-y-4">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Skeleton height={14} count={3} style={{ marginBottom: 8 }} />
+          </div>
+          <Skeleton height={48} borderRadius={12} style={{ marginTop: 8 }} />
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (!loading && !vehicle) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
@@ -138,15 +224,11 @@ export default function DetalleSubasta() {
   }
 
   const images = vehicle.photos || [];
-  const inspection = vehicle.vehicleId ? getInspectionByVehicleId(vehicle.vehicleId) : null;
-  const bids = getBidsByAuctionId(vehicle.id);
-  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
-  const myMaxBid = currentUser ? getUserMaxBid(vehicle.id, currentUser.id) : 0;
-  const isLeading = currentUser ? getAuctionLeader(vehicle.id) === currentUser.id : false;
-  const vehData = vehicle.vehicleId ? getVehicleById(vehicle.vehicleId) : null;
-  const docs = vehicle.documentation || vehData?.documentation || null;
-
-  const vehSpecs = vehicle.specs || vehData?.specs || {};
+  const inspection = vehicle.inspection || null;
+  const myMaxBid = bids.find(b => b.userId === currentUser?.id)?.amount || 0;
+  const isLeading = vehicle.leaderId === currentUser?.id;
+  const docs = vehicle.documentation || null;
+  const vehSpecs = vehicle.specs || {};
 
   // Build full specs list — first 6 always visible, rest behind "Ver más"
   const allSpecs = [
@@ -174,9 +256,8 @@ export default function DetalleSubasta() {
   const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
   const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
-  const seller = isWonByMe && vehicle.dealerId ? getUserById(vehicle.dealerId) : null;
-  const existingPP = (isWonByMe && currentUser) ? getProntoPagoByUserAndAuction(currentUser.id, vehicle.id) : null;
-  const existingCase = (isWonByMe && currentUser) ? getSupportCasesByUserId(currentUser.id).find(c => c.auctionId === vehicle.id) : null;
+  const seller = isWonByMe ? (vehicle.dealer || vehicle.seller || null) : null;
+  const uniqueBidders = vehicle.uniqueBidders || bids.length || 0;
 
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
@@ -510,7 +591,6 @@ export default function DetalleSubasta() {
         onOpenChange={setExtensionModalOpen}
         onConfirm={({ days, reason }) => {
           const currentExt = vehicle?.extensionDays || 0;
-          updateAuction(vehicle.id, { extensionDays: currentExt + days, extensionReason: reason });
           setVehicle(prev => ({ ...prev, extensionDays: currentExt + days, extensionReason: reason }));
         }}
         vehicleName={vehicle ? `${vehicle.brand} ${vehicle.model}` : ''}
@@ -543,18 +623,20 @@ export default function DetalleSubasta() {
             <Button
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               disabled={!reportText.trim()}
-              onClick={() => {
+              onClick={async () => {
                 if (!reportText.trim() || !currentUser || !vehicle) return;
-                addSupportCase({
-                  buyerId: currentUser.id,
-                  sellerId: vehicle.dealerId || vehicle.sellerId || '',
-                  auctionId: vehicle.id,
-                  vehicleLabel: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
-                  description: reportText.trim(),
-                });
-                setReportOpen(false);
-                setReportText('');
-                toast.success('Caso abierto exitosamente', { description: 'Puedes verlo en Mubis Soporte - Casos' });
+                try {
+                  await casesApi.create({
+                    auctionId: vehicle.id,
+                    vehicleLabel: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+                    description: reportText.trim(),
+                  });
+                  setReportOpen(false);
+                  setReportText('');
+                  toast.success('Caso abierto exitosamente', { description: 'Puedes verlo en Mubis Soporte - Casos' });
+                } catch (err) {
+                  toast.error('Error al abrir el caso');
+                }
               }}
             >
               Abrir caso

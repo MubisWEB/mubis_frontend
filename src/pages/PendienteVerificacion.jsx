@@ -6,7 +6,7 @@ import { Clock, XCircle, AlertTriangle, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MubisLogo from '@/components/MubisLogo';
 import TopBar from "@/components/TopBar";
-import { logoutUser, getCurrentUser } from '@/lib/mockStore';
+import { useAuth } from '@/lib/AuthContext';
 
 const STATUS_CONFIG = {
   PENDING: { icon: Clock, label: 'En revisión', color: 'bg-accent/10 text-accent-foreground', message: 'Tu cuenta está siendo revisada por nuestro equipo. Te notificaremos cuando sea aprobada.' },
@@ -16,13 +16,13 @@ const STATUS_CONFIG = {
 
 export default function PendienteVerificacion() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const { user, logout } = useAuth();
   const status = user?.verification_status || 'PENDING';
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
   const Icon = config.icon;
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

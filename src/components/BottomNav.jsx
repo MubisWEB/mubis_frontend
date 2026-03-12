@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, PlusCircle, User, Heart, Wallet, ClipboardCheck, LayoutDashboard, Users, FileText, DollarSign, Trophy } from 'lucide-react';
-import { getUserRole } from '@/lib/mockStore';
+import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 const NAV_CONFIGS = {
   dealer: [
@@ -30,13 +30,12 @@ const NAV_CONFIGS = {
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const userRole = getUserRole() || 'dealer';
-
+  const { user } = useAuth();
+  const userRole = user?.role || 'dealer';
   const navItems = NAV_CONFIGS[userRole] || NAV_CONFIGS.dealer;
 
-  const isActive = (path) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  const isActive = (path) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-50">
@@ -53,9 +52,7 @@ export default function BottomNav() {
               }`}
             >
               <Icon className={`w-6 h-6 ${active ? 'stroke-[2.5]' : 'stroke-2'}`} />
-              <span className={`text-xs ${active ? 'font-semibold' : 'font-medium'}`}>
-                {item.label}
-              </span>
+              <span className={`text-xs ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
             </button>
           );
         })}

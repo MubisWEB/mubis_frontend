@@ -5,7 +5,19 @@ import { Bell, Gavel, Car, ClipboardCheck, UserCheck, CheckCheck, ArrowLeft } fr
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, getNotificationsByUserId, getUnreadCount, markAllNotificationsRead, markNotificationRead } from '@/lib/mockStore';
+import { notificationsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
+import Skeleton from 'react-loading-skeleton';
+
+const NotifRowSkeleton = () => (
+  <div style={{ display: 'flex', gap: 12, padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+    <Skeleton circle width={36} height={36} />
+    <div style={{ flex: 1 }}>
+      <Skeleton width="65%" height={14} />
+      <Skeleton width="40%" height={11} style={{ marginTop: 5 }} />
+    </div>
+  </div>
+);
 
 const TYPE_ICONS = {
   auction_published: Car,
@@ -51,32 +63,44 @@ function timeAgo(dateStr) {
 
 export default function Notificaciones() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      setNotifications(getNotificationsByUserId(user.id));
-      setUnreadCount(getUnreadCount(user.id));
-    }
-  }, []);
-
-  const handleMarkAllRead = () => {
-    if (user) {
-      markAllNotificationsRead(user.id);
-      setNotifications(getNotificationsByUserId(user.id));
-      setUnreadCount(0);
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      const data = await notificationsApi.getAll();
+      const notifs = data || [];
+      setNotifications(notifs);
+      setUnreadCount(notifs.filter(n => !n.read).length);
+    } catch (err) {
+      console.error('Error loading notifications:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleNotificationClick = (n) => {
+  useEffect(() => {
+    if (user) loadNotifications();
+  }, [user]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationsApi.markAllRead();
+      await loadNotifications();
+    } catch (err) {
+      console.error('Error marking all read:', err);
+    }
+  };
+
+  const handleNotificationClick = async (n) => {
     if (!n.read) {
-      markNotificationRead(n.id);
-      if (user) {
-        setNotifications(getNotificationsByUserId(user.id));
-        setUnreadCount(getUnreadCount(user.id));
-      }
+      try {
+        await notificationsApi.markRead(n.id);
+        await loadNotifications();
+      } catch { /* ignore */ }
     }
     const route = getNotificationRoute(n);
     if (route) navigate(route);
@@ -102,10 +126,11 @@ export default function Notificaciones() {
         )}
 
         <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div>{[1,2,3,4,5].map(i => <NotifRowSkeleton key={i} />)}</div>
+          ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
-          ) : (
-            notifications.map((n) => {
+          ) : (notifications.map((n) => {
               const Icon = TYPE_ICONS[n.type] || Bell;
               const hasRoute = !!getNotificationRoute(n);
               return (
@@ -127,8 +152,8 @@ export default function Notificaciones() {
                   {!n.read && <div className="w-2 h-2 rounded-full bg-secondary flex-shrink-0" />}
                 </motion.div>
               );
-            })
-          )}
+            }))}
+
         </Card>
       </div>
 

@@ -1,79 +1,77 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Mail, Phone, MapPin, Building, CheckCircle, Trophy, Gavel, ClipboardCheck } from 'lucide-react';
+import { ArrowLeft, Shield, Mail, Phone, MapPin, Building } from 'lucide-react';
 import MubisLogo from '@/components/MubisLogo';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
 import TopBar from "@/components/TopBar";
-import { getUserById, updateUser, getAuctionsByDealerId, getBidsByUserId, getWonAuctionsByUserId, getInspections, getVehicles } from '@/lib/mockStore';
+import { usersApi } from '@/api/services';
 
 export default function AdminDealerDetalle() {
   const navigate = useNavigate();
   const { userId } = useParams();
-  const user = getUserById(userId);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-muted flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Usuario no encontrado</p>
-          <Button onClick={() => navigate('/AdminDealers')} variant="outline">Volver</Button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    usersApi.getById(userId)
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, [userId]);
 
-  const handleToggleVerification = () => {
+  const handleToggleVerification = async () => {
     const newStatus = user.verification_status === 'VERIFIED' ? 'PENDING' : 'VERIFIED';
-    updateUser(userId, { verification_status: newStatus });
-    toast.success(newStatus === 'VERIFIED' ? 'Usuario verificado' : 'Verificación removida');
-    navigate(0); // refresh
+    try {
+      await usersApi.verify(userId, newStatus);
+      setUser(prev => ({ ...prev, verification_status: newStatus }));
+      toast.success(newStatus === 'VERIFIED' ? 'Usuario verificado' : 'Verificación removida');
+    } catch { toast.error('Error al actualizar verificación'); }
   };
 
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
 
-  // Activity based on role
-  const getActivity = () => {
-    if (user.role === 'dealer') {
-      const auctions = getAuctionsByDealerId(user.id);
-      const vehicles = getVehicles().filter(v => v.dealerId === user.id);
-      const active = auctions.filter(a => a.status === 'active').length;
-      const ended = auctions.filter(a => a.status === 'ended').length;
-      const totalRevenue = auctions.reduce((s, a) => s + (a.current_bid || 0), 0);
-      return { type: 'dealer', stats: [
-        { label: 'Vehículos', value: vehicles.length },
-        { label: 'Subastas activas', value: active },
-        { label: 'Subastas cerradas', value: ended },
-        { label: 'Valor total', value: formatPrice(totalRevenue) },
-      ]};
-    }
-    if (user.role === 'recomprador') {
-      const bids = getBidsByUserId(user.id);
-      const won = getWonAuctionsByUserId(user.id);
-      const totalSpent = won.reduce((s, a) => s + (a.current_bid || 0), 0);
-      return { type: 'recomprador', stats: [
-        { label: 'Pujas realizadas', value: bids.length },
-        { label: 'Subastas ganadas', value: won.length },
-        { label: 'Total invertido', value: formatPrice(totalSpent) },
-      ]};
-    }
-    if (user.role === 'perito') {
-      const inspections = getInspections().filter(i => i.peritoId === user.id || i.lockedByPeritoId === user.id);
-      const completed = inspections.filter(i => i.status === 'COMPLETED').length;
-      const pending = inspections.filter(i => i.status === 'PENDING' || i.status === 'IN_PROGRESS').length;
-      return { type: 'perito', stats: [
-        { label: 'Peritajes totales', value: inspections.length },
-        { label: 'Completados', value: completed },
-        { label: 'Pendientes', value: pending },
-      ]};
-    }
-    return { type: 'unknown', stats: [] };
+  const getActivityStats = () => {
+    if (!user) return [];
+    const stats = user.stats || {};
+    if (user.role === 'dealer') return [
+      { label: 'Vehículos', value: stats.vehicles ?? '—' },
+      { label: 'Subastas activas', value: stats.activeAuctions ?? '—' },
+      { label: 'Subastas cerradas', value: stats.endedAuctions ?? '—' },
+      { label: 'Valor total', value: stats.totalRevenue != null ? formatPrice(stats.totalRevenue) : '—' },
+    ];
+    if (user.role === 'recomprador') return [
+      { label: 'Pujas realizadas', value: stats.bidsCount ?? '—' },
+      { label: 'Subastas ganadas', value: stats.wonCount ?? '—' },
+      { label: 'Total invertido', value: stats.totalSpent != null ? formatPrice(stats.totalSpent) : '—' },
+    ];
+    if (user.role === 'perito') return [
+      { label: 'Peritajes totales', value: stats.totalInspections ?? '—' },
+      { label: 'Completados', value: stats.completedInspections ?? '—' },
+      { label: 'Pendientes', value: stats.pendingInspections ?? '—' },
+    ];
+    return [];
   };
 
-  const activity = getActivity();
+  if (loading) return (
+    <div className="min-h-screen bg-muted flex items-center justify-center">
+      <p className="text-muted-foreground">Cargando...</p>
+    </div>
+  );
+
+  if (!user) return (
+    <div className="min-h-screen bg-muted flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-muted-foreground mb-4">Usuario no encontrado</p>
+        <Button onClick={() => navigate('/AdminDealers')} variant="outline">Volver</Button>
+      </div>
+    </div>
+  );
+
+  const activityStats = getActivityStats();
   const isVerified = user.verification_status === 'VERIFIED';
 
   return (
@@ -93,21 +91,23 @@ export default function AdminDealerDetalle() {
       </div>
 
       <div className="px-4 -mt-4">
-        <div className={`grid grid-cols-${Math.min(activity.stats.length, 3)} gap-3 mb-4`}>
-          {activity.stats.map((s, i) => (
-            <Card key={i} className="p-3 text-center border border-border shadow-sm">
-              <p className="text-xl font-bold text-foreground">{s.value}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-            </Card>
-          ))}
-        </div>
+        {activityStats.length > 0 && (
+          <div className={`grid grid-cols-${Math.min(activityStats.length, 3)} gap-3 mb-4`}>
+            {activityStats.map((s, i) => (
+              <Card key={i} className="p-3 text-center border border-border shadow-sm">
+                <p className="text-xl font-bold text-foreground">{s.value}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <Card className="p-4 mb-4 border border-border shadow-sm">
           <h2 className="font-bold text-foreground mb-3 font-sans">Información de Contacto</h2>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm"><Mail className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.email}</span></div>
-            <div className="flex items-center gap-2 text-sm"><Phone className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.telefono}</span></div>
-            <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.ciudad}</span></div>
+            {user.telefono && <div className="flex items-center gap-2 text-sm"><Phone className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.telefono}</span></div>}
+            {user.ciudad && <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.ciudad}</span></div>}
             {user.company && <div className="flex items-center gap-2 text-sm"><Building className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.company} · {user.branch}</span></div>}
             {user.nit && <div className="flex items-center gap-2 text-sm"><Building className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">NIT: {user.nit}</span></div>}
           </div>

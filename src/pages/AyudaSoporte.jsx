@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,8 @@ import { Mail, Clock, HelpCircle, Send, Inbox, CheckCircle, XCircle, ArrowLeft }
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, getUserRole, addSupportTicket, getSupportTicketsByUserId, updateSupportTicket } from '@/lib/mockStore';
+import { ticketsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
 
 const FAQ_SECTIONS = [
@@ -78,37 +80,52 @@ function timeAgo(dateStr) {
 
 export default function AyudaSoporte() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
-  const role = getUserRole();
+  const { user } = useAuth();
+  const role = user?.role;
   const [caseType, setCaseType] = useState('');
   const [description, setDescription] = useState('');
   const [tickets, setTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(true);
+
+  const loadTickets = async () => {
+    try {
+      const data = await ticketsApi.getMine();
+      setTickets(data || []);
+    } catch { /* ignore */ } finally {
+      setLoadingTickets(false);
+    }
+  };
 
   useEffect(() => {
-    if (user) setTickets(getSupportTicketsByUserId(user.id));
-  }, []);
+    if (user) loadTickets();
+  }, [user]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!caseType) { toast.error('Selecciona un tipo de caso'); return; }
     if (!description.trim()) { toast.error('Describe tu solicitud'); return; }
 
-    addSupportTicket({
-      userId: user?.id,
-      role: role,
-      type: caseType,
-      message: description.trim(),
-    });
-
-    toast.success('Solicitud enviada');
-    setCaseType('');
-    setDescription('');
-    if (user) setTickets(getSupportTicketsByUserId(user.id));
+    try {
+      await ticketsApi.create({
+        type: caseType,
+        message: description.trim(),
+      });
+      toast.success('Solicitud enviada');
+      setCaseType('');
+      setDescription('');
+      await loadTickets();
+    } catch (err) {
+      toast.error('Error al enviar la solicitud');
+    }
   };
 
-  const handleCloseTicket = (ticketId) => {
-    updateSupportTicket(ticketId, { status: 'RESOLVED' });
-    if (user) setTickets(getSupportTicketsByUserId(user.id));
-    toast.success('Solicitud cerrada');
+  const handleCloseTicket = async (ticketId) => {
+    try {
+      await ticketsApi.update(ticketId, { status: 'RESOLVED' });
+      await loadTickets();
+      toast.success('Solicitud cerrada');
+    } catch (err) {
+      toast.error('Error al cerrar la solicitud');
+    }
   };
 
   return (
@@ -183,7 +200,18 @@ export default function AyudaSoporte() {
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Mis solicitudes</p>
           <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-            {tickets.length === 0 ? (
+            {loadingTickets ? (
+              [0, 1, 2].map(i => (
+                <div key={i} style={{ display: 'flex', gap: 12, padding: '14px 16px', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+                  <Skeleton circle width={40} height={40} />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton width="65%" height={14} />
+                    <Skeleton width="40%" height={11} style={{ marginTop: 5 }} />
+                  </div>
+                  <Skeleton width={50} height={14} />
+                </div>
+              ))
+            ) : tickets.length === 0 ? (
               <div className="p-6 text-center">
                 <Inbox className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">Aún no has enviado solicitudes</p>

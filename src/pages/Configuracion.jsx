@@ -8,7 +8,7 @@ import { Bell, Mail, MessageCircle, Gavel, Trophy, ClipboardCheck, Users, Globe,
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, getUserRole } from '@/lib/mockStore';
+import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
 
 const SETTINGS_KEY = (userId) => `mubis_user_settings_${userId}`;
@@ -36,8 +36,8 @@ function saveSettings(userId, settings) {
 
 export default function Configuracion() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
-  const role = getUserRole();
+  const { user } = useAuth();
+  const role = user?.role;
   const [settings, setSettings] = useState(() => loadSettings(user?.id));
 
   const toggle = (key) => {

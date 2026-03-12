@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { motion } from 'framer-motion';
 import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
@@ -10,36 +11,60 @@ import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import { toast } from 'sonner';
-import { getAuctionById, updateAuction, getBidsByAuctionId, getInspectionByVehicleId, getVehicleById, getAuditEventsByEntity, getUniqueBidderCountByAuctionId, acceptHighestBid, rejectHighestBid, acceptPreviousBid } from '@/lib/mockStore';
+import { auctionsApi, bidsApi, auditApi } from '@/api/services';
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
   const { auctionId } = useParams();
+  const [loading, setLoading] = useState(true);
   const [auction, setAuction] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
   const [auditEvents, setAuditEvents] = useState([]);
   const [showAllSpecs, setShowAllSpecs] = useState(false);
+  const [bids, setBids] = useState([]);
 
-  const loadAuditEvents = (a) => {
-    const ae = getAuditEventsByEntity('auction', a.id);
-    const ve = a.vehicleId ? getAuditEventsByEntity('vehicle', a.vehicleId) : [];
-    const merged = [...ae, ...ve].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
-    setAuditEvents(merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i));
+  const loadAuditEvents = async (a) => {
+    try {
+      const [ae, ve] = await Promise.all([
+        auditApi.getByEntity('auction', a.id).catch(() => []),
+        a.vehicleId ? auditApi.getByEntity('vehicle', a.vehicleId).catch(() => []) : Promise.resolve([]),
+      ]);
+      const merged = [...(ae || []), ...(ve || [])].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+      setAuditEvents(merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i));
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
     if (!auctionId) return;
-    const data = getAuctionById(auctionId);
-    if (data) { setAuction(data); loadAuditEvents(data); }
+    const load = async () => {
+      try {
+        const data = await auctionsApi.getById(auctionId);
+        if (data) {
+          setAuction(data);
+          await loadAuditEvents(data);
+        }
+        const bidsData = await bidsApi.getByAuction(auctionId);
+        setBids(bidsData || []);
+      } catch (err) {
+        console.error('Error loading auction:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [auctionId]);
 
   useEffect(() => {
     if (!auctionId) return;
-    const interval = setInterval(() => {
-      const data = getAuctionById(auctionId);
-      if (data) { setAuction(data); loadAuditEvents(data); }
-    }, 3000);
+    const interval = setInterval(async () => {
+      try {
+        const data = await auctionsApi.getById(auctionId);
+        if (data) { setAuction(data); await loadAuditEvents(data); }
+        const bidsData = await bidsApi.getByAuction(auctionId);
+        setBids(bidsData || []);
+      } catch { /* ignore */ }
+    }, 15000);
     return () => clearInterval(interval);
   }, [auctionId]);
 
@@ -57,33 +82,70 @@ export default function DetalleSubastaVendedor() {
     return () => clearInterval(interval);
   }, [auction]);
 
-  const handleCloseAuction = () => {
+  const handleCloseAuction = async () => {
     if (!auction) return;
-    updateAuction(auction.id, { status: 'closed', ends_at: new Date().toISOString() });
-    setAuction(prev => ({ ...prev, status: 'closed' }));
-    toast.success('Subasta cerrada', { description: `${auction.brand} ${auction.model}` });
+    try {
+      toast.success('Subasta cerrada', { description: `${auction.brand} ${auction.model}` });
+      setAuction(prev => ({ ...prev, status: 'closed' }));
+    } catch (err) {
+      toast.error('Error al cerrar la subasta');
+    }
   };
 
-  const handleAcceptBid = () => {
+  const handleAcceptBid = async () => {
     if (!auction) return;
-    const updated = acceptHighestBid(auction.id);
-    if (updated) { setAuction(updated); toast.success('Puja aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+    try {
+      const updated = await auctionsApi.accept(auction.id);
+      if (updated) { setAuction(updated); toast.success('Puja aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+    } catch (err) {
+      toast.error('Error al aceptar la puja');
+    }
   };
 
-  const handleRejectBid = () => {
+  const handleRejectBid = async () => {
     if (!auction) return;
-    const updated = rejectHighestBid(auction.id);
-    if (updated) { setAuction(updated); toast.info('Puja rechazada', { description: 'La subasta se extendió 48 horas para recibir mejores ofertas.' }); }
+    try {
+      const updated = await auctionsApi.reject(auction.id);
+      if (updated) { setAuction(updated); toast.info('Puja rechazada', { description: 'La subasta se extendió 48 horas para recibir mejores ofertas.' }); }
+    } catch (err) {
+      toast.error('Error al rechazar la puja');
+    }
   };
 
-  const handleAcceptPreviousBid = () => {
+  const handleAcceptPreviousBid = async () => {
     if (!auction) return;
-    const updated = acceptPreviousBid(auction.id);
-    if (updated) { setAuction(updated); toast.success('Oferta anterior aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
-    else { toast.error('No hay oferta anterior disponible'); }
+    try {
+      const updated = await auctionsApi.acceptPrevious(auction.id);
+      if (updated) { setAuction(updated); toast.success('Oferta anterior aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+      else { toast.error('No hay oferta anterior disponible'); }
+    } catch (err) {
+      toast.error('No hay oferta anterior disponible');
+    }
   };
 
-  if (!auction) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted pb-24">
+        <TopBar />
+        <div className="mt-3">
+          <Skeleton height={280} borderRadius={0} />
+          <div className="bg-card px-4 py-4 shadow-sm">
+            <Skeleton width="70%" height={28} />
+            <Skeleton width="45%" height={16} style={{ marginTop: 8 }} />
+            <Skeleton width="55%" height={36} style={{ marginTop: 16 }} />
+          </div>
+        </div>
+        <div className="px-4 py-4 space-y-4">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Skeleton height={14} count={3} style={{ marginBottom: 8 }} />
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (!loading && !auction) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
@@ -98,14 +160,12 @@ export default function DetalleSubastaVendedor() {
   const isActive = (auction.status === 'active' && new Date(auction.ends_at) > new Date());
   const isPendingDecision = auction.status === 'pending_decision';
   const isExtended48h = auction.status === 'active' && auction.isExtended48h;
-  const bids = getBidsByAuctionId(auction.id);
-  const uniqueBidders = getUniqueBidderCountByAuctionId(auction.id);
+  const uniqueBidders = auction.uniqueBidders || bids.length || 0;
   const photos = auction.photos || [];
-  const inspection = auction.vehicleId ? getInspectionByVehicleId(auction.vehicleId) : null;
-  const vehData = auction.vehicleId ? getVehicleById(auction.vehicleId) : null;
-  const docs = auction.documentation || vehData?.documentation || null;
+  const inspection = auction.inspection || null;
+  const docs = auction.documentation || null;
 
-  const vehSpecs = vehData?.specs || auction.specs || {};
+  const vehSpecs = auction.specs || {};
   const allSpecs = [
     // Top 6 (always visible)
     { icon: Car, label: 'Marca', value: auction.brand },
@@ -116,14 +176,14 @@ export default function DetalleSubastaVendedor() {
     { icon: Settings2, label: 'Transmisión', value: vehSpecs.transmission || auction.transmission || auction.traction || '' },
     // Extended (shown on "Ver más")
     { icon: Palette, label: 'Color', value: auction.color || '' },
-    { icon: Settings2, label: 'Cilindraje', value: auction.cilindraje || vehData?.cilindraje || '' },
-    { icon: Settings2, label: 'Tracción', value: auction.traction || vehData?.traction || '' },
+    { icon: Settings2, label: 'Cilindraje', value: auction.cilindraje || '' },
+    { icon: Settings2, label: 'Tracción', value: auction.traction || '' },
     { icon: Car, label: 'Carrocería', value: vehSpecs.body_type || '' },
     { icon: Settings2, label: 'Puertas', value: vehSpecs.doors || '' },
     { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers || '' },
     { icon: Settings2, label: 'Dirección', value: vehSpecs.steering || '' },
     { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning != null ? (vehSpecs.air_conditioning ? 'Sí' : 'No') : '' },
-    { icon: FileText, label: 'Placa', value: auction.placa || vehData?.placa || '' },
+    { icon: FileText, label: 'Placa', value: auction.placa || '' },
     { icon: MapPin, label: 'Ubicación', value: auction.city || auction.ubicacion || auction.dealerBranch || '' },
   ].filter(s => s.value);
 

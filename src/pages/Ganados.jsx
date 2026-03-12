@@ -11,10 +11,24 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getWonAuctionsByUserId, getCurrentUser, updateAuction, addAuction, getAuctionById } from '@/lib/mockStore';
+import { auctionsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
+import Skeleton from 'react-loading-skeleton';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 import RouteAssistant from '@/components/RouteAssistant';
+
+const WonCardSkeleton = () => (
+  <div className="rounded-2xl border border-border overflow-hidden bg-card">
+    <Skeleton height={170} borderRadius={0} />
+    <div className="p-3.5">
+      <Skeleton width="55%" height={16} />
+      <Skeleton width="35%" height={12} style={{ marginTop: 4 }} />
+      <Skeleton width="70%" height={12} style={{ marginTop: 8 }} />
+      <Skeleton height={36} borderRadius={12} style={{ marginTop: 10 }} />
+    </div>
+  </div>
+);
 
 const COMPLETION_WINDOW_MS = 96 * 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -113,10 +127,11 @@ function GanadosFilterSheet({ filters, setFilters }) {
 
 export default function Ganados() {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
-  const currentRole = (currentUser?.role || localStorage.getItem('mubis_user_role') || '').toLowerCase().trim();
+  const { user: currentUser } = useAuth();
+  const currentRole = (currentUser?.role || '').toLowerCase().trim();
   const canUseRouteAssistant = currentRole === 'recomprador';
   const [wonAuctions, setWonAuctions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [, setTick] = useState(0);
   const [extensionModal, setExtensionModal] = useState({ open: false, auctionId: null, vehicleName: '' });
   const [search, setSearch] = useState('');
@@ -127,108 +142,19 @@ export default function Ganados() {
   const [routeOpen, setRouteOpen] = useState(false);
 
   useEffect(() => {
-    if (!currentUser?.id) return;
-
-    const supportsWonStates = ['recomprador', 'dealer'].includes(currentUser.role);
-    const targetStatuses = supportsWonStates
-      ? [
-          'proceso', 'proceso', 'proceso', 'proceso', 'proceso',
-          'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
-          'completado', 'completado', 'completado', 'completado', 'completado', 'completado', 'completado',
-          'cancelado', 'cancelado', 'cancelado', 'cancelado', 'cancelado', 'cancelado',
-        ]
-      : [];
-    const getAssignedStatus = (index) => targetStatuses[index] || targetStatuses[targetStatuses.length - 1] || 'proceso';
-
-    let won = getWonAuctionsByUserId(currentUser.id).map((auction, index) => {
-      if (!supportsWonStates) return auction;
-
-      const assignedStatus = getAssignedStatus(index);
-      if (auction.mockWonStatus !== assignedStatus) {
-        updateAuction(auction.id, { mockWonStatus: assignedStatus });
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await auctionsApi.getWon();
+        setWonAuctions(data || []);
+      } catch (err) {
+        console.error('Error loading won auctions:', err);
+      } finally {
+        setLoading(false);
       }
-
-      return {
-        ...auction,
-        city: 'Bogotá',
-        extensionDays: auction.extensionDays || 0,
-        ends_at: auction.ends_at || new Date().toISOString(),
-        mockWonStatus: assignedStatus,
-      };
-    });
-
-    if (['recomprador', 'dealer'].includes(currentUser.role) && won.length < targetStatuses.length) {
-      const mockCars = [
-        { brand: 'Toyota', model: 'Corolla', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
-        { brand: 'Mazda', model: 'CX-5', year: 2023, city: 'Bogotá', mileage: 12000, current_bid: 98000000 },
-        { brand: 'Chevrolet', model: 'Tracker', year: 2021, city: 'Bogotá', mileage: 35000, current_bid: 65000000 },
-        { brand: 'Renault', model: 'Duster', year: 2020, city: 'Bogotá', mileage: 42000, current_bid: 52000000 },
-        { brand: 'Kia', model: 'Sportage', year: 2023, city: 'Bogotá', mileage: 8000, current_bid: 105000000 },
-        { brand: 'Hyundai', model: 'Tucson', year: 2022, city: 'Bogotá', mileage: 22000, current_bid: 88000000 },
-        { brand: 'BMW', model: 'X3', year: 2021, city: 'Bogotá', mileage: 30000, current_bid: 145000000 },
-        { brand: 'Volkswagen', model: 'Tiguan', year: 2022, city: 'Bogotá', mileage: 19000, current_bid: 92000000 },
-        { brand: 'Ford', model: 'Escape', year: 2020, city: 'Bogotá', mileage: 48000, current_bid: 58000000 },
-        { brand: 'Nissan', model: 'Qashqai', year: 2023, city: 'Bogotá', mileage: 5000, current_bid: 112000000 },
-        { brand: 'Audi', model: 'Q5', year: 2021, city: 'Bogotá', mileage: 28000, current_bid: 165000000 },
-        { brand: 'Mercedes-Benz', model: 'GLC', year: 2022, city: 'Bogotá', mileage: 15000, current_bid: 195000000 },
-        { brand: 'Toyota', model: 'RAV4', year: 2023, city: 'Bogotá', mileage: 9000, current_bid: 118000000 },
-        { brand: 'Mazda', model: '3', year: 2022, city: 'Bogotá', mileage: 20000, current_bid: 68000000 },
-        { brand: 'Kia', model: 'Seltos', year: 2023, city: 'Bogotá', mileage: 11000, current_bid: 82000000 },
-        { brand: 'Hyundai', model: 'Creta', year: 2022, city: 'Bogotá', mileage: 16000, current_bid: 76000000 },
-        { brand: 'Chevrolet', model: 'Onix', year: 2023, city: 'Bogotá', mileage: 7000, current_bid: 55000000 },
-        { brand: 'Renault', model: 'Koleos', year: 2021, city: 'Bogotá', mileage: 32000, current_bid: 95000000 },
-        { brand: 'Toyota', model: 'Hilux', year: 2022, city: 'Bogotá', mileage: 25000, current_bid: 135000000 },
-        { brand: 'Ford', model: 'Bronco Sport', year: 2023, city: 'Bogotá', mileage: 6000, current_bid: 142000000 },
-        { brand: 'Nissan', model: 'Kicks', year: 2022, city: 'Bogotá', mileage: 18000, current_bid: 72000000 },
-      ];
-
-      const photos = [
-        'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&h=400&fit=crop',
-      ];
-
-      const needed = targetStatuses.length - won.length;
-      for (let i = 0; i < needed; i++) {
-        const nextIndex = won.length;
-        const car = mockCars[nextIndex % mockCars.length];
-        const mockId = `won-mock-${nextIndex}`;
-        // Persist in store if not already there
-        const existing = getAuctionById(mockId);
-        if (!existing) {
-          addAuction({
-            id: mockId,
-            ...car,
-            status: 'ended',
-            winnerId: currentUser.id,
-            sellerId: 'u-dealer-1',
-            photos: [photos[nextIndex % photos.length]],
-            ends_at: new Date().toISOString(),
-            bids_count: Math.floor(Math.random() * 15) + 3,
-            mileage: car.mileage,
-          });
-        } else if (existing.city !== car.city) {
-          updateAuction(mockId, { city: car.city });
-        }
-        won.push({
-          id: mockId,
-          ...car,
-          status: 'ended',
-          winnerId: currentUser.id,
-          sellerId: 'u-dealer-1',
-          photos: [photos[nextIndex % photos.length]],
-          ends_at: new Date().toISOString(),
-          extensionDays: 0,
-          mockWonStatus: getAssignedStatus(nextIndex),
-        });
-      }
-    }
-
-    setWonAuctions(supportsWonStates ? won.slice(0, targetStatuses.length) : won);
-  }, [currentUser?.id, currentUser?.role]);
+    };
+    load();
+  }, []);
 
   useEffect(() => {
     if (wonAuctions.length === 0) return;
@@ -292,10 +218,7 @@ export default function Ganados() {
 
   const handleExtensionConfirm = ({ days, reason }) => {
     const { auctionId } = extensionModal;
-    const auction = wonAuctions.find(a => a.id === auctionId);
-    const currentExtension = auction?.extensionDays || 0;
-    updateAuction(auctionId, { extensionDays: currentExtension + days, extensionReason: reason });
-    setWonAuctions(prev => prev.map(a => a.id === auctionId ? { ...a, extensionDays: currentExtension + days, extensionReason: reason } : a));
+    setWonAuctions(prev => prev.map(a => a.id === auctionId ? { ...a, extensionDays: (a.extensionDays || 0) + days, extensionReason: reason } : a));
   };
 
   const openExtension = (auction) => {
@@ -382,7 +305,11 @@ export default function Ganados() {
             </div>
           </div>
 
-          {filteredAuctions.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[1,2,3,4,5,6].map(i => <WonCardSkeleton key={i} />)}
+            </div>
+          ) : filteredAuctions.length === 0 ? (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
               <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Trophy className="w-10 h-10 text-secondary/40" />

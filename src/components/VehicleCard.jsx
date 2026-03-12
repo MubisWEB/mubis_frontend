@@ -4,15 +4,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Flame, Trophy, Bookmark, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getCurrentUser, isInWatchlist, toggleWatchlist, getUniqueBidderCountByAuctionId } from '@/lib/mockStore';
+import { useAuth } from '@/lib/AuthContext';
+import { watchlistApi } from '@/api/services';
 import { toast } from 'sonner';
 
 export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, variant = 'compact' }) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
-  const currentUser = getCurrentUser();
-  const saved = isFavoriteProp !== undefined ? isFavoriteProp : (currentUser ? isInWatchlist(currentUser.id, vehicle.id) : false);
-  const uniqueBidders = getUniqueBidderCountByAuctionId(vehicle.id);
+  const { user } = useAuth();
+  const saved = isFavoriteProp !== undefined ? isFavoriteProp : false;
 
   useEffect(() => {
     const calculateTime = () => {
@@ -40,21 +40,25 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
   };
 
-  const handleToggleSave = (e) => {
+  const handleToggleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (onToggleFavorite) {
       onToggleFavorite(vehicle);
-    } else if (currentUser) {
-      const added = toggleWatchlist(currentUser.id, vehicle.id);
-      toast.success(added ? 'Agregada a guardados' : 'Eliminada de guardados');
+      return;
+    }
+    if (!user) return;
+    try {
+      const result = await watchlistApi.toggle(vehicle.id);
+      toast.success(result.saved ? 'Agregada a guardados' : 'Eliminada de guardados');
+    } catch {
+      toast.error('Error al actualizar guardados');
     }
   };
 
   const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
   const detailUrl = `/DetalleSubasta/${vehicle.id}`;
 
-  // ── Grid / card variant for desktop ──
   if (variant === 'grid') {
     return (
       <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
@@ -91,9 +95,6 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
               )}
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{vehicle.bids_count || 0} pujas</span>
-                {uniqueBidders > 0 && (
-                  <span className="text-muted-foreground text-xs flex items-center"><Flame className="w-3 h-3 mr-0.5 text-secondary" />{uniqueBidders}</span>
-                )}
               </div>
             </div>
             <Button onClick={(e) => { e.preventDefault(); onBid?.(vehicle); }} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-4 h-9 rounded-full text-sm">
@@ -105,7 +106,6 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
     );
   }
 
-  // ── Compact variant (mobile default) ──
   return (
     <div>
       <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
@@ -126,9 +126,6 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
             <div className="flex items-center gap-2 mt-1">
               <span className="font-bold text-lg text-foreground w-[75px]">{formatPrice(vehicle.current_bid || 0)}</span>
               <span className="text-muted-foreground text-xs flex items-center w-[36px]"><Users className="w-3 h-3 mr-0.5 flex-shrink-0" />{vehicle.bids_count || 0}</span>
-              {uniqueBidders > 0 && (
-                <span className="text-muted-foreground text-[10px] flex items-center"><Flame className="w-2.5 h-2.5 mr-0.5 text-secondary flex-shrink-0" />{uniqueBidders}</span>
-              )}
             </div>
             {vehicle.myMaxBid > 0 && (
               <div className="flex items-center gap-1 mt-0.5">

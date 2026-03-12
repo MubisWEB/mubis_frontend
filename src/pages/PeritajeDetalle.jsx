@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,8 @@ import { cn } from '@/lib/utils';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
-import { getVehicleById, updateVehicle, getInspectionByVehicleId, updateInspection, addAuction, getCurrentUser } from '@/lib/mockStore';
+import { inspectionsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 
 const PERITAJE_CATEGORIES = [
   { key: 'motor', label: 'Motor' },
@@ -30,19 +32,40 @@ const initialPeritaje = Object.fromEntries(PERITAJE_CATEGORIES.map(c => [c.key, 
 export default function PeritajeDetalle() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
-  const [vehicle, setVehicle] = useState(null);
+  const { user: currentUser } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [inspection, setInspection] = useState(null);
+  const [vehicle, setVehicle] = useState(null);
   const [peritaje, setPeritaje] = useState({ ...initialPeritaje });
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject] = useState(false);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const v = getVehicleById(vehicleId);
-    const insp = getInspectionByVehicleId(vehicleId);
-    setVehicle(v);
-    setInspection(insp);
+    if (!vehicleId) return;
+    const load = async () => {
+      try {
+        // vehicleId param may actually be the inspectionId depending on routing
+        const insp = await inspectionsApi.getById(vehicleId);
+        if (insp) {
+          setInspection(insp);
+          setVehicle(insp.vehicle || null);
+        }
+      } catch (err) {
+        // Try treating as vehicleId
+        try {
+          const inspByVehicle = await inspectionsApi.getByVehicle(vehicleId);
+          const insp = Array.isArray(inspByVehicle) ? inspByVehicle[0] : inspByVehicle;
+          if (insp) {
+            setInspection(insp);
+            setVehicle(insp.vehicle || null);
+          }
+        } catch { /* ignore */ }
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [vehicleId]);
 
   const setScore = (cat, field, val) => {
@@ -73,34 +96,53 @@ export default function PeritajeDetalle() {
     return Object.keys(e).length === 0;
   };
 
-  const handleFinalize = () => {
+  const handleFinalize = async () => {
     if (!validate()) return;
-    if (!inspection || !vehicle) return;
+    if (!inspection) return;
     const globalScore = getGlobalScore();
-    updateInspection(inspection.id, { status: 'COMPLETED', completedAt: new Date().toISOString(), peritoId: currentUser?.id, peritaje, scoreGlobal: globalScore });
-    updateVehicle(vehicle.id, { status: 'READY_FOR_AUCTION', peritaje, peritaje_global: globalScore, peritoId: currentUser?.id });
-    addAuction({
-      vehicleId: vehicle.id, dealerId: vehicle.dealerId, brand: vehicle.brand, model: vehicle.model,
-      year: vehicle.year, city: vehicle.city || vehicle.ubicacion, mileage: vehicle.mileage,
-      color: vehicle.color, fuel_type: vehicle.fuel_type, traction: vehicle.traction, placa: vehicle.placa,
-      photos: vehicle.photos || [], current_bid: vehicle.suggested_price || 0, starting_price: vehicle.suggested_price || 0,
-      bids_count: 0, views: 0, status: 'active', ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      peritaje, peritaje_global: globalScore, documentation: vehicle.documentation,
-    });
-    toast.success('Peritaje finalizado', { description: `${vehicle.brand} ${vehicle.model} · Score: ${globalScore}/100` });
-    navigate('/PeritajesPendientes');
+    try {
+      await inspectionsApi.complete(inspection.id, {
+        peritaje,
+        scoreGlobal: globalScore,
+      });
+      toast.success('Peritaje finalizado', { description: `${vehicle?.brand || ''} ${vehicle?.model || ''} · Score: ${globalScore}/100` });
+      navigate('/PeritajesPendientes');
+    } catch (err) {
+      toast.error('Error al finalizar el peritaje');
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!rejectReason.trim()) { toast.error('Debes indicar la razón del rechazo'); return; }
-    if (!inspection || !vehicle) return;
-    updateInspection(inspection.id, { status: 'REJECTED', rejectedAt: new Date().toISOString(), rejectReason, peritoId: currentUser?.id });
-    updateVehicle(vehicle.id, { status: 'INSPECTION_REJECTED', rejectReason });
-    toast.error('Peritaje rechazado', { description: vehicle.brand + ' ' + vehicle.model });
-    navigate('/PeritajesPendientes');
+    if (!inspection) return;
+    try {
+      await inspectionsApi.reject(inspection.id, { rejectReason });
+      toast.error('Peritaje rechazado', { description: `${vehicle?.brand || ''} ${vehicle?.model || ''}` });
+      navigate('/PeritajesPendientes');
+    } catch (err) {
+      toast.error('Error al rechazar el peritaje');
+    }
   };
 
-  if (!vehicle) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <Header title="Peritaje" backTo="/PeritajesPendientes" />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+          <Skeleton height={96} borderRadius={16} />
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <Skeleton width="50%" height={13} />
+            <Skeleton width="40%" height={32} style={{ marginTop: 8 }} />
+          </div>
+          <Skeleton height={14} count={4} style={{ marginBottom: 8 }} />
+          <Skeleton height={48} borderRadius={12} style={{ marginTop: 24 }} />
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (!loading && !vehicle) {
     return (<div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Vehículo no encontrado</p></div>);
   }
 

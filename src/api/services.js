@@ -1,0 +1,152 @@
+import api from './client';
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+
+export const authApi = {
+  login: async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password });
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+    return data.user;
+  },
+
+  register: async (userData) => {
+    const { data } = await api.post('/auth/register', userData);
+    return data;
+  },
+
+  me: async () => {
+    const { data } = await api.get('/auth/me');
+    return data;
+  },
+
+  logout: async () => {
+    try { await api.post('/auth/logout'); } catch { /* ignore */ }
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  },
+};
+
+// ── USERS (admin) ─────────────────────────────────────────────────────────────
+
+export const usersApi = {
+  getAll: async () => (await api.get('/users')).data,
+  getById: async (id) => (await api.get(`/users/${id}`)).data,
+  update: async (id, updates) => (await api.patch(`/users/${id}`, updates)).data,
+  verify: async (id, status) => (await api.patch(`/users/${id}/verify`, { status })).data,
+  getStats: async () => (await api.get('/users/stats')).data,
+};
+
+// ── VEHICLES ──────────────────────────────────────────────────────────────────
+
+export const vehiclesApi = {
+  create: async (vehicleData) => (await api.post('/vehicles', vehicleData)).data,
+  getMine: async () => (await api.get('/vehicles')).data,
+  getById: async (id) => (await api.get(`/vehicles/${id}`)).data,
+  update: async (id, updates) => (await api.patch(`/vehicles/${id}`, updates)).data,
+};
+
+// ── INSPECTIONS ───────────────────────────────────────────────────────────────
+
+export const inspectionsApi = {
+  getPending: async () => (await api.get('/inspections/pending')).data,
+  getByVehicle: async (vehicleId) => (await api.get(`/inspections/vehicle/${vehicleId}`)).data,
+  getById: async (id) => (await api.get(`/inspections/${id}`)).data,
+  getAll: async () => (await api.get('/inspections')).data,
+  take: async (id) => (await api.post(`/inspections/${id}/take`)).data,
+  complete: async (id, body) => (await api.post(`/inspections/${id}/complete`, body)).data,
+  reject: async (id, body) => (await api.post(`/inspections/${id}/reject`, body)).data,
+};
+
+// ── AUCTIONS ──────────────────────────────────────────────────────────────────
+
+export const auctionsApi = {
+  getActive: async () => (await api.get('/auctions')).data,
+  getMine: async () => (await api.get('/auctions/mine')).data,
+  getWon: async () => (await api.get('/auctions/won')).data,
+  getById: async (id) => (await api.get(`/auctions/${id}`)).data,
+  getAll: async () => (await api.get('/admin/auctions')).data,
+  incrementView: async (id) => api.post(`/auctions/${id}/view`),
+  accept: async (id) => (await api.patch(`/auctions/${id}/accept`)).data,
+  reject: async (id) => (await api.patch(`/auctions/${id}/reject`)).data,
+  acceptPrevious: async (id) => (await api.patch(`/auctions/${id}/accept-previous`)).data,
+};
+
+// ── BIDS ──────────────────────────────────────────────────────────────────────
+
+export const bidsApi = {
+  place: async (auctionId, maxAmount) => (await api.post('/bids', { auctionId, maxAmount })).data,
+  getMine: async () => (await api.get('/bids/mine')).data,
+  getByAuction: async (auctionId) => (await api.get(`/bids/auction/${auctionId}`)).data,
+  getAll: async () => (await api.get('/admin/movements')).data,
+};
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+
+export const notificationsApi = {
+  getAll: async () => (await api.get('/notifications')).data,
+  markRead: async (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: async () => api.patch('/notifications/read-all'),
+};
+
+// ── WATCHLIST ─────────────────────────────────────────────────────────────────
+
+export const watchlistApi = {
+  toggle: async (auctionId) => (await api.post(`/watchlist/${auctionId}`)).data,
+  getAll: async () => (await api.get('/watchlist')).data,
+  check: async (auctionId) => (await api.get(`/watchlist/${auctionId}/check`)).data,
+};
+
+// ── SUPPORT TICKETS ───────────────────────────────────────────────────────────
+
+export const ticketsApi = {
+  create: async (body) => (await api.post('/support/tickets', body)).data,
+  getMine: async () => (await api.get('/support/tickets/mine')).data,
+  update: async (id, updates) => (await api.patch(`/support/tickets/${id}`, updates)).data,
+};
+
+// ── SUPPORT CASES ─────────────────────────────────────────────────────────────
+
+export const casesApi = {
+  create: async (body) => (await api.post('/support/cases', body)).data,
+  getMine: async () => (await api.get('/support/cases/mine')).data,
+  getAll: async () => (await api.get('/support/cases')).data,
+  getById: async (id) => (await api.get(`/support/cases/${id}`)).data,
+  sendMessage: async (id, text) => (await api.post(`/support/cases/${id}/messages`, { text })).data,
+  update: async (id, updates) => (await api.patch(`/support/cases/${id}`, updates)).data,
+};
+
+// ── PUBLICATIONS ──────────────────────────────────────────────────────────────
+
+export const publicationsApi = {
+  getBalance: async () => (await api.get('/publications/balance')).data,
+  recharge: async (userId, quantity) => (await api.post('/publications/recharge', { userId, quantity })).data,
+};
+
+// ── PRONTO PAGO ───────────────────────────────────────────────────────────────
+
+export const prontoPagoApi = {
+  request: async (body) => (await api.post('/pronto-pago', body)).data,
+  getMine: async () => (await api.get('/pronto-pago/mine')).data,
+  getByAuction: async (auctionId) => (await api.get(`/pronto-pago/auction/${auctionId}`)).data,
+};
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+
+export const adminApi = {
+  getStats: async () => (await api.get('/admin/stats')).data,
+  getDealers: async () => (await api.get('/admin/dealers')).data,
+  getSolicitudes: async () => (await api.get('/admin/solicitudes')).data,
+  getAuctions: async () => (await api.get('/admin/auctions')).data,
+  getMovements: async () => (await api.get('/admin/movements')).data,
+  getAnalytics: async () => (await api.get('/admin/analytics')).data,
+  getCases: async () => (await api.get('/support/cases')).data,
+};
+
+// ── AUDIT / ACTIVITY ──────────────────────────────────────────────────────────
+
+export const auditApi = {
+  getActivity: async (limit = 10) => (await api.get(`/audit/activity?limit=${limit}`)).data,
+  getAll: async () => (await api.get('/audit')).data,
+  getByEntity: async (type, id) => (await api.get(`/audit/entity/${type}/${id}`)).data,
+};

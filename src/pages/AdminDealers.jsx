@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Shield, MapPin, Phone, Mail, Building } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { getUsers, getAuctionsByDealerId, getBidsByUserId, getInspections } from '@/lib/mockStore';
+import { adminApi } from '@/api/services';
 
 const STATUS_BADGE = {
   VERIFIED: { label: 'Verificado', cls: 'bg-primary/10 text-primary' },
@@ -18,14 +19,24 @@ const STATUS_BADGE = {
 
 export default function AdminDealers() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('VERIFIED');
 
   useEffect(() => {
-    const all = getUsers().filter(u => u.role !== 'admin');
-    setUsers(all);
+    const load = async () => {
+      try {
+        const data = await adminApi.getDealers();
+        setUsers((data || []).filter(u => u.role !== 'admin'));
+      } catch (err) {
+        console.error('Error loading dealers:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   const filtered = users.filter(u => {
@@ -39,18 +50,9 @@ export default function AdminDealers() {
   });
 
   const getUserActivity = (user) => {
-    if (user.role === 'dealer') {
-      const auctions = getAuctionsByDealerId(user.id);
-      return `${auctions.length} subastas`;
-    }
-    if (user.role === 'recomprador') {
-      const bids = getBidsByUserId(user.id);
-      return `${bids.length} pujas`;
-    }
-    if (user.role === 'perito') {
-      const inspections = getInspections().filter(i => i.peritoId === user.id);
-      return `${inspections.length} peritajes`;
-    }
+    if (user.auctionsCount !== undefined) return `${user.auctionsCount} subastas`;
+    if (user.bidsCount !== undefined) return `${user.bidsCount} pujas`;
+    if (user.inspectionsCount !== undefined) return `${user.inspectionsCount} peritajes`;
     return '';
   };
 
@@ -80,7 +82,20 @@ export default function AdminDealers() {
           ))}
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="space-y-3">
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} style={{ display: 'flex', gap: 12, padding: '14px 16px', alignItems: 'center', border: '1px solid var(--border)', borderRadius: 12, background: 'var(--card)' }}>
+                <Skeleton circle width={40} height={40} />
+                <div style={{ flex: 1 }}>
+                  <Skeleton width="65%" height={14} />
+                  <Skeleton width="40%" height={11} style={{ marginTop: 5 }} />
+                </div>
+                <Skeleton width={72} height={22} borderRadius={999} />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-sm">No hay usuarios con estos filtros</p>
           </div>

@@ -1,35 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Banknote, Zap, AlertCircle, CheckCircle } from 'lucide-react';
-import { getProntoPagoConfig, requestProntoPago, getProntoPagoByUserAndAuction } from '@/lib/mockStore';
+import { prontoPagoApi } from '@/api/services';
 import { toast } from 'sonner';
 
+const DEFAULT_CONFIG = { maxPercent: 0.10, commission: 0.05 };
+
 export default function ProntoPagoModal({ open, onClose, auction, userId, onComplete }) {
-  const config = getProntoPagoConfig();
+  const config = DEFAULT_CONFIG;
   const maxAmount = (auction?.current_bid || 0) * config.maxPercent;
   const [amount, setAmount] = useState(maxAmount);
+  const [existing, setExisting] = useState(null);
+
+  useEffect(() => {
+    if (!open || !auction?.id) return;
+    const loadExisting = async () => {
+      try {
+        const data = await prontoPagoApi.getByAuction(auction.id);
+        setExisting(data || null);
+      } catch {
+        setExisting(null);
+      }
+    };
+    loadExisting();
+    setAmount((auction?.current_bid || 0) * config.maxPercent);
+  }, [open, auction?.id]);
+
   const commission = amount * config.commission;
   const netAmount = amount - commission;
-  const existing = auction ? getProntoPagoByUserAndAuction(userId, auction.id) : null;
 
   const formatPrice = (price) => new Intl.NumberFormat('es-CO', {
     style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0
   }).format(price);
 
-  const handleRequest = () => {
+  const handleRequest = async () => {
     if (!auction || !userId) return;
-    requestProntoPago({
-      userId,
-      auctionId: auction.id,
-      requestedAmount: amount,
-      vehicleValue: auction.current_bid || 0,
-    });
-    toast.success('¡Pronto Pago aprobado! Recibirás el dinero pronto.');
-    onComplete?.();
-    onClose();
+    try {
+      await prontoPagoApi.request({
+        auctionId: auction.id,
+        requestedAmount: amount,
+        vehicleValue: auction.current_bid || 0,
+      });
+      toast.success('¡Pronto Pago aprobado! Recibirás el dinero pronto.');
+      onComplete?.();
+      onClose();
+    } catch (err) {
+      toast.error('Error al solicitar Pronto Pago');
+    }
   };
 
   if (!auction) return null;

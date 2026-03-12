@@ -11,7 +11,21 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
-import { getVehicles, getAuctions, getCurrentUser, getInspectionByVehicleId, reconcileAuctionStatuses, getPublicationsBalance } from '@/lib/mockStore';
+import { vehiclesApi, auctionsApi, inspectionsApi, publicationsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
+import Skeleton from 'react-loading-skeleton';
+
+const AuctionRowSkeleton = () => (
+  <div className="flex gap-3 p-3 border border-border/60 rounded-xl bg-card">
+    <Skeleton width={112} height={80} borderRadius={12} />
+    <div style={{ flex: 1 }}>
+      <Skeleton width="60%" height={16} />
+      <Skeleton width="40%" height={12} style={{ marginTop: 5 }} />
+      <Skeleton width={80} height={22} style={{ marginTop: 10 }} />
+    </div>
+    <Skeleton width={20} height={20} borderRadius={4} />
+  </div>
+);
 
 const brands = ['Toyota', 'Chevrolet', 'Mazda', 'Renault', 'Kia', 'Hyundai', 'Volkswagen', 'Ford', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi'];
 
@@ -96,12 +110,11 @@ function SellerFilterSheet({ filters, setFilters }) {
 }
 
 // ── Card components ──
-function VehicleProcessCard({ v, navigate }) {
-  const insp = getInspectionByVehicleId(v.id);
+function VehicleProcessCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || insp && insp.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || insp && insp.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || insp && insp.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
+    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    if (v.status === 'PENDING_INSPECTION' || inspection && inspection.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   const docs = v.documentation;
@@ -111,7 +124,7 @@ function VehicleProcessCard({ v, navigate }) {
   const docsOk = docs && soatOk && tecnoOk && multasOk;
 
   return (
-    <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${insp?.id || v.id}`)}>
+    <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
       <div className="flex p-3 gap-3">
         <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
           {v.photos?.[0] && <img src={v.photos[0]} alt="" className="w-full h-full object-cover" />}
@@ -138,12 +151,11 @@ function VehicleProcessCard({ v, navigate }) {
 
 }
 
-function VehicleProcessGridCard({ v, navigate }) {
-  const insp = getInspectionByVehicleId(v.id);
+function VehicleProcessGridCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || insp && insp.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || insp && insp.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || insp && insp.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
+    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    if (v.status === 'PENDING_INSPECTION' || inspection && inspection.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   const docs = v.documentation;
@@ -151,7 +163,7 @@ function VehicleProcessGridCard({ v, navigate }) {
   const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
 
   return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${insp?.id || v.id}`)}>
+    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <img src={v.photos?.[0] || defaultImage} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         <div className="absolute top-2 left-2">{getStatusBadge()}</div>
@@ -180,11 +192,6 @@ function AuctionCard({ auction, navigate }) {
     const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
-  const peritajeBadge = (() => {
-    const insp = getInspectionByVehicleId(auction.vehicleId);
-    if (!insp || insp.status !== 'COMPLETED') return null;
-    return <Badge className={`text-[10px] font-semibold ${insp.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : 'bg-purple-100 text-purple-800'}`}><FileCheck className="w-3 h-3 mr-0.5" />{insp.scoreGlobal}/100</Badge>;
-  })();
   const isEnded = auction.status === 'ended' || auction.status === 'closed';
   const isPending = auction.status === 'pending_decision';
 
@@ -210,7 +217,6 @@ function AuctionCard({ auction, navigate }) {
             <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
             <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{auction.bids_count || 0}</span>
             {!isEnded && <span className="text-muted-foreground text-xs flex items-center"><Clock className="w-3 h-3 mr-0.5" />{getTimeLeft(auction.ends_at)}</span>}
-            {peritajeBadge}
           </div>
         </div>
       </div>
@@ -263,26 +269,49 @@ function AuctionGridCard({ auction, navigate }) {
 // ── Main page ──
 export default function MisSubastas() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [auctions, setAuctions] = useState([]);
+  const [vehicleInspections, setVehicleInspections] = useState({});
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
   const [activeTab, setActiveTab] = useState('activas');
   const [viewMode, setViewMode] = useState('grid');
   const [pubBalance, setPubBalance] = useState(0);
-  const currentUser = getCurrentUser();
+  const [loading, setLoading] = useState(true);
 
-  const loadData = useCallback(() => {
-    reconcileAuctionStatuses();
-    setVehicles(getVehicles().filter((v) => v.dealerId === currentUser?.id));
-    setAuctions(getAuctions().filter((a) => a.dealerId === currentUser?.id));
-    if (currentUser?.id) setPubBalance(getPublicationsBalance(currentUser.id));
-  }, [currentUser?.id]);
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [vehiclesData, auctionsData, balanceData] = await Promise.all([
+        vehiclesApi.getMine(),
+        auctionsApi.getMine(),
+        publicationsApi.getBalance(),
+      ]);
+      setVehicles(vehiclesData || []);
+      setAuctions(auctionsData || []);
+      setPubBalance(balanceData?.balance ?? balanceData ?? 0);
+
+      // Load inspections for each vehicle
+      const inspMap = {};
+      await Promise.all((vehiclesData || []).map(async (v) => {
+        try {
+          const insp = await inspectionsApi.getByVehicle(v.id);
+          if (insp) inspMap[v.id] = Array.isArray(insp) ? insp[0] : insp;
+        } catch { /* ignore */ }
+      }));
+      setVehicleInspections(inspMap);
+    } catch (err) {
+      console.error('Error loading MisSubastas data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 3000);
+    const interval = setInterval(loadData, 15000);
     return () => clearInterval(interval);
   }, [loadData]);
 
@@ -309,7 +338,7 @@ export default function MisSubastas() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
-            
+
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
@@ -376,11 +405,11 @@ export default function MisSubastas() {
           {activeTab === 'proceso' && (
           enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> :
           <>
-                <div className="space-y-2 md:hidden">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                <div className="space-y-2 md:hidden">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div> :
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
 
-            <div className="hidden md:flex md:flex-col gap-4">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+            <div className="hidden md:flex md:flex-col gap-4">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
             }
               </>)
 
@@ -389,11 +418,11 @@ export default function MisSubastas() {
           {activeTab === 'rechazados' && (
           rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> :
           <>
-                <div className="space-y-2 md:hidden">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+                <div className="space-y-2 md:hidden">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} />)}</div> :
+            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
 
-            <div className="hidden md:flex md:flex-col gap-4">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} />)}</div>
+            <div className="hidden md:flex md:flex-col gap-4">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
             }
               </>)
 
@@ -438,7 +467,11 @@ export default function MisSubastas() {
 
           }
 
-          {vehicles.length === 0 && auctions.length === 0 &&
+          {loading && vehicles.length === 0 && auctions.length === 0 &&
+          <div className="space-y-2">
+            {[1,2,3].map(i => <AuctionRowSkeleton key={i} />)}
+          </div>}
+          {!loading && vehicles.length === 0 && auctions.length === 0 &&
           <div className="text-center py-16">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="w-8 h-8 text-muted-foreground" />

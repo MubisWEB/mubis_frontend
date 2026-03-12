@@ -6,7 +6,7 @@ import { CheckCircle, XCircle, Mail, Phone, MapPin, Building } from 'lucide-reac
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
-import { getUsersByStatus, updateUser } from '@/lib/mockStore';
+import { adminApi, usersApi } from '@/api/services';
 
 const ROLE_LABELS = { dealer: 'Dealer', perito: 'Perito', recomprador: 'Recomprador' };
 
@@ -14,27 +14,33 @@ export default function AdminSolicitudes() {
   const [filter, setFilter] = useState('all');
   const [requests, setRequests] = useState([]);
 
-  const loadRequests = () => {
-    const pending = getUsersByStatus('PENDING');
-    setRequests(pending);
+  const loadRequests = async () => {
+    try {
+      const data = await adminApi.getSolicitudes();
+      setRequests(data);
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
     loadRequests();
-    const interval = setInterval(loadRequests, 2000);
+    const interval = setInterval(loadRequests, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  const handleApprove = (user) => {
-    updateUser(user.id, { verification_status: 'VERIFIED' });
-    toast.success('Usuario aprobado', { description: `${user.nombre} ahora puede acceder a la plataforma` });
-    loadRequests();
+  const handleApprove = async (user) => {
+    try {
+      await usersApi.verify(user.id, 'VERIFIED');
+      toast.success('Usuario aprobado', { description: `${user.nombre} ahora puede acceder a la plataforma` });
+      loadRequests();
+    } catch { toast.error('Error al aprobar usuario'); }
   };
 
-  const handleReject = (user) => {
-    updateUser(user.id, { verification_status: 'REJECTED' });
-    toast.error('Solicitud rechazada', { description: `Se ha rechazado la solicitud de ${user.nombre}` });
-    loadRequests();
+  const handleReject = async (user) => {
+    try {
+      await usersApi.verify(user.id, 'REJECTED');
+      toast.error('Solicitud rechazada', { description: `Se ha rechazado la solicitud de ${user.nombre}` });
+      loadRequests();
+    } catch { toast.error('Error al rechazar usuario'); }
   };
 
   const filteredRequests = filter === 'all' ? requests : requests.filter(r => r.role === filter);
@@ -45,7 +51,6 @@ export default function AdminSolicitudes() {
       <Header title="Solicitudes Pendientes" subtitle={`${requests.length} solicitudes por revisar`} backTo="/AdminDashboard" />
 
       <div className="max-w-7xl mx-auto px-4 pt-4">
-        {/* Filter tabs */}
         <div className="flex gap-2 mb-4 overflow-x-auto">
           {[{ key: 'all', label: 'Todos' }, { key: 'dealer', label: 'Dealers' }, { key: 'perito', label: 'Peritos' }, { key: 'recomprador', label: 'Recompradores' }].map(tab => (
             <Button key={tab.key} variant={filter === tab.key ? 'default' : 'outline'} size="sm"
