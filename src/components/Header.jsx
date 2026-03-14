@@ -12,7 +12,7 @@ export default function Header({ title, subtitle, backTo, children }) {
       <nav className="w-full bg-background border-b border-border">
         <div className="px-4 sm:px-6 lg:px-8 flex items-center h-14 gap-3">
           <div className="flex-1 flex items-center justify-center min-w-0">
-            <MubisLogo size="md" />
+            <MubisLogo size="sm" />
           </div>
           {children && <div className="flex-shrink-0">{children}</div>}
         </div>

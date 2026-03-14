@@ -23,19 +23,20 @@ export default function MubisLogo({ size = "md", variant = "dark", linkTo = null
     >
       {/* "mubıs" — ı (U+0131) is the Latin dotless i, present in Inter */}
       <text
-        x="0"
+        x={VB_W / 2}
         y="51"
         fontFamily="'Inter', sans-serif"
         fontWeight="800"
         fontSize="52"
         fill={textFill}
         letterSpacing="-1"
+        textAnchor="middle"
       >
         mub{'\u0131'}s
       </text>
 
-      {/* Green dot — same primary color as the design system */}
-      <circle cx="118.5" cy="15" r="5.3" fill="hsl(142,71%,45%)" />
+      {/* Green dot — cx adjusted for textAnchor="middle" (118.5 + ~30.5 offset) */}
+      <circle cx="149" cy="15" r="5.3" fill="hsl(142,71%,45%)" />
     </svg>
   );
 

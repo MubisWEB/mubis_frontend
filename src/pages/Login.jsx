@@ -45,7 +45,7 @@ export default function Login() {
       <TopBar />
       <nav className="w-full bg-background/80 backdrop-blur border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="lg" linkTo="/" />
+          <MubisLogo size="sm" linkTo="/" />
         </div>
       </nav>
 

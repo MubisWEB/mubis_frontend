@@ -74,8 +74,8 @@ export default function Registro() {
     <div className="min-h-screen flex flex-col font-sans bg-muted/30">
       <TopBar />
       <nav className="w-full bg-background/80 backdrop-blur border-b border-border/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
-          <MubisLogo size="lg" linkTo="/" />
+        <div className="flex items-center justify-center h-16">
+          <MubisLogo size="sm" linkTo="/" />
         </div>
       </nav>
 
@@ -155,7 +155,7 @@ export default function Registro() {
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Repetir contraseña *</label>
                     <div className="relative">
                       <Input type={showPassword2 ? "text" : "password"} placeholder="Repite tu contraseña" value={formData.password2}
