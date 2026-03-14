@@ -176,7 +176,7 @@ export default function RouteAssistant({ open, onOpenChange, inProcessAuctions =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0" aria-describedby={undefined}>
         <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Route className="w-5 h-5 text-secondary" />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,7 +82,8 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[380px] rounded-3xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[380px] rounded-3xl p-0 overflow-hidden" aria-describedby={undefined}>
+        <DialogTitle className="sr-only">{vehicle.brand} {vehicle.model} — Realizar puja</DialogTitle>
         {/* Header con imagen */}
         <div className="relative h-32 bg-gradient-to-br from-violet-600 to-violet-800">
           <img

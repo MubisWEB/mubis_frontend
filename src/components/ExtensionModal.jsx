@@ -45,7 +45,7 @@ export default function ExtensionModal({ open, onOpenChange, onConfirm, vehicleN
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm rounded-2xl">
+      <DialogContent className="max-w-sm rounded-2xl" aria-describedby={undefined}>
         {submitted ? (
           <div className="text-center py-6 space-y-3">
             <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto">

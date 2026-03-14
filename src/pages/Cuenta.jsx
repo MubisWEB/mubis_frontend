@@ -283,7 +283,7 @@ export default function Cuenta() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader><DialogTitle>Mi perfil</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
