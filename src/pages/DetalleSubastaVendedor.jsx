@@ -12,6 +12,7 @@ import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import { toast } from 'sonner';
 import { auctionsApi, bidsApi, auditApi } from '@/api/services';
+import socket, { joinAuction, leaveAuction } from '@/api/socket';
 
 export default function DetalleSubastaVendedor() {
   const navigate = useNavigate();
@@ -57,15 +58,36 @@ export default function DetalleSubastaVendedor() {
 
   useEffect(() => {
     if (!auctionId) return;
-    const interval = setInterval(async () => {
-      try {
-        const data = await auctionsApi.getById(auctionId);
-        if (data) { setAuction(data); await loadAuditEvents(data); }
-        const bidsData = await bidsApi.getByAuction(auctionId);
-        setBids(bidsData || []);
-      } catch { /* ignore */ }
-    }, 15000);
-    return () => clearInterval(interval);
+    joinAuction(auctionId);
+
+    const handleNewBid = ({ auctionId: id, currentBid, bidsCount, leaderId, userName }) => {
+      if (id !== auctionId) return;
+      setAuction(prev => prev ? { ...prev, current_bid: currentBid, bids_count: bidsCount, leaderId } : prev);
+      setBids(prev => [{ id: `ws-${Date.now()}`, userName: userName || 'Postor', amount: currentBid, createdAt: new Date().toISOString() }, ...prev].slice(0, 50));
+    };
+
+    const handleStatusChanged = ({ auctionId: id, status }) => {
+      if (id !== auctionId) return;
+      setAuction(prev => prev ? { ...prev, status } : prev);
+    };
+
+    const handleAuctionEnded = ({ auctionId: id, winnerId, finalBid }) => {
+      if (id !== auctionId) return;
+      setAuction(prev => prev ? { ...prev, status: 'ENDED', winnerId, current_bid: finalBid } : prev);
+      // Reload full auction so pending_decision UI appears immediately
+      auctionsApi.getById(id).then(data => { if (data) setAuction(data); }).catch(() => {});
+    };
+
+    socket.on('new_bid', handleNewBid);
+    socket.on('auction_status_changed', handleStatusChanged);
+    socket.on('auction_ended', handleAuctionEnded);
+
+    return () => {
+      leaveAuction(auctionId);
+      socket.off('new_bid', handleNewBid);
+      socket.off('auction_status_changed', handleStatusChanged);
+      socket.off('auction_ended', handleAuctionEnded);
+    };
   }, [auctionId]);
 
   useEffect(() => {

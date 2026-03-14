@@ -13,8 +13,8 @@ export const getRedirectForRole = (role) => {
   switch (role?.toLowerCase()) {
     case 'admin':       return '/AdminDashboard';
     case 'perito':      return '/PeritajesPendientes';
-    case 'recomprador':
-    case 'dealer':      return '/Comprar';
+    case 'dealer':      return '/MisSubastas';
+    case 'recomprador': return '/Comprar';
     default:            return '/login';
   }
 };

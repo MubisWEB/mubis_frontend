@@ -10,26 +10,37 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Single in-flight refresh promise — prevents concurrent 401s from each
+// triggering their own refresh (which would rotate the token and cause the
+// 2nd/3rd attempts to fail with an already-used refreshToken).
+let _refreshing = null;
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     if (error.response?.status === 401) {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
-        try {
-          const { data } = await axios.post(
+        if (!_refreshing) {
+          _refreshing = axios.post(
             `${import.meta.env.VITE_API_URL}/auth/refresh`,
             {},
             { headers: { Authorization: `Bearer ${refreshToken}` } }
-          );
-          localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          error.config.headers.Authorization = `Bearer ${data.accessToken}`;
+          ).then(({ data }) => {
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            return data.accessToken;
+          }).catch(() => {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+            return null;
+          }).finally(() => { _refreshing = null; });
+        }
+        const newToken = await _refreshing;
+        if (newToken) {
+          error.config.headers.Authorization = `Bearer ${newToken}`;
           return api.request(error.config);
-        } catch {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
         }
       }
     }

@@ -124,10 +124,13 @@ export default function PeritajeDetalle() {
     }
   };
 
+  const isDealer = currentUser?.role === 'dealer';
+  const backTo = isDealer ? '/MisSubastas' : '/PeritajesPendientes';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <Header title="Peritaje" backTo="/PeritajesPendientes" />
+        <Header title="Peritaje" backTo={backTo} />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
           <Skeleton height={96} borderRadius={16} />
           <div className="rounded-2xl border border-border bg-card p-4">
@@ -146,9 +149,86 @@ export default function PeritajeDetalle() {
     return (<div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Vehículo no encontrado</p></div>);
   }
 
+  // ── Dealer: read-only view ────────────────────────────────────────────────
+  if (isDealer) {
+    const statusLabel = inspection?.status === 'COMPLETED' ? 'Peritaje completado'
+      : inspection?.status === 'REJECTED' ? 'Peritaje rechazado'
+      : inspection?.status === 'IN_PROGRESS' ? 'En peritaje'
+      : 'Pendiente de peritaje';
+    const statusClass = inspection?.status === 'COMPLETED' ? 'bg-primary/10 text-primary'
+      : inspection?.status === 'REJECTED' ? 'bg-destructive/10 text-destructive'
+      : 'bg-secondary/10 text-secondary';
+
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · ${vehicle.placa}`} backTo={backTo} />
+        <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+          {vehicle.photos?.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {vehicle.photos.slice(0, 6).map((p, i) => (
+                <img key={i} src={p} alt="" className="w-28 h-20 rounded-xl object-cover flex-shrink-0 border border-border/40" />
+              ))}
+            </div>
+          )}
+
+          <Card className="p-4 border border-border/60 rounded-2xl flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Estado del peritaje</p>
+              <span className={`text-sm font-bold px-3 py-1 rounded-full ${statusClass}`}>{statusLabel}</span>
+            </div>
+            {inspection?.status === 'COMPLETED' && inspection?.scoreGlobal != null && (
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground mb-1">Score global</p>
+                <p className={cn('text-3xl font-bold', getScoreColor(inspection.scoreGlobal))}>{inspection.scoreGlobal}<span className="text-sm text-muted-foreground">/100</span></p>
+              </div>
+            )}
+          </Card>
+
+          {inspection?.status === 'COMPLETED' && inspection?.scores && (
+            <Card className="p-4 border border-border/60 rounded-2xl space-y-2">
+              <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-3">Resultados por categoría</p>
+              {Object.entries(inspection.scores).map(([key, val]) => (
+                <div key={key} className="flex items-center justify-between py-1 border-b border-border/20 last:border-0">
+                  <span className="text-sm text-foreground capitalize">{key}</span>
+                  <span className={cn('text-sm font-bold', getScoreColor(val))}>{val}/100</span>
+                </div>
+              ))}
+              {inspection.comments && <p className="text-xs text-muted-foreground mt-3 italic border-t border-border/20 pt-3">"{inspection.comments}"</p>}
+            </Card>
+          )}
+
+          {inspection?.status === 'REJECTED' && inspection?.rejectReason && (
+            <Card className="p-4 border border-destructive/30 rounded-2xl bg-destructive/5">
+              <p className="text-sm font-semibold text-destructive mb-1">Razón del rechazo</p>
+              <p className="text-sm text-foreground">{inspection.rejectReason}</p>
+            </Card>
+          )}
+
+          <Card className="p-4 border border-border/60 rounded-2xl space-y-2">
+            <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-3">Datos del vehículo</p>
+            {[
+              ['Marca', vehicle.brand], ['Modelo', vehicle.model], ['Año', vehicle.year],
+              ['Placa', vehicle.placa], ['Color', vehicle.color],
+              ['Kilometraje', vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('es-CO')} km` : null],
+              ['Combustible', vehicle.fuel_type], ['Tracción', vehicle.traction],
+              ['Cilindraje', vehicle.cilindraje], ['Ciudad', vehicle.city || vehicle.ubicacion],
+            ].filter(([, v]) => v).map(([label, value]) => (
+              <div key={label} className="flex justify-between text-sm py-0.5">
+                <span className="text-muted-foreground">{label}</span>
+                <span className="font-medium text-foreground">{value}</span>
+              </div>
+            ))}
+          </Card>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  // ── Perito: full inspection form ─────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · Placa: ${vehicle.placa}`} backTo="/PeritajesPendientes" />
+      <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · Placa: ${vehicle.placa}`} backTo={backTo} />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {vehicle.photos?.length > 0 && (

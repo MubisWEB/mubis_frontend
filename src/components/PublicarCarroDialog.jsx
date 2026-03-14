@@ -57,6 +57,24 @@ const initialForm = {
   tiene_multas: '', multas_descripcion: '',
 };
 
+const compressImage = (file, maxPx = 1024, quality = 0.78) =>
+  new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
 export default function PublicarCarroDialog({ open, onOpenChange, onPublished }) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(JSON.parse(JSON.stringify(initialForm)));
@@ -111,26 +129,22 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   const next = () => { if (validateStep()) setStep(s => s + 1); };
   const back = () => setStep(s => s - 1);
 
-  const handlePhotos = (e) => {
+  const handlePhotos = async (e) => {
     const files = Array.from(e.target.files);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setForm(prev => ({ ...prev, photos: [...prev.photos, ev.target.result] }));
-        setErrors(prev => ({ ...prev, photos: undefined }));
-      };
-      reader.readAsDataURL(file);
-    });
     e.target.value = '';
+    for (const file of files) {
+      const compressed = await compressImage(file);
+      setForm(prev => ({ ...prev, photos: [...prev.photos, compressed] }));
+      setErrors(prev => ({ ...prev, photos: undefined }));
+    }
   };
 
-  const handleTP = (e) => {
+  const handleTP = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => { set('tarjeta_propiedad', ev.target.result); };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    const compressed = await compressImage(file, 1200, 0.82);
+    set('tarjeta_propiedad', compressed);
   };
 
   const removePhoto = (idx) => {

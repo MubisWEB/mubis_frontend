@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/d.hernandeza2/.claude/projects/c--Users-d-hernandeza2-Documents-mubis-frontend-44fab88a-1/memory/**)"
+    ]
+  }
+}

@@ -24,7 +24,7 @@ const MainNav = () => {
     <nav className="w-full bg-background sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <div className="flex items-center gap-8">
-          <button onClick={() => navigate("/")}><MubisLogo size="md" /></button>
+          <button onClick={() => navigate("/")}><MubisLogo size="sm" /></button>
           <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <button

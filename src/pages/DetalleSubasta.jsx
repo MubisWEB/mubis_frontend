@@ -14,6 +14,7 @@ import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ExtensionModal from '@/components/ExtensionModal';
 import { auctionsApi, bidsApi, watchlistApi, casesApi, auditApi } from '@/api/services';
+import socket, { joinAuction, leaveAuction } from '@/api/socket';
 import { useAuth } from '@/lib/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,19 +71,34 @@ export default function DetalleSubasta() {
 
   useEffect(() => {
     if (!auctionId) return;
-    const interval = setInterval(async () => {
-      try {
-        const a = await auctionsApi.getById(auctionId);
-        if (a) setVehicle(a);
-        const [ae, ve] = await Promise.all([
-          auditApi.getByEntity('auction', auctionId).catch(() => []),
-          a?.vehicleId ? auditApi.getByEntity('vehicle', a.vehicleId).catch(() => []) : Promise.resolve([]),
-        ]);
-        const merged = [...(ae || []), ...(ve || [])].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
-        setAuditEvents(merged.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i));
-      } catch { /* ignore */ }
-    }, 15000);
-    return () => clearInterval(interval);
+    joinAuction(auctionId);
+
+    const handleNewBid = ({ auctionId: id, currentBid, bidsCount, leaderId, userName }) => {
+      if (id !== auctionId) return;
+      setVehicle(prev => prev ? { ...prev, current_bid: currentBid, bids_count: bidsCount, leaderId } : prev);
+      setBids(prev => [{ id: `ws-${Date.now()}`, userName: userName || 'Postor', amount: currentBid, createdAt: new Date().toISOString() }, ...prev].slice(0, 20));
+    };
+
+    const handleStatusChanged = ({ auctionId: id, status }) => {
+      if (id !== auctionId) return;
+      setVehicle(prev => prev ? { ...prev, status } : prev);
+    };
+
+    const handleAuctionEnded = ({ auctionId: id, winnerId, finalBid }) => {
+      if (id !== auctionId) return;
+      setVehicle(prev => prev ? { ...prev, status: 'ENDED', winnerId, current_bid: finalBid } : prev);
+    };
+
+    socket.on('new_bid', handleNewBid);
+    socket.on('auction_status_changed', handleStatusChanged);
+    socket.on('auction_ended', handleAuctionEnded);
+
+    return () => {
+      leaveAuction(auctionId);
+      socket.off('new_bid', handleNewBid);
+      socket.off('auction_status_changed', handleStatusChanged);
+      socket.off('auction_ended', handleAuctionEnded);
+    };
   }, [auctionId]);
 
   useEffect(() => {
