@@ -47,7 +47,7 @@ export default function AdminSolicitudes() {
   const formatDate = (d) => { if (!d) return ''; const diff = Math.floor((Date.now() - new Date(d).getTime()) / (1000 * 60 * 60 * 24)); if (diff === 0) return 'Hoy'; if (diff === 1) return 'Ayer'; return `Hace ${diff} días`; };
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <Header title="Solicitudes Pendientes" subtitle={`${requests.length} solicitudes por revisar`} backTo="/AdminDashboard" />
 
       <div className="max-w-7xl mx-auto px-4 pt-4">

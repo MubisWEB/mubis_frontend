@@ -57,7 +57,7 @@ export default function AdminCasos() {
   };
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <Header title="Casos de Soporte" subtitle={`${cases.length} casos`} backTo="/AdminDashboard" />
 
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">

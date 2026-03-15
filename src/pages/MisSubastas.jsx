@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -332,7 +333,7 @@ export default function MisSubastas() {
 
 
   return (
-    <div className="min-h-screen bg-background pb-32 md:pb-12">
+    <div className="min-h-screen bg-background pb-32">
       <Header />
       <div className="px-4 md:px-8 pt-5 pb-2">
         <div className="flex items-center justify-between mb-4">
@@ -376,9 +377,17 @@ export default function MisSubastas() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center justify-between">
           <div className="md:hidden">
             <SellerFilterSheet filters={filters} setFilters={setFilters} />
+          </div>
+          <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border ml-auto">
+            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              <LayoutList className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
@@ -390,20 +399,9 @@ export default function MisSubastas() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          {/* View toggle */}
-          <div className="hidden md:flex items-center justify-end mb-3">
-            <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
-              <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-                <LayoutList className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
 
           {activeTab === 'proceso' && (
-          enProceso.length === 0 ? <EmptyState text="Sin vehículos en proceso" /> :
+          enProceso.length === 0 ? <EmptyState icon={Timer} title="Sin vehículos en proceso" subtitle="Los vehículos enviados a peritaje aparecerán aquí." /> :
           <>
                 <div className="space-y-2 md:hidden">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
                 {viewMode === 'grid' ?
@@ -416,7 +414,7 @@ export default function MisSubastas() {
           }
 
           {activeTab === 'rechazados' && (
-          rechazados.length === 0 ? <EmptyState text="Sin peritajes rechazados" /> :
+          rechazados.length === 0 ? <EmptyState icon={ClipboardX} title="Sin peritajes rechazados" subtitle="¡Buena señal! Ningún vehículo ha sido rechazado." /> :
           <>
                 <div className="space-y-2 md:hidden">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
                 {viewMode === 'grid' ?
@@ -429,7 +427,7 @@ export default function MisSubastas() {
           }
 
           {activeTab === 'activas' && (
-          activas.length === 0 ? <EmptyState text="Sin subastas activas" /> :
+          activas.length === 0 ? <EmptyState icon={Gavel} title="Sin subastas activas" subtitle="Publica un vehículo para que aparezca en subasta aquí." /> :
           <>
                 <div className="space-y-3 md:hidden">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
                 {viewMode === 'grid' ?
@@ -442,7 +440,7 @@ export default function MisSubastas() {
           }
 
           {activeTab === 'decision' && (
-          pendienteDecision.length === 0 ? <EmptyState text="Sin subastas pendientes de decisión" /> :
+          pendienteDecision.length === 0 ? <EmptyState icon={Trophy} title="Sin decisiones pendientes" subtitle="Cuando una subasta finalice con ofertas, la verás aquí para decidir." /> :
           <>
                 <div className="space-y-3 md:hidden">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
                 {viewMode === 'grid' ?
@@ -455,7 +453,7 @@ export default function MisSubastas() {
           }
 
           {activeTab === 'finalizadas' && (
-          finalizadas.length === 0 ? <EmptyState text="Sin subastas finalizadas" /> :
+          finalizadas.length === 0 ? <EmptyState icon={CheckCheck} title="Sin subastas finalizadas" subtitle="El historial de tus subastas cerradas aparecerá aquí." /> :
           <>
                 <div className="space-y-3 md:hidden">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
                 {viewMode === 'grid' ?
@@ -489,10 +487,14 @@ export default function MisSubastas() {
 
 }
 
-function EmptyState({ text }) {
+function EmptyState({ icon: Icon, title, subtitle }) {
   return (
-    <div className="text-center py-8">
-      <p className="text-sm text-muted-foreground">{text}</p>
-    </div>);
-
+    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
+      <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Icon className="w-10 h-10 text-secondary/40" />
+      </div>
+      <h3 className="text-xl font-bold text-foreground mb-2 font-sans">{title}</h3>
+      {subtitle && <p className="text-muted-foreground text-sm">{subtitle}</p>}
+    </motion.div>
+  );
 }

@@ -44,7 +44,7 @@ export default function AdminSubastas() {
   };
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <Header title="Subastas" subtitle={`${auctions.length} subastas totales`} backTo="/AdminDashboard" />
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
         <Card className="p-3 border border-border shadow-sm rounded-xl">

@@ -129,7 +129,7 @@ export default function PeritajeDetalle() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-28">
         <Header title="Peritaje" backTo={backTo} />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
           <Skeleton height={96} borderRadius={16} />
@@ -160,7 +160,7 @@ export default function PeritajeDetalle() {
       : 'bg-secondary/10 text-secondary';
 
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · ${vehicle.placa}`} backTo={backTo} />
         <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
           {vehicle.photos?.length > 0 && (
@@ -227,7 +227,7 @@ export default function PeritajeDetalle() {
 
   // ── Perito: full inspection form ─────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-28">
       <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · Placa: ${vehicle.placa}`} backTo={backTo} />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">

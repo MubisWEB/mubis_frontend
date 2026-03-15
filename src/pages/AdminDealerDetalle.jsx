@@ -75,7 +75,7 @@ export default function AdminDealerDetalle() {
   const isVerified = user.verification_status === 'VERIFIED';
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <TopBar />
       <div className="bg-gradient-brand px-4 pt-4 pb-6">
         <div className="flex items-center justify-between mb-4">

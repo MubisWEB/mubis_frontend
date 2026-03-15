@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, UserCheck, Clock, TrendingUp, ClipboardCheck, FileText, MessageCircle } from 'lucide-react';
+import { Users, UserCheck, Clock, TrendingUp, ClipboardCheck, FileText, MessageCircle, Package2, Target, Building2 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { adminApi, casesApi } from '@/api/services';
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-muted pb-24">
+      <div className="min-h-screen bg-muted pb-28">
         <Header title="Panel Admin" subtitle="Gestión de usuarios y subastas" />
         <div className="max-w-7xl mx-auto px-4 pt-4">
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
   const totalPending = (stats.dealers?.pending || 0) + (stats.peritos?.pending || 0) + (stats.recompradores?.pending || 0);
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <Header title="Panel Admin" subtitle="Gestión de usuarios y subastas" />
 
       <div className="max-w-7xl mx-auto px-4 pt-4">
@@ -144,6 +144,15 @@ export default function AdminDashboard() {
             </Button>
             <Button onClick={() => navigate('/AdminSubastas')} variant="outline" className="w-full justify-between rounded-full">
               <span>Subastas</span><Badge className="bg-secondary/10 text-secondary text-[13px] font-semibold min-h-[28px] px-2.5 py-1">{stats.auctions?.total || 0}</Badge>
+            </Button>
+            <Button onClick={() => navigate('/AdminInventario')} variant="outline" className="w-full justify-between rounded-full">
+              <span>Gestión de Inventario</span><Package2 className="w-4 h-4" />
+            </Button>
+            <Button onClick={() => navigate('/AdminMetas')} variant="outline" className="w-full justify-between rounded-full">
+              <span>Metas de Ventas</span><Target className="w-4 h-4" />
+            </Button>
+            <Button onClick={() => navigate('/AdminSucursales')} variant="outline" className="w-full justify-between rounded-full">
+              <span>Sucursales</span><Building2 className="w-4 h-4" />
             </Button>
           </div>
         </Card>

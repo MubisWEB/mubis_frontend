@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy } from 'lucide-react';
+import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const NAV_CONFIGS = {
@@ -8,11 +8,15 @@ const NAV_CONFIGS = {
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Heart, label: 'Vender', path: '/MisSubastas' },
     { icon: Trophy, label: 'Ganados', path: '/Ganados' },
+    { icon: TrendingUp, label: 'Rendimiento', path: '/MiRendimiento' },
+    { icon: Target, label: 'Metas', path: '/MisMetas' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   recomprador: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Trophy, label: 'Ganados', path: '/Ganados' },
+    { icon: Store, label: 'B2B', path: '/B2BCatalogo' },
+    { icon: FileText, label: 'Ofertas', path: '/MisOfertas' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   perito: [

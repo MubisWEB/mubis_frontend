@@ -15,7 +15,7 @@ export default function AdminMovimientos() {
   const formatPrice = (p) => `$${(p / 1000000).toFixed(1)}M`;
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <Header title="Movimientos" subtitle={`${bids.length} transacciones`} backTo="/AdminDashboard" />
       <div className="max-w-7xl mx-auto px-4 pt-4">
         {bids.length === 0 ? (

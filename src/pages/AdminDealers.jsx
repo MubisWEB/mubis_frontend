@@ -59,7 +59,7 @@ export default function AdminDealers() {
   const statusInfo = (s) => STATUS_BADGE[s] || STATUS_BADGE.PENDING;
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <Header title="Usuarios" subtitle={`${filtered.length} usuarios`} backTo="/AdminDashboard" />
 
       <div className="max-w-7xl mx-auto px-4 pt-4">

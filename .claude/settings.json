@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/d.hernandeza2/.claude/projects/c--Users-d-hernandeza2-Documents-mubis-frontend-44fab88a-1/memory/**)"
+      "Read(//c/Users/d.hernandeza2/.claude/projects/c--Users-d-hernandeza2-Documents-mubis-frontend-44fab88a-1/memory/**)",
+      "Bash(grep -n \"md:pb-12\\\\|md:pb-8\\\\|md:pb-0\" c:/Users/d.hernandeza2/Documents/mubis_frontend-44fab88a-1/src/pages/*.jsx c:/Users/d.hernandeza2/Documents/mubis_frontend-44fab88a-1/src/pages/*.tsx)"
     ]
   }
 }

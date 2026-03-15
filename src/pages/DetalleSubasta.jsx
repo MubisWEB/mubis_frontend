@@ -276,7 +276,7 @@ export default function DetalleSubasta() {
   const uniqueBidders = vehicle.uniqueBidders || bids.length || 0;
 
   return (
-    <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-24' : 'pb-40'}`}>
+    <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-28' : 'pb-40'}`}>
       <TopBar />
       <div className="relative mt-3 md:mt-5">
           <PhotoGallery

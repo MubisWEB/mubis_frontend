@@ -72,7 +72,7 @@ export default function PeritajesPendientes() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-28">
       <Header />
 
       <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-4">

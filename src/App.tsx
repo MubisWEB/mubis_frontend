@@ -40,6 +40,13 @@ import PeritajesPendientes from './pages/PeritajesPendientes';
 import PeritajeDetalle from './pages/PeritajeDetalle';
 import SoporteCasos, { SoporteCasoDetalle } from './pages/SoporteCasos';
 import AdminCasos, { AdminCasoDetalle } from './pages/AdminCasos';
+import AdminInventario from './pages/AdminInventario';
+import AdminMetas from './pages/AdminMetas';
+import AdminSucursales from './pages/AdminSucursales';
+import MiRendimiento from './pages/MiRendimiento';
+import MisMetas from './pages/MisMetas';
+import B2BCatalogo from './pages/B2BCatalogo';
+import MisOfertas from './pages/MisOfertas';
 
 const queryClient = new QueryClient();
 
@@ -100,6 +107,17 @@ const App = () => (
           <Route path="/AdminAnaliticas" element={<RequireRole roles={['admin']}><AdminAnaliticas /></RequireRole>} />
           <Route path="/AdminCasos" element={<RequireRole roles={['admin']}><AdminCasos /></RequireRole>} />
           <Route path="/AdminCasos/:caseId" element={<RequireRole roles={['admin']}><AdminCasoDetalle /></RequireRole>} />
+          <Route path="/AdminInventario" element={<RequireRole roles={['admin']}><AdminInventario /></RequireRole>} />
+          <Route path="/AdminMetas" element={<RequireRole roles={['admin']}><AdminMetas /></RequireRole>} />
+          <Route path="/AdminSucursales" element={<RequireRole roles={['admin']}><AdminSucursales /></RequireRole>} />
+
+          {/* Dealer */}
+          <Route path="/MiRendimiento" element={<RequireRole roles={['dealer']}><MiRendimiento /></RequireRole>} />
+          <Route path="/MisMetas" element={<RequireRole roles={['dealer']}><MisMetas /></RequireRole>} />
+
+          {/* Recomprador */}
+          <Route path="/B2BCatalogo" element={<RequireRole roles={['recomprador']}><B2BCatalogo /></RequireRole>} />
+          <Route path="/MisOfertas" element={<RequireRole roles={['recomprador']}><MisOfertas /></RequireRole>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -129,7 +129,7 @@ export default function AyudaSoporte() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-28">
       <Header />
 
       <div className="px-4 py-4 space-y-4">

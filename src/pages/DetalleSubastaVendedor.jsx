@@ -147,7 +147,7 @@ export default function DetalleSubastaVendedor() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-muted pb-24">
+      <div className="min-h-screen bg-muted pb-28">
         <TopBar />
         <div className="mt-3">
           <Skeleton height={280} borderRadius={0} />
@@ -214,7 +214,7 @@ export default function DetalleSubastaVendedor() {
   const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
 
   return (
-    <div className="min-h-screen bg-muted pb-24">
+    <div className="min-h-screen bg-muted pb-28">
       <TopBar />
       <div className="relative mt-3 md:mt-5">
           <PhotoGallery
