@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [openCasesCount, setOpenCasesCount] = useState(0);
+  const [error, setError] = useState(null);
 
   const loadStats = async () => {
     try {
@@ -23,14 +24,18 @@ export default function AdminDashboard() {
       ]);
       setStats(s);
       setOpenCasesCount((allCases || []).filter(c => c.status === 'OPEN').length);
+      setError(null);
     } catch (err) {
       console.error('Error loading admin stats:', err);
+      if (!stats) setError('No se pudieron cargar las estadísticas');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     loadStats();
     const interval = setInterval(loadStats, 15000);
     return () => clearInterval(interval);
@@ -72,7 +77,18 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!stats) return null;
+  if (!stats) return (
+    <div className="min-h-screen bg-muted pb-28">
+      <Header title="Panel Admin" subtitle="Gestión de usuarios y subastas" />
+      <div className="max-w-7xl mx-auto px-4 pt-8 text-center">
+        <p className="text-muted-foreground mb-4">{error || 'No se pudieron cargar las estadísticas'}</p>
+        <Button onClick={() => { setLoading(true); loadStats(); }} variant="outline" className="rounded-full">
+          Reintentar
+        </Button>
+      </div>
+      <BottomNav />
+    </div>
+  );
 
   const totalUsers = (stats.dealers?.total || 0) + (stats.peritos?.total || 0) + (stats.recompradores?.total || 0);
   const totalVerified = (stats.dealers?.verified || 0) + (stats.peritos?.verified || 0) + (stats.recompradores?.verified || 0);

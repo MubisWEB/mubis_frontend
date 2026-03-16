@@ -372,23 +372,21 @@ export default function MisSubastas() {
       </div>
 
       {/* Search & Sort */}
-      <div className="px-4 md:px-8 pb-3">
-        <div className="relative mb-3">
+      <div className="px-4 md:px-8 pb-3 flex items-center gap-2">
+        <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
         </div>
-        <div className="flex items-center justify-between">
-          <div className="md:hidden">
-            <SellerFilterSheet filters={filters} setFilters={setFilters} />
-          </div>
-          <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border ml-auto">
-            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-              <LayoutList className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="md:hidden">
+          <SellerFilterSheet filters={filters} setFilters={setFilters} />
+        </div>
+        <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
+          <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+            <LayoutList className="w-4 h-4" />
+          </button>
         </div>
       </div>
 

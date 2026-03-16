@@ -1,17 +1,27 @@
-import api from './client';
+import api, { publicApi } from './client';
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 
 export const authApi = {
-  login: async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password, tenantSlug: 'mubis-demo' });
+  getTenants: async () => {
+    const { data } = await publicApi.get('/auth/tenants');
+    return data;
+  },
+
+  login: async (email, password, tenantSlug) => {
+    const { data } = await publicApi.post('/auth/login', { email, password, tenantSlug });
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     return data.user;
   },
 
   register: async (userData) => {
-    const { data } = await api.post('/auth/register', userData);
+    const { data } = await publicApi.post('/auth/register', userData);
+    return data;
+  },
+
+  forgotPassword: async (email, tenantSlug) => {
+    const { data } = await publicApi.post('/auth/forgot-password', { email, tenantSlug });
     return data;
   },
 

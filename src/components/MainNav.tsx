@@ -63,7 +63,7 @@ const MainNav = () => {
               <MapPin className="w-4 h-4" /> Bogotá
             </button>
             <button onClick={() => handleNav("/login")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-              Log in
+              Ingresar
             </button>
           </div>
         </div>
