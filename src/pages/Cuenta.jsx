@@ -324,21 +324,23 @@ export default function Cuenta() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
           <DialogHeader><DialogTitle>Mi perfil</DialogTitle></DialogHeader>
-          <div className="space-y-5 py-2">
+          <div className="space-y-4 py-2">
             {/* Name section */}
             <Card className="p-4 border border-border/60 rounded-xl space-y-3">
               <p className="text-sm font-semibold text-foreground">Cambiar nombre</p>
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Nombre</Label>
-                <Input id="edit-name" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Tu nombre completo" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-name" className="text-xs">Nombre</Label>
+                  <Input id="edit-name" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Tu nombre completo" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-password" className="text-xs">Contraseña actual</Label>
+                  <Input id="edit-password" type="password" value={editPassword} onChange={e => setEditPassword(e.target.value)} placeholder="Tu contraseña" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-password">Contraseña actual</Label>
-                <Input id="edit-password" type="password" value={editPassword} onChange={e => setEditPassword(e.target.value)} placeholder="Confirma tu contraseña" />
-              </div>
-              <Button onClick={handleSaveName} disabled={savingName || !editName.trim() || !editPassword} className="w-full rounded-xl">
+              <Button onClick={handleSaveName} disabled={savingName || !editName.trim() || !editPassword} className="w-full rounded-xl" size="sm">
                 {savingName ? 'Guardando...' : 'Actualizar nombre'}
               </Button>
             </Card>
@@ -346,38 +348,43 @@ export default function Cuenta() {
             {/* Phone section */}
             <Card className="p-4 border border-border/60 rounded-xl space-y-3">
               <p className="text-sm font-semibold text-foreground">Cambiar teléfono</p>
-              <div className="space-y-2">
-                <Label htmlFor="edit-phone">Nuevo teléfono</Label>
-                <Input id="edit-phone" value={editPhone} onChange={e => { setEditPhone(e.target.value); if (phoneStep !== 'idle') setPhoneStep('idle'); }} placeholder="300 000 0000" />
-              </div>
-              {phoneStep === 'idle' && (
-                <Button onClick={handleRequestPhoneCode} disabled={savingPhone || !editPhone.trim()} variant="outline" className="w-full rounded-xl">
-                  {savingPhone ? 'Enviando...' : 'Enviar código SMS'}
-                </Button>
-              )}
-              {phoneStep === 'codeSent' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="sms-code">Código de verificación</Label>
-                    <Input id="sms-code" value={smsCode} onChange={e => setSmsCode(e.target.value)} placeholder="Ingresa el código de 4 dígitos" maxLength={4} className="text-center tracking-widest text-lg" />
+              {phoneStep === 'idle' ? (
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor="edit-phone" className="text-xs">Nuevo teléfono</Label>
+                    <Input id="edit-phone" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="300 000 0000" />
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={handleRequestPhoneCode} disabled={savingPhone} className="flex-1 rounded-xl text-xs">Reenviar</Button>
-                    <Button onClick={handleVerifyPhone} disabled={savingPhone || !smsCode.trim()} className="flex-1 rounded-xl">
-                      {savingPhone ? 'Verificando...' : 'Verificar'}
-                    </Button>
+                  <Button onClick={handleRequestPhoneCode} disabled={savingPhone || !editPhone.trim()} variant="outline" className="rounded-xl whitespace-nowrap" size="sm">
+                    {savingPhone ? 'Enviando...' : 'Enviar código'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-3 items-end">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Teléfono</Label>
+                    <Input value={editPhone} disabled className="w-28" />
                   </div>
-                </>
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor="sms-code" className="text-xs">Código SMS</Label>
+                    <Input id="sms-code" value={smsCode} onChange={e => setSmsCode(e.target.value)} placeholder="1234" maxLength={4} className="text-center tracking-widest" />
+                  </div>
+                  <Button variant="ghost" onClick={() => { setPhoneStep('idle'); setSmsCode(''); }} className="rounded-xl px-2" size="sm">Cambiar</Button>
+                  <Button onClick={handleVerifyPhone} disabled={savingPhone || !smsCode.trim()} className="rounded-xl whitespace-nowrap" size="sm">
+                    {savingPhone ? '...' : 'Verificar'}
+                  </Button>
+                </div>
               )}
             </Card>
 
-            <div className="space-y-2 opacity-60">
-              <Label>Email</Label>
-              <Input value={user?.email || ''} disabled />
-            </div>
-            <div className="space-y-2 opacity-60">
-              <Label>Empresa / Sucursal</Label>
-              <Input value={`${user?.company || ''} · ${user?.branch || ''}`} disabled />
+            <div className="grid grid-cols-2 gap-3 opacity-60">
+              <div className="space-y-1">
+                <Label className="text-xs">Email</Label>
+                <Input value={user?.email || ''} disabled />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Empresa / Sucursal</Label>
+                <Input value={`${user?.company || ''} · ${user?.branch || ''}`} disabled />
+              </div>
             </div>
           </div>
           <DialogFooter>

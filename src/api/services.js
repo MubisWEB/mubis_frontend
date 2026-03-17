@@ -69,6 +69,7 @@ export const inspectionsApi = {
   getById: async (id) => (await api.get(`/inspections/${id}`)).data,
   getAll: async () => (await api.get('/inspections')).data,
   take: async (id) => (await api.post(`/inspections/${id}/take`)).data,
+  release: async (id) => (await api.post(`/inspections/${id}/release`)).data,
   complete: async (id, body) => (await api.post(`/inspections/${id}/complete`, body)).data,
   reject: async (id, body) => (await api.post(`/inspections/${id}/reject`, body)).data,
 };

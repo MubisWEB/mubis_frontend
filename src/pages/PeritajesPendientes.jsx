@@ -100,15 +100,20 @@ export default function PeritajesPendientes() {
           </div>
         ) : (
           <div className="space-y-3">
-            {inspections.map((insp, index) => (
+            {inspections.map((insp, index) => {
+              const isInProgress = insp.status === 'IN_PROGRESS';
+              return (
               <motion.div key={insp.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                <Card className="p-4 border border-border/60 shadow-sm rounded-2xl">
+                <Card className={`p-4 border shadow-sm rounded-2xl ${isInProgress ? 'border-secondary/40 bg-secondary/5' : 'border-border/60'}`}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="font-bold text-foreground text-base">{insp.vehicle?.brand} {insp.vehicle?.model}</h3>
                       <p className="text-muted-foreground text-sm">{insp.vehicle?.year} · Placa: {insp.vehicle?.placa}</p>
                     </div>
-                    <Badge className="bg-amber-500 text-white text-xs pointer-events-none">Pendiente</Badge>
+                    {isInProgress
+                      ? <Badge className="bg-blue-600 text-white text-xs pointer-events-none">En progreso</Badge>
+                      : <Badge className="bg-amber-500 text-white text-xs pointer-events-none">Pendiente</Badge>
+                    }
                   </div>
                   <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{Number(insp.vehicle?.mileage || 0).toLocaleString('es-CO')} km</span>
@@ -116,12 +121,19 @@ export default function PeritajesPendientes() {
                     <span className="flex items-center gap-1"><Building className="w-3 h-3" />{insp.dealerCompany}</span>
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.requestedAt)}</span>
                   </div>
-                  <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
-                    <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
-                  </Button>
+                  {isInProgress ? (
+                    <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl gap-2">
+                      <ClipboardCheck className="w-4 h-4" /> Continuar peritaje
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
+                      <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
+                    </Button>
+                  )}
                 </Card>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

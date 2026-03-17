@@ -84,17 +84,17 @@ export default function PeritajeDetalle() {
   // Warn on browser back/close
   useEffect(() => {
     const handler = (e) => {
-      if (hasChangesRef.current) {
+      if (!isDealer && inspection?.status === 'IN_PROGRESS') {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, []);
+  }, [isDealer, inspection]);
 
   const handleBack = () => {
-    if (hasFormData()) {
+    if (!isDealer && inspection?.status === 'IN_PROGRESS') {
       setShowExitDialog(true);
     } else {
       navigate(backTo);
@@ -112,6 +112,19 @@ export default function PeritajeDetalle() {
     localStorage.removeItem(getDraftKey());
     setShowExitDialog(false);
     navigate(backTo);
+  };
+
+  const handleReleaseAndExit = async () => {
+    if (!inspection) return;
+    try {
+      await inspectionsApi.release(inspection.id);
+      localStorage.removeItem(getDraftKey());
+      toast.info('Peritaje liberado', { description: 'El peritaje volvió a estar disponible.' });
+      setShowExitDialog(false);
+      navigate(backTo);
+    } catch {
+      toast.error('Error al liberar el peritaje');
+    }
   };
 
   useEffect(() => {
@@ -362,13 +375,13 @@ export default function PeritajeDetalle() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Salir del peritaje?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tienes cambios sin guardar. Puedes guardar un borrador para continuar después, o salir sin guardar.
+              Este peritaje está en progreso. Puedes guardar un borrador para continuar después, liberar el peritaje para que otro perito lo tome, o seguir trabajando.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel onClick={() => setShowExitDialog(false)}>Seguir editando</AlertDialogCancel>
-            <Button variant="outline" onClick={handleDiscardAndExit} className="border-destructive/30 text-destructive">Salir sin guardar</Button>
-            <AlertDialogAction onClick={handleSaveDraftAndExit} className="bg-secondary text-secondary-foreground hover:bg-secondary/90">Guardar borrador</AlertDialogAction>
+            <Button variant="outline" onClick={handleReleaseAndExit} className="border-destructive/30 text-destructive">Liberar peritaje</Button>
+            <AlertDialogAction onClick={handleSaveDraftAndExit} className="bg-secondary text-secondary-foreground hover:bg-secondary/90">Guardar y salir</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
