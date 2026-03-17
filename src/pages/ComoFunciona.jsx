@@ -1,11 +1,11 @@
 import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
-import SponsorBanner from "@/components/SponsorBanner";
 import step1Img from "@/assets/step-1.jpg";
 import step2Img from "@/assets/step-2.jpg";
 import step3Img from "@/assets/step-3.jpg";
 import { CheckCircle, Shield, Zap, Clock, Users, TrendingUp, ArrowRight, Car, Gavel, UserCheck, DollarSign } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const steps = [
   {
@@ -87,7 +87,6 @@ export default function ComoFunciona() {
     <div className="min-h-screen flex flex-col bg-background">
       <TopBar />
       <MainNav />
-      <SponsorBanner />
       <main className="flex-1">
         {/* Hero */}
         <section className="bg-background py-16 md:py-24">
@@ -208,9 +207,9 @@ export default function ComoFunciona() {
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-secondary-foreground mb-4">¿Listo para empezar?</h2>
             <p className="text-secondary-foreground/80 mb-8">Aplica ahora y sé parte de la plataforma líder en subastas de vehículos usados</p>
-            <a href="/registro" className="inline-flex items-center gap-2 rounded-full bg-background px-8 py-3 text-sm font-semibold text-foreground hover:opacity-90 transition-opacity">
+            <Link to="/registro" className="inline-flex items-center gap-2 rounded-full bg-background px-8 py-3 text-sm font-semibold text-foreground hover:opacity-90 transition-opacity">
               Aplicar Ahora <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </section>
       </main>

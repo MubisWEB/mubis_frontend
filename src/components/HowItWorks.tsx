@@ -2,6 +2,7 @@ import step1Img from "@/assets/step-1.jpg";
 import step2Img from "@/assets/step-2.jpg";
 import step3Img from "@/assets/step-3.jpg";
 import { Users, Car, Gavel, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const roles = [
   {
@@ -103,12 +104,12 @@ const HowItWorks = () => {
         </div>
 
         <div className="text-center mt-12">
-          <a
-            href="/como-funciona"
+          <Link
+            to="/como-funciona"
             className="inline-flex items-center gap-2 text-sm font-semibold text-secondary hover:underline"
           >
             Ver más detalles <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

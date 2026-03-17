@@ -1,6 +1,6 @@
+import TopBar from "@/components/TopBar";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
-import SponsorBanner from "@/components/SponsorBanner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const faqs = [
@@ -42,15 +42,15 @@ const faqs = [
   },
   {
     q: "¿Cómo puedo contactar a Mubis?",
-    a: "Puedes escribirnos a info@mubis.com o llamarnos al +34 670 03 30 99."
+    a: "Puedes escribirnos a info@mubis.com o llamarnos al +57 601 234 5678."
   },
 ];
 
 export default function PreguntasFrecuentes() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <TopBar />
       <MainNav />
-      <SponsorBanner />
       <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <h1 className="text-3xl md:text-4xl font-black text-foreground mb-2">Preguntas Frecuentes</h1>
         <p className="text-muted-foreground mb-10">Encuentra respuestas a las dudas más comunes sobre Mubis.</p>

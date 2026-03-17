@@ -43,8 +43,8 @@ export const AuthProvider = ({ children }) => {
     restore();
   }, []);
 
-  const login = async (email, password) => {
-    const raw = await authApi.login(email, password);
+  const login = async (email, password, tenantSlug) => {
+    const raw = await authApi.login(email, password, tenantSlug);
     const normalized = normalizeUser(raw);
     setUser(normalized);
     connectSocket();

@@ -4,6 +4,12 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+// Public axios instance — no auth header, no refresh interceptor.
+// Use for endpoints that don't require authentication (login, register, etc.)
+export const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+});
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -18,7 +24,11 @@ let _refreshing = null;
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config;
+
+    // Guard: only attempt refresh once per request to prevent infinite loops
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         if (!_refreshing) {
@@ -39,8 +49,8 @@ api.interceptors.response.use(
         }
         const newToken = await _refreshing;
         if (newToken) {
-          error.config.headers.Authorization = `Bearer ${newToken}`;
-          return api.request(error.config);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api.request(originalRequest);
         }
       }
     }

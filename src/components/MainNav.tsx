@@ -85,20 +85,9 @@ const MainNav = () => {
             <button className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground">
               <MapPin className="w-4 h-4" /> Bogotá
             </button>
-            {isAuthenticated ? (
-              <>
-                <button onClick={() => handleNav(authenticatedPath)} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-                  {authenticatedLabel}
-                </button>
-                <button onClick={() => handleNav('/Cuenta')} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground">
-                  <User className="w-4 h-4" /> Mi perfil
-                </button>
-              </>
-            ) : (
-              <button onClick={() => handleNav("/login")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-                Ingresar
-              </button>
-            )}
+            <button onClick={() => handleNav("/login")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+              Ingresar
+            </button>
           </div>
         </div>
       )}

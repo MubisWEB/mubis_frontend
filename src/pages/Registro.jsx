@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,15 @@ export default function Registro() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
+  const [tenants, setTenants] = useState([]);
+  const [tenantSlug, setTenantSlug] = useState("");
+
+  useEffect(() => {
+    authApi.getTenants().then((list) => {
+      setTenants(list);
+      if (list.length === 1) setTenantSlug(list[0].slug);
+    }).catch(() => {});
+  }, []);
 
   const [formData, setFormData] = useState({
     role: "",
@@ -38,6 +47,7 @@ export default function Registro() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!tenantSlug) { toast.error("Selecciona una empresa"); return; }
     if (!formData.role) { toast.error("Selecciona tu tipo de cuenta"); return; }
     if (!formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
       toast.error("Por favor completa todos los campos obligatorios"); return;
@@ -49,6 +59,7 @@ export default function Registro() {
     setLoading(true);
     try {
       await authApi.register({
+        tenantSlug,
         email: formData.email,
         password: formData.password,
         role: formData.role,
@@ -58,6 +69,7 @@ export default function Registro() {
         telefono: formData.telefono,
         ciudad: formData.ciudad,
         nit: formData.nit,
+        instagram: formData.instagram,
       });
       toast.success("Solicitud enviada. Te contactaremos pronto.");
       navigate("/registro-confirmacion");
@@ -91,6 +103,17 @@ export default function Registro() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
+                {tenants.length > 1 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Empresa *</label>
+                    <select value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} disabled={loading}
+                      className="h-11 w-full rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/40">
+                      <option value="">Selecciona tu empresa</option>
+                      {tenants.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
+                    </select>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Tipo de cuenta *</label>
                   <Select value={formData.role} onValueChange={v => handleChange("role", v)}>
@@ -170,7 +193,7 @@ export default function Registro() {
 
                 <label className="flex items-start gap-3 pt-2 text-sm text-muted-foreground">
                   <input type="checkbox" checked={formData.acepta} onChange={(e) => handleChange("acepta", e.target.checked)} disabled={loading} className="mt-1 h-4 w-4 rounded border-border" />
-                  <span>Acepto los <span className="text-violet-600 font-semibold">términos y condiciones</span> y la <span className="text-violet-600 font-semibold">política de privacidad</span> de Mubis™</span>
+                  <span>Acepto los <Link to="/terminos-y-condiciones" target="_blank" className="text-violet-600 font-semibold hover:underline underline-offset-2">términos y condiciones</Link> y la <Link to="/politica-de-privacidad" target="_blank" className="text-violet-600 font-semibold hover:underline underline-offset-2">política de privacidad</Link> de Mubis™</span>
                 </label>
 
                 <Button type="submit" disabled={loading || !formData.acepta}

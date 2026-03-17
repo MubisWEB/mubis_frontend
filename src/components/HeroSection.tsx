@@ -1,4 +1,5 @@
 import { ArrowRight, Play, Clock, Users, Gavel, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import auctionCar from "@/assets/car-logan.png";
 import auctionCar2 from "@/assets/car-fortuner.png";
 import auctionCar3 from "@/assets/car-tracker.png";
@@ -59,7 +60,7 @@ const AuctionCard = ({
 
   return (
     <div
-      onClick={() => {onClick();window.location.href = '/registro';}}
+      onClick={onClick}
       className={`absolute inset-0 w-full bg-background rounded-2xl border border-border shadow-xl overflow-hidden cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${positionStyles[position]}`}
       style={{ willChange: "transform, opacity" }}>
       
@@ -179,16 +180,14 @@ const HeroSection = () => {
               <span className="font-bold text-foreground">inventario verificado.</span>
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="/registro" className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity">
-                
+              <Link to="/registro" className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity">
                 Aplicar Ahora <ArrowRight className="w-4 h-4" />
-              </a>
-              <a
-                href="/como-funciona"
+              </Link>
+              <Link
+                to="/como-funciona"
                 className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
-                
                 <Play className="w-4 h-4" /> Cómo funciona
-              </a>
+              </Link>
             </div>
           </div>
 
