@@ -25,6 +25,21 @@ export const authApi = {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   },
+
+  updateProfile: async (nombre, currentPassword) => {
+    const { data } = await api.patch('/auth/profile', { nombre, currentPassword });
+    return data;
+  },
+
+  requestPhoneVerification: async (telefono) => {
+    const { data } = await api.post('/auth/phone/request-verification', { telefono });
+    return data;
+  },
+
+  verifyPhone: async (telefono, code) => {
+    const { data } = await api.post('/auth/phone/verify', { telefono, code });
+    return data;
+  },
 };
 
 // ── USERS (admin) ─────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,10 @@ import Header from '@/components/Header';
 import { toast } from 'sonner';
 import { inspectionsApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 const PERITAJE_CATEGORIES = [
   { key: 'motor', label: 'Motor' },
@@ -33,6 +37,8 @@ export default function PeritajeDetalle() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const isDealer = currentUser?.role === 'dealer';
+  const backTo = isDealer ? '/MisSubastas' : '/PeritajesPendientes';
   const [loading, setLoading] = useState(true);
   const [inspection, setInspection] = useState(null);
   const [vehicle, setVehicle] = useState(null);
@@ -40,6 +46,73 @@ export default function PeritajeDetalle() {
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const hasChangesRef = useRef(false);
+
+  const getDraftKey = () => `peritaje_draft_${vehicleId}`;
+
+  // Check if form has any data entered
+  const hasFormData = useCallback(() => {
+    return PERITAJE_CATEGORIES.some(c => peritaje[c.key].score !== '' || peritaje[c.key].description.trim() !== '') || rejectReason.trim() !== '';
+  }, [peritaje, rejectReason]);
+
+  // Save draft to localStorage
+  const saveDraft = useCallback(() => {
+    if (!vehicleId) return;
+    localStorage.setItem(getDraftKey(), JSON.stringify({ peritaje, rejectReason }));
+  }, [vehicleId, peritaje, rejectReason]);
+
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    if (!vehicleId) return;
+    const saved = localStorage.getItem(getDraftKey());
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.peritaje) setPeritaje(parsed.peritaje);
+        if (parsed.rejectReason) setRejectReason(parsed.rejectReason);
+        toast.info('Borrador recuperado', { description: 'Se cargaron los datos guardados previamente.' });
+      } catch { /* ignore corrupt data */ }
+    }
+  }, [vehicleId]);
+
+  // Track changes
+  useEffect(() => {
+    hasChangesRef.current = hasFormData();
+  }, [hasFormData]);
+
+  // Warn on browser back/close
+  useEffect(() => {
+    const handler = (e) => {
+      if (hasChangesRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, []);
+
+  const handleBack = () => {
+    if (hasFormData()) {
+      setShowExitDialog(true);
+    } else {
+      navigate(backTo);
+    }
+  };
+
+  const handleSaveDraftAndExit = () => {
+    saveDraft();
+    toast.success('Borrador guardado', { description: 'Podrás continuar donde lo dejaste.' });
+    setShowExitDialog(false);
+    navigate(backTo);
+  };
+
+  const handleDiscardAndExit = () => {
+    localStorage.removeItem(getDraftKey());
+    setShowExitDialog(false);
+    navigate(backTo);
+  };
 
   useEffect(() => {
     if (!vehicleId) return;
@@ -106,6 +179,7 @@ export default function PeritajeDetalle() {
         scoreGlobal: globalScore,
       });
       toast.success('Peritaje finalizado', { description: `${vehicle?.brand || ''} ${vehicle?.model || ''} · Score: ${globalScore}/100` });
+      localStorage.removeItem(getDraftKey());
       navigate('/PeritajesPendientes');
     } catch (err) {
       toast.error('Error al finalizar el peritaje');
@@ -118,14 +192,12 @@ export default function PeritajeDetalle() {
     try {
       await inspectionsApi.reject(inspection.id, { rejectReason });
       toast.error('Peritaje rechazado', { description: `${vehicle?.brand || ''} ${vehicle?.model || ''}` });
+      localStorage.removeItem(getDraftKey());
       navigate('/PeritajesPendientes');
     } catch (err) {
       toast.error('Error al rechazar el peritaje');
     }
   };
-
-  const isDealer = currentUser?.role === 'dealer';
-  const backTo = isDealer ? '/MisSubastas' : '/PeritajesPendientes';
 
   if (loading) {
     return (
@@ -228,7 +300,7 @@ export default function PeritajeDetalle() {
   // ── Perito: full inspection form ─────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · Placa: ${vehicle.placa}`} backTo={backTo} />
+      <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · Placa: ${vehicle.placa}`} onBack={handleBack} />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {vehicle.photos?.length > 0 && (
@@ -283,6 +355,23 @@ export default function PeritajeDetalle() {
         </div>
       </div>
       <BottomNav />
+
+      {/* Unsaved changes dialog */}
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Salir del peritaje?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tienes cambios sin guardar. Puedes guardar un borrador para continuar después, o salir sin guardar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel onClick={() => setShowExitDialog(false)}>Seguir editando</AlertDialogCancel>
+            <Button variant="outline" onClick={handleDiscardAndExit} className="border-destructive/30 text-destructive">Salir sin guardar</Button>
+            <AlertDialogAction onClick={handleSaveDraftAndExit} className="bg-secondary text-secondary-foreground hover:bg-secondary/90">Guardar borrador</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
