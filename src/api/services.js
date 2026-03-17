@@ -35,6 +35,21 @@ export const authApi = {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   },
+
+  updateProfile: async (nombre, currentPassword) => {
+    const { data } = await api.patch('/auth/profile', { nombre, currentPassword });
+    return data;
+  },
+
+  requestPhoneVerification: async (telefono) => {
+    const { data } = await api.post('/auth/phone/request-verification', { telefono });
+    return data;
+  },
+
+  verifyPhone: async (telefono, code) => {
+    const { data } = await api.post('/auth/phone/verify', { telefono, code });
+    return data;
+  },
 };
 
 // ── USERS (admin) ─────────────────────────────────────────────────────────────
@@ -64,6 +79,7 @@ export const inspectionsApi = {
   getById: async (id) => (await api.get(`/inspections/${id}`)).data,
   getAll: async () => (await api.get('/inspections')).data,
   take: async (id) => (await api.post(`/inspections/${id}/take`)).data,
+  release: async (id) => (await api.post(`/inspections/${id}/release`)).data,
   complete: async (id, body) => (await api.post(`/inspections/${id}/complete`, body)).data,
   reject: async (id, body) => (await api.post(`/inspections/${id}/reject`, body)).data,
 };

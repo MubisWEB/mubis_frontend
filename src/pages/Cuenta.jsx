@@ -13,7 +13,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { notificationsApi, publicationsApi, usersApi } from '@/api/services';
+import { notificationsApi, publicationsApi, authApi } from '@/api/services';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
 
@@ -46,7 +46,12 @@ export default function Cuenta() {
   const role = user?.role;
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState(user?.nombre || '');
+  const [editPassword, setEditPassword] = useState('');
   const [editPhone, setEditPhone] = useState(user?.telefono || '');
+  const [phoneStep, setPhoneStep] = useState('idle'); // 'idle' | 'codeSent' | 'verified'
+  const [smsCode, setSmsCode] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const [savingPhone, setSavingPhone] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pubBalance, setPubBalance] = useState(0);
@@ -81,15 +86,51 @@ export default function Cuenta() {
     navigate('/login');
   };
 
-  const handleSaveProfile = async () => {
+  const handleSaveName = async () => {
     if (!editName.trim()) { toast.error('El nombre es obligatorio'); return; }
+    if (!editPassword) { toast.error('Debes ingresar tu contraseña actual'); return; }
+    setSavingName(true);
     try {
-      await usersApi.update(user.id, { nombre: editName.trim(), telefono: editPhone.trim() });
+      await authApi.updateProfile(editName.trim(), editPassword);
       await refreshUser();
-      toast.success('Cambios guardados');
-      setEditOpen(false);
+      toast.success('Nombre actualizado');
+      setEditPassword('');
     } catch (err) {
-      toast.error('Error al guardar cambios');
+      const msg = err?.response?.data?.message || 'Error al actualizar nombre';
+      toast.error(typeof msg === 'string' ? msg : msg[0] || 'Error');
+    } finally {
+      setSavingName(false);
+    }
+  };
+
+  const handleRequestPhoneCode = async () => {
+    if (!editPhone.trim()) { toast.error('Ingresa un número de teléfono'); return; }
+    setSavingPhone(true);
+    try {
+      await authApi.requestPhoneVerification(editPhone.trim());
+      setPhoneStep('codeSent');
+      toast.info('Código enviado', { description: `Se envió un SMS a ${editPhone}` });
+    } catch (err) {
+      toast.error('Error al enviar código');
+    } finally {
+      setSavingPhone(false);
+    }
+  };
+
+  const handleVerifyPhone = async () => {
+    if (!smsCode.trim()) { toast.error('Ingresa el código de verificación'); return; }
+    setSavingPhone(true);
+    try {
+      await authApi.verifyPhone(editPhone.trim(), smsCode.trim());
+      await refreshUser();
+      toast.success('Teléfono actualizado');
+      setPhoneStep('idle');
+      setSmsCode('');
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Código incorrecto';
+      toast.error(typeof msg === 'string' ? msg : msg[0] || 'Error');
+    } finally {
+      setSavingPhone(false);
     }
   };
 
@@ -133,7 +174,7 @@ export default function Cuenta() {
 
   const menuItems = [
     { icon: Bell, label: 'Notificaciones', action: () => navigate('/Notificaciones'), badge: unreadCount > 0 ? unreadCount : null },
-    { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditOpen(true); } },
+    { icon: Pencil, label: 'Mi perfil', action: () => { setEditName(user?.nombre || ''); setEditPhone(user?.telefono || ''); setEditPassword(''); setPhoneStep('idle'); setSmsCode(''); setEditOpen(true); } },
     { icon: Settings, label: 'Configuración', action: () => navigate('/Configuracion') },
     { icon: HelpCircle, label: 'Ayuda y soporte', action: () => navigate('/AyudaSoporte') },
   ];
@@ -274,7 +315,7 @@ export default function Cuenta() {
 
         {/* Logout */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
-          <Button variant="outline" className="w-full h-11 rounded-full border-destructive/30 text-destructive hover:bg-destructive/5 font-medium" onClick={handleLogout}>
+          <Button variant="outline" className="w-full h-11 rounded-full border-destructive text-destructive hover:bg-red-600 hover:text-black hover:border-red-600 font-medium" onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" />Cerrar sesión
           </Button>
         </motion.div>
@@ -283,29 +324,71 @@ export default function Cuenta() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
           <DialogHeader><DialogTitle>Mi perfil</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Nombre</Label>
-              <Input id="edit-name" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Tu nombre completo" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-phone">Teléfono</Label>
-              <Input id="edit-phone" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="300 000 0000" />
-            </div>
-            <div className="space-y-2 opacity-60">
-              <Label>Email</Label>
-              <Input value={user?.email || ''} disabled />
-            </div>
-            <div className="space-y-2 opacity-60">
-              <Label>Empresa / Sucursal</Label>
-              <Input value={`${user?.company || ''} · ${user?.branch || ''}`} disabled />
+            {/* Name section */}
+            <Card className="p-4 border border-border/60 rounded-xl space-y-3">
+              <p className="text-sm font-semibold text-foreground">Cambiar nombre</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-name" className="text-xs">Nombre</Label>
+                  <Input id="edit-name" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Tu nombre completo" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-password" className="text-xs">Contraseña actual</Label>
+                  <Input id="edit-password" type="password" value={editPassword} onChange={e => setEditPassword(e.target.value)} placeholder="Tu contraseña" />
+                </div>
+              </div>
+              <Button onClick={handleSaveName} disabled={savingName || !editName.trim() || !editPassword} className="w-full rounded-xl" size="sm">
+                {savingName ? 'Guardando...' : 'Actualizar nombre'}
+              </Button>
+            </Card>
+
+            {/* Phone section */}
+            <Card className="p-4 border border-border/60 rounded-xl space-y-3">
+              <p className="text-sm font-semibold text-foreground">Cambiar teléfono</p>
+              {phoneStep === 'idle' ? (
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor="edit-phone" className="text-xs">Nuevo teléfono</Label>
+                    <Input id="edit-phone" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="300 000 0000" />
+                  </div>
+                  <Button onClick={handleRequestPhoneCode} disabled={savingPhone || !editPhone.trim()} variant="outline" className="rounded-xl whitespace-nowrap" size="sm">
+                    {savingPhone ? 'Enviando...' : 'Enviar código'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-3 items-end">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Teléfono</Label>
+                    <Input value={editPhone} disabled className="w-28" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor="sms-code" className="text-xs">Código SMS</Label>
+                    <Input id="sms-code" value={smsCode} onChange={e => setSmsCode(e.target.value)} placeholder="1234" maxLength={4} className="text-center tracking-widest" />
+                  </div>
+                  <Button variant="ghost" onClick={() => { setPhoneStep('idle'); setSmsCode(''); }} className="rounded-xl px-2" size="sm">Cambiar</Button>
+                  <Button onClick={handleVerifyPhone} disabled={savingPhone || !smsCode.trim()} className="rounded-xl whitespace-nowrap" size="sm">
+                    {savingPhone ? '...' : 'Verificar'}
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            <div className="grid grid-cols-2 gap-3 opacity-60">
+              <div className="space-y-1">
+                <Label className="text-xs">Email</Label>
+                <Input value={user?.email || ''} disabled />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Empresa / Sucursal</Label>
+                <Input value={`${user?.company || ''} · ${user?.branch || ''}`} disabled />
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveProfile}>Guardar</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cerrar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
