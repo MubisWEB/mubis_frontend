@@ -17,6 +17,7 @@ import Skeleton from 'react-loading-skeleton';
 import ExtensionModal from '@/components/ExtensionModal';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 import RouteAssistant from '@/components/RouteAssistant';
+import { ArrowLeft } from 'lucide-react';
 
 const WonCardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -232,7 +233,16 @@ export default function Ganados() {
       {/* Status filter cards */}
       <div className="px-4 md:px-8 pt-3 pb-2">
         <div className="mb-4">
+          <div className="flex items-center gap-2 mb-1">
+          <button
+            onClick={() => navigate('/Cuenta')}
+            className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+
           <h1 className="text-xl font-bold text-foreground font-sans">Mis Ganados</h1>
+        </div>
           {wonAuctions.length > 0 && <p className="text-xs text-muted-foreground">{wonAuctions.length} subastas ganadas</p>}
         </div>
         <div className="grid grid-cols-3 gap-2 mb-4">
