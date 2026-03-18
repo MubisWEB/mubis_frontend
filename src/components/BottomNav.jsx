@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store } from 'lucide-react';
+import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store, History } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const NAV_CONFIGS = {
@@ -17,6 +17,7 @@ const NAV_CONFIGS = {
   ],
   perito: [
     { icon: ClipboardCheck, label: 'Pendientes', path: '/PeritajesPendientes' },
+    { icon: History, label: 'Historial', path: '/HistorialPeritajes' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   admin: [

@@ -39,6 +39,8 @@ import AdminMovimientos from './pages/AdminMovimientos';
 import AdminAnaliticas from './pages/AdminAnaliticas';
 import PeritajesPendientes from './pages/PeritajesPendientes';
 import PeritajeDetalle from './pages/PeritajeDetalle';
+import HistorialPeritajes from './pages/HistorialPeritajes';
+import HistorialPeritajeDetalle from './pages/HistorialPeritajeDetalle';
 import SoporteCasos, { SoporteCasoDetalle } from './pages/SoporteCasos';
 import AdminCasos, { AdminCasoDetalle } from './pages/AdminCasos';
 import AdminInventario from './pages/AdminInventario';
@@ -97,7 +99,9 @@ const App = () => (
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
+          <Route path="/HistorialPeritajes" element={<RequireRole roles={['perito']}><HistorialPeritajes /></RequireRole>} />
           <Route path="/PeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito','dealer']}><PeritajeDetalle /></RequireRole>} />
+          <Route path="/HistorialPeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito']}><HistorialPeritajeDetalle /></RequireRole>} />
 
           {/* Admin */}
           <Route path="/AdminDashboard" element={<RequireRole roles={['admin']}><AdminDashboard /></RequireRole>} />

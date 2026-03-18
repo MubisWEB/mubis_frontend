@@ -75,6 +75,7 @@ export const vehiclesApi = {
 
 export const inspectionsApi = {
   getPending: async () => (await api.get('/inspections/pending')).data,
+  getHistory: async () => (await api.get('/inspections/history')).data,
   getByVehicle: async (vehicleId) => (await api.get(`/inspections/vehicle/${vehicleId}`)).data,
   getById: async (id) => (await api.get(`/inspections/${id}`)).data,
   getAll: async () => (await api.get('/inspections')).data,
