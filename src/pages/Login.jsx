@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,24 +9,34 @@ import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
 import MubisLogo from "@/components/MubisLogo";
 import { useAuth, getRedirectForRole } from "@/lib/AuthContext";
+import { authApi } from "@/api/services";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [tenants, setTenants] = useState([]);
+  const [tenantSlug, setTenantSlug] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    authApi.getTenants().then((list) => {
+      setTenants(list);
+      if (list.length === 1) setTenantSlug(list[0].slug);
+    }).catch(() => {});
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!tenantSlug || !email || !password) {
       toast.error("Por favor completa todos los campos");
       return;
     }
     setLoading(true);
     try {
-      const user = await login(email, password);
+      const user = await login(email, password, tenantSlug);
       toast.success("¡Bienvenido de nuevo!");
       if (user.role !== 'admin' && user.verification_status !== 'VERIFIED') {
         navigate('/PendienteVerificacion');
@@ -61,6 +71,17 @@ export default function Login() {
               </div>
 
               <form onSubmit={handleLogin} className="space-y-5">
+                {tenants.length > 1 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Empresa</label>
+                    <select value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} disabled={loading}
+                      className="h-11 w-full rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/40">
+                      <option value="">Selecciona tu empresa</option>
+                      {tenants.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
+                    </select>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Correo electrónico</label>
                   <Input type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -77,6 +98,12 @@ export default function Login() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Link to="/recuperar-contrasena" className="text-sm text-violet-600 font-medium hover:underline underline-offset-4">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
                 </div>
 
                 <Button type="submit" disabled={loading}

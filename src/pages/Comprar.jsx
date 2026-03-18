@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Flame, Radio, Bookmark, LayoutGrid, LayoutList } from 'lucide-react';
+import { Search, SlidersHorizontal, Flame, Radio, Bookmark, LayoutGrid, LayoutList, Trophy } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';
@@ -177,25 +177,45 @@ export default function Comprar() {
           </div>
         </Card>
       </div>
-
       {/* Search & Sort bar */}
       <div className="bg-background px-4 md:px-8 pt-3 pb-3">
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
-            <Flame className="w-3 h-3 mr-1 text-secondary" />{vehicles.length} activas
+            <Flame className="w-3 h-3 mr-1 text-secondary" />
+            {vehicles.length} activas
           </Badge>
-          <button onClick={() => navigate('/Guardadas')} className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors">
-            <Bookmark className="w-3.5 h-3.5" />Guardadas
+
+          <button
+            onClick={() => navigate('/Ganados')}
+            className="ml-auto flex items-center gap-1 text-xs text-primary hover:opacity-80 transition-opacity"
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            Ganadas
+          </button>
+
+          <button
+            onClick={() => navigate('/Guardadas')}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors"
+          >
+            <Bookmark className="w-3.5 h-3.5" />
+            Guardadas
           </button>
         </div>
+
         <div className="relative mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
+          <Input
+            placeholder="Buscar marca o modelo..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+          />
         </div>
         <div className="flex gap-2">
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue placeholder="Ordenar" />
+              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" />
+              <SelectValue placeholder="Ordenar" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Más nuevos</SelectItem>

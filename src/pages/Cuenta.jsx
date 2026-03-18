@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -182,6 +182,9 @@ export default function Cuenta() {
   if (role === 'dealer' || role === 'recomprador') {
     menuItems.splice(1, 0,
       { icon: DollarSign, label: 'Movimientos', action: () => navigate('/Movimientos') },
+      { icon: Trophy, label: 'Ganadas', action: () => navigate('/Ganados') },
+      { icon: TrendingUp, label: 'Rendimiento', action: () => navigate('/MiRendimiento') },
+      { icon: Target, label: 'Metas', action: () => navigate('/MisMetas') },
       { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
     );

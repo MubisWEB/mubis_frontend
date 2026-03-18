@@ -18,6 +18,7 @@ import TerminosCondiciones from './pages/TerminosCondiciones';
 import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
 import AvisoLegal from './pages/AvisoLegal';
 import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
+import RecuperarContrasena from './pages/RecuperarContrasena';
 import Comprar from './pages/Comprar';
 import DetalleSubasta from './pages/DetalleSubasta';
 import MisSubastas from './pages/MisSubastas';
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/aviso-legal" element={<AvisoLegal />} />
           <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/registro-confirmacion" element={<RegistroConfirmacion />} />
           <Route path="/PendienteVerificacion" element={<PendienteVerificacion />} />
