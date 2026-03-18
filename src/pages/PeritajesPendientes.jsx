@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardCheck, MapPin, Calendar, Gauge, Building, RefreshCw } from 'lucide-react';
+import { ClipboardCheck, MapPin, Calendar, Gauge, Building, RefreshCw, History, CheckCircle2, XCircle } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -33,12 +33,15 @@ export default function PeritajesPendientes() {
   const navigate = useNavigate();
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pending');
   const { user: currentUser } = useAuth();
 
   const loadInspections = async () => {
     try {
       setLoading(true);
-      const data = await inspectionsApi.getPending();
+      const data = activeTab === 'history'
+        ? await inspectionsApi.getHistory()
+        : await inspectionsApi.getPending();
       setInspections(data || []);
     } catch (err) {
       console.error('Error loading inspections:', err);
@@ -51,7 +54,7 @@ export default function PeritajesPendientes() {
     loadInspections();
     const interval = setInterval(loadInspections, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeTab]);
 
   const handleTakeInspection = async (inspection) => {
     try {
@@ -85,8 +88,30 @@ export default function PeritajesPendientes() {
             <Button variant="outline" size="icon" onClick={loadInspections} disabled={loading} className="h-8 w-8 rounded-full">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
+            <Badge className="bg-secondary/10 text-secondary">
+              {inspections.length} {activeTab === 'history' ? 'registrados' : 'pendientes'}
+            </Badge>
           </div>
+        </div>
+        <div className="mb-4 inline-flex rounded-xl border border-border/70 bg-muted/30 p-1">
+          <Button
+            size="sm"
+            variant={activeTab === 'pending' ? 'default' : 'ghost'}
+            className="rounded-lg gap-1.5"
+            onClick={() => setActiveTab('pending')}
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            Pendientes
+          </Button>
+          <Button
+            size="sm"
+            variant={activeTab === 'history' ? 'default' : 'ghost'}
+            className="rounded-lg gap-1.5"
+            onClick={() => setActiveTab('history')}
+          >
+            <History className="w-4 h-4" />
+            Historial
+          </Button>
         </div>
         {loading ? (
           <div className="space-y-3">{[1,2,3].map(i => <InspRowSkeleton key={i} />)}</div>
@@ -95,13 +120,20 @@ export default function PeritajesPendientes() {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <ClipboardCheck className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No hay peritajes pendientes</h3>
-            <p className="text-muted-foreground text-sm">Los peritajes de tu sucursal aparecerán aquí</p>
+            <h3 className="text-lg font-bold text-foreground mb-2 font-sans">
+              {activeTab === 'history' ? 'No hay peritajes en historial' : 'No hay peritajes pendientes'}
+            </h3>
+            <p className="text-muted-foreground text-sm">
+              {activeTab === 'history'
+                ? 'Aquí aparecerán los peritajes completados o rechazados.'
+                : 'Los peritajes de tu sucursal aparecerán aquí'}
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {inspections.map((insp, index) => {
               const isInProgress = insp.status === 'IN_PROGRESS';
+              const isHistory = activeTab === 'history';
               return (
               <motion.div key={insp.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
                 <Card className={`p-4 border shadow-sm rounded-2xl ${isInProgress ? 'border-secondary/40 bg-secondary/5' : 'border-border/60'}`}>
@@ -110,25 +142,36 @@ export default function PeritajesPendientes() {
                       <h3 className="font-bold text-foreground text-base">{insp.vehicle?.brand} {insp.vehicle?.model}</h3>
                       <p className="text-muted-foreground text-sm">{insp.vehicle?.year} · Placa: {insp.vehicle?.placa}</p>
                     </div>
-                    {isInProgress
-                      ? <Badge className="bg-blue-600 text-white text-xs pointer-events-none">En progreso</Badge>
-                      : <Badge className="bg-amber-500 text-white text-xs pointer-events-none">Pendiente</Badge>
-                    }
+                    {isHistory ? (
+                      insp.status === 'COMPLETED'
+                        ? <Badge className="bg-emerald-600 text-white text-xs pointer-events-none"><CheckCircle2 className="w-3 h-3 mr-1" />Completado</Badge>
+                        : <Badge className="bg-destructive text-destructive-foreground text-xs pointer-events-none"><XCircle className="w-3 h-3 mr-1" />Rechazado</Badge>
+                    ) : (
+                      isInProgress
+                        ? <Badge className="bg-blue-600 text-white text-xs pointer-events-none">En progreso</Badge>
+                        : <Badge className="bg-amber-500 text-white text-xs pointer-events-none">Pendiente</Badge>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{Number(insp.vehicle?.mileage || 0).toLocaleString('es-CO')} km</span>
                     <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{insp.vehicle?.city || insp.vehicle?.ubicacion}</span>
                     <span className="flex items-center gap-1"><Building className="w-3 h-3" />{insp.dealerCompany}</span>
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.requestedAt)}</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.completedAt || insp.createdAt || insp.requestedAt)}</span>
                   </div>
-                  {isInProgress ? (
-                    <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl gap-2">
-                      <ClipboardCheck className="w-4 h-4" /> Continuar peritaje
+                  {isHistory ? (
+                    <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} variant="outline" className="w-full rounded-xl gap-2">
+                      <History className="w-4 h-4" /> Ver detalle
                     </Button>
                   ) : (
-                    <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
-                      <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
-                    </Button>
+                    isInProgress ? (
+                      <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl gap-2">
+                        <ClipboardCheck className="w-4 h-4" /> Continuar peritaje
+                      </Button>
+                    ) : (
+                      <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
+                        <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
+                      </Button>
+                    )
                   )}
                 </Card>
               </motion.div>

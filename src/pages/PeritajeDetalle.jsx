@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
-import { inspectionsApi } from '@/api/services';
+import { inspectionsApi, mediaApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
@@ -47,14 +47,16 @@ export default function PeritajeDetalle() {
   const [showReject, setShowReject] = useState(false);
   const [errors, setErrors] = useState({});
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [reportPdfFile, setReportPdfFile] = useState(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const hasChangesRef = useRef(false);
 
   const getDraftKey = () => `peritaje_draft_${vehicleId}`;
 
   // Check if form has any data entered
   const hasFormData = useCallback(() => {
-    return PERITAJE_CATEGORIES.some(c => peritaje[c.key].score !== '' || peritaje[c.key].description.trim() !== '') || rejectReason.trim() !== '';
-  }, [peritaje, rejectReason]);
+    return PERITAJE_CATEGORIES.some(c => peritaje[c.key].score !== '' || peritaje[c.key].description.trim() !== '') || rejectReason.trim() !== '' || !!reportPdfFile;
+  }, [peritaje, rejectReason, reportPdfFile]);
 
   // Save draft to localStorage
   const saveDraft = useCallback(() => {
@@ -187,15 +189,24 @@ export default function PeritajeDetalle() {
     if (!inspection) return;
     const globalScore = getGlobalScore();
     try {
+      let reportPdfUrl;
+      if (reportPdfFile) {
+        setUploadingPdf(true);
+        const uploadRes = await mediaApi.upload([reportPdfFile]);
+        reportPdfUrl = uploadRes?.urls?.[0];
+      }
       await inspectionsApi.complete(inspection.id, {
         peritaje,
         scoreGlobal: globalScore,
+        reportPdfUrl,
       });
       toast.success('Peritaje finalizado', { description: `${vehicle?.brand || ''} ${vehicle?.model || ''} · Score: ${globalScore}/100` });
       localStorage.removeItem(getDraftKey());
       navigate('/PeritajesPendientes');
     } catch (err) {
       toast.error('Error al finalizar el peritaje');
+    } finally {
+      setUploadingPdf(false);
     }
   };
 
@@ -279,6 +290,16 @@ export default function PeritajeDetalle() {
                 </div>
               ))}
               {inspection.comments && <p className="text-xs text-muted-foreground mt-3 italic border-t border-border/20 pt-3">"{inspection.comments}"</p>}
+              {inspection.reportPdfUrl && (
+                <a
+                  href={inspection.reportPdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex text-xs text-primary hover:underline mt-2"
+                >
+                  Ver archivo adjunto del peritaje
+                </a>
+              )}
             </Card>
           )}
 
@@ -351,6 +372,19 @@ export default function PeritajeDetalle() {
           })}
         </div>
 
+        <Card className="p-4 border border-border/60 rounded-2xl space-y-2">
+          <Label className="text-xs font-medium">Archivo adjunto del peritaje (PDF)</Label>
+          <Input
+            type="file"
+            accept=".pdf,application/pdf"
+            className="rounded-xl text-xs"
+            onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
+          />
+          {reportPdfFile && (
+            <p className="text-xs text-muted-foreground">Archivo seleccionado: {reportPdfFile.name}</p>
+          )}
+        </Card>
+
         {showReject && (
           <Card className="p-4 border border-destructive/30 rounded-2xl space-y-3">
             <p className="text-sm font-semibold text-destructive">Razón del rechazo *</p>
@@ -364,7 +398,9 @@ export default function PeritajeDetalle() {
 
         <div className="flex gap-3 pt-2">
           <Button variant="outline" onClick={() => setShowReject(true)} className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-1"><X className="w-4 h-4" /> Rechazar</Button>
-          <Button onClick={handleFinalize} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"><Check className="w-4 h-4" /> Finalizar</Button>
+          <Button onClick={handleFinalize} disabled={uploadingPdf} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1">
+            <Check className="w-4 h-4" /> {uploadingPdf ? 'Subiendo...' : 'Finalizar'}
+          </Button>
         </div>
       </div>
       <BottomNav />
