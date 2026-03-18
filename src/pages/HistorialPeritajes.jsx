@@ -3,11 +3,10 @@ import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardCheck, MapPin, Calendar, Gauge, Building, RefreshCw } from 'lucide-react';
+import { MapPin, Calendar, Gauge, Building, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { inspectionsApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 import Skeleton from 'react-loading-skeleton';
@@ -29,39 +28,29 @@ const InspRowSkeleton = () => (
   </div>
 );
 
-export default function PeritajesPendientes() {
+export default function HistorialPeritajes() {
   const navigate = useNavigate();
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useAuth();
 
-  const loadInspections = async () => {
+  const loadHistory = async () => {
     try {
       setLoading(true);
-      const data = await inspectionsApi.getPending();
+      const data = await inspectionsApi.getHistory();
       setInspections(data || []);
     } catch (err) {
-      console.error('Error loading inspections:', err);
+      console.error('Error loading history:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadInspections();
-    const interval = setInterval(loadInspections, 15000);
+    loadHistory();
+    const interval = setInterval(loadHistory, 15000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleTakeInspection = async (inspection) => {
-    try {
-      await inspectionsApi.take(inspection.id);
-      toast.success('Peritaje tomado', { description: `${inspection.vehicle?.brand || ''} ${inspection.vehicle?.model || ''}` });
-      navigate(`/PeritajeDetalle/${inspection.id}`);
-    } catch (err) {
-      toast.error('Error al tomar el peritaje');
-    }
-  };
 
   const formatDate = (d) => {
     if (!d) return '';
@@ -78,62 +67,51 @@ export default function PeritajesPendientes() {
       <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-xl font-bold text-foreground font-sans">Peritajes pendientes</h1>
-            <p className="text-xs text-muted-foreground">Sucursal: {currentUser?.branch || 'N/A'}</p>
+            <h1 className="text-xl font-bold text-foreground font-sans">Historial de peritajes</h1>
+            <p className="text-xs text-muted-foreground">Peritajes completados y rechazados</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={loadInspections} disabled={loading} className="h-8 w-8 rounded-full">
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-            <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
-          </div>
+          <Button variant="outline" size="icon" onClick={loadHistory} disabled={loading} className="h-8 w-8 rounded-full">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
+
         {loading ? (
           <div className="space-y-3">{[1,2,3].map(i => <InspRowSkeleton key={i} />)}</div>
         ) : inspections.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <ClipboardCheck className="w-8 h-8 text-muted-foreground" />
+              <CheckCircle2 className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No hay peritajes pendientes</h3>
-            <p className="text-muted-foreground text-sm">Los peritajes de tu sucursal aparecerán aquí</p>
+            <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No hay peritajes en historial</h3>
+            <p className="text-muted-foreground text-sm">Los peritajes completados o rechazados aparecerán aquí</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {inspections.map((insp, index) => {
-              const isInProgress = insp.status === 'IN_PROGRESS';
-              return (
+            {inspections.map((insp, index) => (
               <motion.div key={insp.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                <Card className={`p-4 border shadow-sm rounded-2xl ${isInProgress ? 'border-secondary/40 bg-secondary/5' : 'border-border/60'}`}>
+                <Card className="p-4 border shadow-sm rounded-2xl border-border/60">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="font-bold text-foreground text-base">{insp.vehicle?.brand} {insp.vehicle?.model}</h3>
                       <p className="text-muted-foreground text-sm">{insp.vehicle?.year} · Placa: {insp.vehicle?.placa}</p>
                     </div>
-                    {isInProgress
-                      ? <Badge className="bg-blue-600 text-white text-xs pointer-events-none">En progreso</Badge>
-                      : <Badge className="bg-amber-500 text-white text-xs pointer-events-none">Pendiente</Badge>
+                    {insp.status === 'COMPLETED'
+                      ? <Badge className="bg-emerald-600 text-white text-xs pointer-events-none gap-1"><CheckCircle2 className="w-3 h-3" />Completado</Badge>
+                      : <Badge className="bg-destructive text-destructive-foreground text-xs pointer-events-none gap-1"><XCircle className="w-3 h-3" />Rechazado</Badge>
                     }
                   </div>
                   <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{Number(insp.vehicle?.mileage || 0).toLocaleString('es-CO')} km</span>
                     <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{insp.vehicle?.city || insp.vehicle?.ubicacion}</span>
                     <span className="flex items-center gap-1"><Building className="w-3 h-3" />{insp.dealerCompany}</span>
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.requestedAt)}</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.completedAt)}</span>
                   </div>
-                  {isInProgress ? (
-                    <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl gap-2">
-                      <ClipboardCheck className="w-4 h-4" /> Continuar peritaje
-                    </Button>
-                  ) : (
-                    <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
-                      <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
-                    </Button>
-                  )}
+                  <Button onClick={() => navigate(`/HistorialPeritajeDetalle/${insp.id}`)} variant="outline" className="w-full rounded-xl">
+                    Ver detalle
+                  </Button>
                 </Card>
               </motion.div>
-              );
-            })}
+            ))}
           </div>
         )}
       </div>

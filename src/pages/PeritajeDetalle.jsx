@@ -156,6 +156,9 @@ export default function PeritajeDetalle() {
     load();
   }, [vehicleId]);
 
+  // Check if this is viewing a completed/rejected inspection (readonly mode)
+  const isReadonly = inspection?.status === 'COMPLETED' || inspection?.status === 'REJECTED';
+
   const setScore = (cat, field, val) => {
     setPeritaje(prev => ({ ...prev, [cat]: { ...prev[cat], [field]: val } }));
     setErrors(prev => ({ ...prev, [cat]: undefined }));
@@ -372,16 +375,46 @@ export default function PeritajeDetalle() {
           })}
         </div>
 
-        <Card className="p-4 border border-border/60 rounded-2xl space-y-2">
-          <Label className="text-xs font-medium">Archivo adjunto del peritaje (PDF)</Label>
-          <Input
-            type="file"
-            accept=".pdf,application/pdf"
-            className="rounded-xl text-xs"
-            onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
-          />
-          {reportPdfFile && (
-            <p className="text-xs text-muted-foreground">Archivo seleccionado: {reportPdfFile.name}</p>
+        <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+          <Label className="text-xs font-medium">Archivo adjunto del peritaje</Label>
+          <div className="relative group cursor-pointer">
+            <div className="border-2 border-dashed border-muted-foreground/40 rounded-2xl p-6 text-center transition-all group-hover:border-secondary group-hover:bg-secondary/5">
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl"
+                onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
+                disabled={isReadonly}
+              />
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center group-hover:bg-secondary/20 transition-all">
+                  <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {reportPdfFile ? 'Archivo listo' : 'Seleccionar PDF'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {reportPdfFile ? reportPdfFile.name : 'o arrastra aquí'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {inspection?.reportPdfUrl && !reportPdfFile && (
+            <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+              <span className="text-xs text-emerald-900 font-medium">Archivo guardado</span>
+              <a
+                href={inspection.reportPdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-emerald-700 hover:underline font-medium"
+              >
+                Ver
+              </a>
+            </div>
           )}
         </Card>
 
