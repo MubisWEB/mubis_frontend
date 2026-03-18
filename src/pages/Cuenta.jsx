@@ -181,11 +181,11 @@ export default function Cuenta() {
 
   if (role === 'dealer' || role === 'recomprador') {
     menuItems.splice(1, 0,
-      { icon: DollarSign, label: 'Movimientos', action: () => navigate('/Movimientos') },
-      { icon: Trophy, label: 'Ganadas', action: () => navigate('/Ganados') },
-      { icon: TrendingUp, label: 'Rendimiento', action: () => navigate('/MiRendimiento') },
-      { icon: Target, label: 'Metas', action: () => navigate('/MisMetas') },
-      { icon: Bookmark, label: 'Guardadas', action: () => navigate('/Guardadas') },
+      { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
+      { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
+      { icon: TrendingUp, label: 'Analítica', action: () => navigate('/MiRendimiento') },
+      { icon: Target, label: 'Mis Metas', action: () => navigate('/MisMetas') },
+      { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
     );
   }

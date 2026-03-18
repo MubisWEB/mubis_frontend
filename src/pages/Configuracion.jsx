@@ -15,7 +15,7 @@ const SETTINGS_KEY = (userId) => `mubis_user_settings_${userId}`;
 
 const DEFAULT_SETTINGS = {
   notif_email: true,
-  notif_telegram: false,
+  notif_whatsapp: false,
   auction_ending: true,
   auction_finished: true,
   new_activity: true,
@@ -78,7 +78,7 @@ export default function Configuracion() {
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Canales de notificación</p>
           <Card className="border border-border shadow-sm rounded-xl px-4 divide-y divide-border">
             <SwitchRow icon={Mail} label="Email" settingKey="notif_email" />
-            <SwitchRow icon={MessageCircle} label="Telegram" settingKey="notif_telegram" />
+            <SwitchRow icon={MessageCircle} label="Whatsapp" settingKey="notif_whatsapp" />
           </Card>
         </motion.div>
 
