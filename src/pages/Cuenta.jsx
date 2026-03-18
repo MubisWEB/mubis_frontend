@@ -235,7 +235,7 @@ export default function Cuenta() {
             <p className="text-muted-foreground text-sm truncate">{user?.email}</p>
             <p className="text-muted-foreground text-xs">{user?.company} · {user?.branch}</p>
             {user?.telefono && <p className="text-muted-foreground text-xs">{user.telefono}</p>}
-            <Badge className={`mt-1 font-medium text-xs ${ROLE_BADGE_CLASS[role] || ''}`}>{ROLE_LABELS[role] || role}</Badge>
+            <Badge className={`mt-1 font-medium text-xs hover:bg-opacity-100 ${ROLE_BADGE_CLASS[role] || ''}`}>{ROLE_LABELS[role] || role}</Badge>
           </div>
         </motion.div>
       </div>

@@ -85,7 +85,7 @@ export default function PeritajesPendientes() {
             <Button variant="outline" size="icon" onClick={loadInspections} disabled={loading} className="h-8 w-8 rounded-full">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <Badge className="bg-secondary/10 text-secondary">{inspections.length} pendientes</Badge>
+            <Badge className="bg-amber-500 text-white hover:bg-amber-500">{inspections.length} pendientes</Badge>
           </div>
         </div>
         {loading ? (
