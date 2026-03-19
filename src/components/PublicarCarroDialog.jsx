@@ -261,7 +261,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
               <div>
                 <SectionTitle>Datos del vehículo</SectionTitle>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label className="text-xs font-medium">Placa *</Label><Input className="mt-1 rounded-xl" placeholder="ABC123" maxLength={7} value={form.placa} onChange={e => set('placa', e.target.value.toUpperCase())} />{fieldError('placa')}</div>
+                  <div><Label className="text-xs font-medium">Placa *</Label><Input className="mt-1 rounded-xl" placeholder="ABC123" maxLength={6} value={form.placa} onChange={e => set('placa', e.target.value.toUpperCase())} />{fieldError('placa')}</div>
                   <div><Label className="text-xs font-medium">Marca *</Label><Select value={form.brand} onValueChange={v => set('brand', v)}><SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger><SelectContent>{BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select>{fieldError('brand')}</div>
                   <div><Label className="text-xs font-medium">Modelo *</Label><Input className="mt-1 rounded-xl" placeholder="Ej: X3, Sportage" value={form.model} onChange={e => set('model', e.target.value)} />{fieldError('model')}</div>
                   <div><Label className="text-xs font-medium">Año *</Label><Input className="mt-1 rounded-xl" type="number" placeholder="2022" value={form.year} onChange={e => set('year', e.target.value)} />{fieldError('year')}</div>

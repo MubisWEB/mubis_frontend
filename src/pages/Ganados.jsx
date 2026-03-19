@@ -241,7 +241,7 @@ export default function Ganados() {
             <ArrowLeft className="w-4 h-4 text-foreground" />
           </button>
 
-          <h1 className="text-xl font-bold text-foreground font-sans">Mis Ganados</h1>
+          <h1 className="text-xl font-bold text-foreground font-sans">Subastas Ganadas</h1>
         </div>
           {wonAuctions.length > 0 && <p className="text-xs text-muted-foreground">{wonAuctions.length} subastas ganadas</p>}
         </div>
@@ -301,7 +301,7 @@ export default function Ganados() {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-lg font-bold text-foreground font-sans">Ganados</p>
+            <p className="text-lg font-bold text-foreground font-sans">Ganadas</p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{filteredAuctions.length} vehículos</span>
               <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
