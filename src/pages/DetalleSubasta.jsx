@@ -436,21 +436,23 @@ export default function DetalleSubasta() {
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-foreground flex items-center gap-2"><FileCheck className="w-4 h-4 text-secondary" />Peritaje Mubis</p>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${inspection.scoreGlobal >= 80 ? 'bg-primary/10 text-primary' : inspection.scoreGlobal >= 50 ? 'bg-purple-100 text-purple-800' : 'bg-destructive/10 text-destructive'}`}>
-                {inspection.scoreGlobal}
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${(inspection.scoreGlobal * 10) >= 80 ? 'bg-primary/10 text-primary' : (inspection.scoreGlobal * 10) >= 50 ? 'bg-purple-100 text-purple-800' : 'bg-destructive/10 text-destructive'}`}>
+                {Math.round(inspection.scoreGlobal * 10)}
               </div>
             </div>
             {inspection.scores && (
               <div className="space-y-2">
-                {Object.entries(inspection.scores).map(([key, val]) => (
+                {Object.entries(inspection.scores).map(([key, val]) => {
+                  const score100 = Math.round(val * 10);
+                  return (
                   <div key={key} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-2">
-                      {val >= 70 ? <CheckCircle className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-accent-foreground" />}
+                      {score100 >= 70 ? <CheckCircle className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-accent-foreground" />}
                       <span className="text-sm font-medium text-foreground capitalize">{key}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{val}/100</span>
-                  </div>
-                ))}
+                    <span className="text-xs text-muted-foreground">{score100}/100</span>
+                  </div>);
+                })}
               </div>
             )}
             {inspection.comments && <p className="text-xs text-muted-foreground mt-3 italic">"{inspection.comments}"</p>}

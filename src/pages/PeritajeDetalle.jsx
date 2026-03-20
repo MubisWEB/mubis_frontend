@@ -8,17 +8,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { Check, X, AlertCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Check, X, AlertCircle, Camera, FileText, ClipboardCheck, ChevronLeft, ChevronRight, Plus, Upload, Trash2, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
-import { inspectionsApi, mediaApi } from '@/api/services';
+import { inspectionsApi, mediaApi, vehiclesApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from '@/components/ui/alert-dialog';
+
+const PERITO_STEPS = [
+  { id: 0, label: 'Fotos', icon: Camera },
+  { id: 1, label: 'Documentación', icon: FileText },
+  { id: 2, label: 'Evaluación', icon: ClipboardCheck },
+  { id: 3, label: 'Finalizar', icon: Check },
+];
 
 const PERITAJE_CATEGORIES = [
   { key: 'motor', label: 'Motor' },
@@ -51,18 +59,44 @@ export default function PeritajeDetalle() {
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const hasChangesRef = useRef(false);
 
+  // Perito step-by-step states
+  const [step, setStep] = useState(0);
+  const [vehiclePhotos, setVehiclePhotos] = useState([]);
+  const [photoFiles, setPhotoFiles] = useState([]);
+  const [documentacion, setDocumentacion] = useState({
+    soat: { status: '', fechaVencimiento: '' },
+    tecnomecanica: { status: '', fechaVencimiento: '' },
+    multas: { tiene: '', descripcion: '' },
+  });
+  const [startingPrice, setStartingPrice] = useState('');
+  const photoInputRef = useRef(null);
+
   const getDraftKey = () => `peritaje_draft_${vehicleId}`;
 
   // Check if form has any data entered
   const hasFormData = useCallback(() => {
-    return PERITAJE_CATEGORIES.some(c => peritaje[c.key].score !== '' || peritaje[c.key].description.trim() !== '') || rejectReason.trim() !== '' || !!reportPdfFile;
-  }, [peritaje, rejectReason, reportPdfFile]);
+    return PERITAJE_CATEGORIES.some(c => peritaje[c.key].score !== '' || peritaje[c.key].description.trim() !== '') 
+      || rejectReason.trim() !== '' 
+      || !!reportPdfFile 
+      || vehiclePhotos.length > 0 
+      || photoFiles.length > 0
+      || documentacion.soat.status !== ''
+      || documentacion.tecnomecanica.status !== ''
+      || documentacion.multas.tiene !== '';
+  }, [peritaje, rejectReason, reportPdfFile, vehiclePhotos, photoFiles, documentacion]);
 
   // Save draft to localStorage
   const saveDraft = useCallback(() => {
     if (!vehicleId) return;
-    localStorage.setItem(getDraftKey(), JSON.stringify({ peritaje, rejectReason }));
-  }, [vehicleId, peritaje, rejectReason]);
+    localStorage.setItem(getDraftKey(), JSON.stringify({ 
+      peritaje, 
+      rejectReason, 
+      step, 
+      documentacion,
+      startingPrice,
+      // Note: we don't save photoFiles as File objects can't be serialized
+    }));
+  }, [vehicleId, peritaje, rejectReason, step, documentacion, startingPrice]);
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -73,6 +107,9 @@ export default function PeritajeDetalle() {
         const parsed = JSON.parse(saved);
         if (parsed.peritaje) setPeritaje(parsed.peritaje);
         if (parsed.rejectReason) setRejectReason(parsed.rejectReason);
+        if (parsed.step !== undefined) setStep(parsed.step);
+        if (parsed.documentacion) setDocumentacion(parsed.documentacion);
+        if (parsed.startingPrice) setStartingPrice(parsed.startingPrice);
         toast.info('Borrador recuperado', { description: 'Se cargaron los datos guardados previamente.' });
       } catch { /* ignore corrupt data */ }
     }
@@ -156,6 +193,15 @@ export default function PeritajeDetalle() {
     load();
   }, [vehicleId]);
 
+  // Pre-fill startingPrice from dealer's suggested price when vehicle loads
+  useEffect(() => {
+    if (!vehicle || startingPrice) return; // Don't override if already has a value
+    const suggestedPrice = vehicle?.specs?._startingPrice;
+    if (suggestedPrice) {
+      setStartingPrice(String(suggestedPrice));
+    }
+  }, [vehicle]);
+
   // Check if this is viewing a completed/rejected inspection (readonly mode)
   const isReadonly = inspection?.status === 'COMPLETED' || inspection?.status === 'REJECTED';
 
@@ -187,27 +233,141 @@ export default function PeritajeDetalle() {
     return Object.keys(e).length === 0;
   };
 
+  // Validation for each step
+  const validateStep = (stepNum) => {
+    const e = {};
+    if (stepNum === 0) {
+      // Step 1: Fotos - at least 1 photo required
+      if (vehiclePhotos.length === 0 && photoFiles.length === 0) {
+        e.photos = 'Debes agregar al menos una foto del vehículo';
+      }
+    } else if (stepNum === 1) {
+      // Step 2: Documentación
+      if (!documentacion.soat.status) e.soatStatus = 'Selecciona el estado del SOAT';
+      if (documentacion.soat.status && !documentacion.soat.fechaVencimiento) e.soatFecha = 'Ingresa la fecha de vencimiento';
+      if (!documentacion.tecnomecanica.status) e.tecnoStatus = 'Selecciona el estado de la tecnomecánica';
+      if (documentacion.tecnomecanica.status && !documentacion.tecnomecanica.fechaVencimiento) e.tecnoFecha = 'Ingresa la fecha de vencimiento';
+      if (!documentacion.multas.tiene) e.multasTiene = 'Indica si el vehículo tiene multas';
+      if (documentacion.multas.tiene === 'si' && !documentacion.multas.descripcion.trim()) e.multasDesc = 'Describe las multas';
+    } else if (stepNum === 2) {
+      // Step 3: Evaluación - uses existing validate
+      return validate();
+    } else if (stepNum === 3) {
+      // Step 4: Finalizar - precio de salida y PDF requeridos
+      if (!startingPrice || isNaN(startingPrice) || +startingPrice <= 0) {
+        e.startingPrice = 'Ingresa un precio de salida válido';
+      }
+      if (!reportPdfFile && !inspection?.reportPdfUrl) {
+        e.reportPdf = 'Debes adjuntar el archivo PDF del peritaje';
+      }
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (validateStep(step)) {
+      saveDraft();
+      setStep(prev => Math.min(prev + 1, 3));
+    }
+  };
+
+  const handlePrevStep = () => {
+    saveDraft();
+    setStep(prev => Math.max(prev - 1, 0));
+  };
+
+  // Photo handling
+  const handlePhotoSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setVehiclePhotos(prev => [...prev, ...newPreviews]);
+    setPhotoFiles(prev => [...prev, ...files]);
+    setErrors(prev => ({ ...prev, photos: undefined }));
+  };
+
+  const handleRemovePhoto = (index) => {
+    setVehiclePhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotoFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Documentation handlers
+  const updateDocumentacion = (section, field, value) => {
+    setDocumentacion(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: value }
+    }));
+    setErrors(prev => ({ ...prev, [`${section}${field.charAt(0).toUpperCase() + field.slice(1)}`]: undefined }));
+  };
+
   const handleFinalize = async () => {
-    if (!validate()) return;
+    if (!validateStep(3)) return;
     if (!inspection) return;
     const globalScore = getGlobalScore();
     try {
+      setUploadingPdf(true);
+      
+      // Upload vehicle photos first
+      let uploadedPhotoUrls = [];
+      if (photoFiles.length > 0) {
+        const photoUploadRes = await mediaApi.upload(photoFiles);
+        uploadedPhotoUrls = photoUploadRes?.urls || [];
+      }
+
+      // Upload PDF if selected
       let reportPdfUrl;
       if (reportPdfFile) {
-        setUploadingPdf(true);
         const uploadRes = await mediaApi.upload([reportPdfFile]);
         reportPdfUrl = uploadRes?.urls?.[0];
       }
-      await inspectionsApi.complete(inspection.id, {
-        peritaje,
-        scoreGlobal: globalScore,
-        reportPdfUrl,
+
+      // Build documentation for backend
+      const docForBackend = {
+        soat: { 
+          status: documentacion.soat.status, 
+          fecha: documentacion.soat.fechaVencimiento 
+        },
+        tecno: { 
+          status: documentacion.tecnomecanica.status, 
+          fecha: documentacion.tecnomecanica.fechaVencimiento 
+        },
+        multas: { 
+          tiene: documentacion.multas.tiene === 'si', 
+          descripcion: documentacion.multas.descripcion 
+        },
+      };
+
+      // Convert scores from 0-100 to 0-10 for backend
+      const scoresForBackend = {};
+      PERITAJE_CATEGORIES.forEach(cat => {
+        const score100 = +peritaje[cat.key].score || 0;
+        scoresForBackend[cat.key] = Math.round(score100 / 10); // Convert 0-100 to 0-10
       });
+
+      // Build comments from all descriptions
+      const comments = PERITAJE_CATEGORIES
+        .map(cat => `${cat.label}: ${peritaje[cat.key].description}`)
+        .join(' | ');
+
+      // Complete inspection with all data (including photos and documentation)
+      await inspectionsApi.complete(inspection.id, {
+        scores: scoresForBackend,
+        comments,
+        reportPdfUrl,
+        startingPrice: +startingPrice,
+        vehiclePhotos: uploadedPhotoUrls,
+        documentation: docForBackend,
+      });
+      
       toast.success('Peritaje finalizado', { description: `${vehicle?.brand || ''} ${vehicle?.model || ''} · Score: ${globalScore}/100` });
       localStorage.removeItem(getDraftKey());
       navigate('/PeritajesPendientes');
     } catch (err) {
-      toast.error('Error al finalizar el peritaje');
+      console.error('Error al finalizar:', err);
+      const errorMsg = err?.response?.data?.message || err?.message || 'Error desconocido';
+      toast.error('Error al finalizar el peritaje', { description: errorMsg });
     } finally {
       setUploadingPdf(false);
     }
@@ -278,7 +438,7 @@ export default function PeritajeDetalle() {
             {inspection?.status === 'COMPLETED' && inspection?.scoreGlobal != null && (
               <div className="text-right">
                 <p className="text-xs text-muted-foreground mb-1">Score global</p>
-                <p className={cn('text-3xl font-bold', getScoreColor(inspection.scoreGlobal))}>{inspection.scoreGlobal}<span className="text-sm text-muted-foreground">/100</span></p>
+                <p className={cn('text-3xl font-bold', getScoreColor(inspection.scoreGlobal * 10))}>{Math.round(inspection.scoreGlobal * 10)}<span className="text-sm text-muted-foreground">/100</span></p>
               </div>
             )}
           </Card>
@@ -286,12 +446,14 @@ export default function PeritajeDetalle() {
           {inspection?.status === 'COMPLETED' && inspection?.scores && (
             <Card className="p-4 border border-border/60 rounded-2xl space-y-2">
               <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-3">Resultados por categoría</p>
-              {Object.entries(inspection.scores).map(([key, val]) => (
+              {Object.entries(inspection.scores).map(([key, val]) => {
+                const score100 = Math.round(val * 10);
+                return (
                 <div key={key} className="flex items-center justify-between py-1 border-b border-border/20 last:border-0">
                   <span className="text-sm text-foreground capitalize">{key}</span>
-                  <span className={cn('text-sm font-bold', getScoreColor(val))}>{val}/100</span>
-                </div>
-              ))}
+                  <span className={cn('text-sm font-bold', getScoreColor(score100))}>{score100}/100</span>
+                </div>);
+              })}
               {inspection.comments && <p className="text-xs text-muted-foreground mt-3 italic border-t border-border/20 pt-3">"{inspection.comments}"</p>}
               {inspection.reportPdfUrl && (
                 <a
@@ -334,107 +496,500 @@ export default function PeritajeDetalle() {
     );
   }
 
-  // ── Perito: full inspection form ─────────────────────────────────────────
+  // ── Perito: full inspection form (3-step process) ─────────────────────────
+  
+  // Step indicator component
+  const StepIndicator = () => (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {PERITO_STEPS.map((s, idx) => {
+        const Icon = s.icon;
+        const isCompleted = idx < step;
+        const isCurrent = idx === step;
+        return (
+          <React.Fragment key={s.id}>
+            <div className="flex flex-col items-center">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+                  isCompleted ? "bg-primary text-primary-foreground" :
+                  isCurrent ? "bg-secondary text-secondary-foreground ring-2 ring-secondary ring-offset-2" :
+                  "bg-muted text-muted-foreground"
+                )}
+              >
+                {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+              </div>
+              <span className={cn(
+                "text-xs mt-1.5 font-medium",
+                isCurrent ? "text-secondary" : isCompleted ? "text-primary" : "text-muted-foreground"
+              )}>
+                {s.label}
+              </span>
+            </div>
+            {idx < PERITO_STEPS.length - 1 && (
+              <div className={cn(
+                "w-12 h-0.5 mb-5",
+                idx < step ? "bg-primary" : "bg-muted"
+              )} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+
+  // Step 1: Fotos del vehículo
+  const renderStep0 = () => (
+    <div className="space-y-5">
+      <div>
+        <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-4">
+          Fotos del vehículo
+        </p>
+        <p className="text-xs text-muted-foreground mb-4">
+          Toma o selecciona fotos del vehículo desde diferentes ángulos. Mínimo 1 foto requerida.
+        </p>
+      </div>
+
+      {/* Photo grid */}
+      <div className="grid grid-cols-3 gap-3">
+        {vehiclePhotos.map((photo, index) => (
+          <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-border/40 group">
+            <img src={photo} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+            <button
+              onClick={() => handleRemovePhoto(index)}
+              className="absolute top-1 right-1 w-6 h-6 bg-destructive/90 text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+        
+        {/* Add photo button */}
+        <div 
+          onClick={() => photoInputRef.current?.click()}
+          className="aspect-square rounded-xl border-2 border-dashed border-muted-foreground/40 flex flex-col items-center justify-center cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-all"
+        >
+          <Plus className="w-6 h-6 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground mt-1">Agregar</span>
+        </div>
+      </div>
+
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handlePhotoSelect}
+      />
+
+      {/* Existing vehicle photos */}
+      {vehicle.photos?.length > 0 && (
+        <div className="pt-4 border-t border-border/40">
+          <p className="text-xs text-muted-foreground mb-2">Fotos existentes del vehículo:</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {vehicle.photos.map((p, i) => (
+              <img key={i} src={p} alt="" className="w-20 h-14 rounded-lg object-cover flex-shrink-0 border border-border/40 opacity-60" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {errors.photos && (
+        <span className="text-destructive text-xs flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" />{errors.photos}
+        </span>
+      )}
+
+      {/* Navigation */}
+      <div className="flex gap-3 pt-4">
+        <Button 
+          onClick={handleNextStep} 
+          className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"
+        >
+          Siguiente <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Step 2: Documentación
+  const renderStep1 = () => (
+    <div className="space-y-5">
+      <div>
+        <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-4">
+          Documentación del vehículo
+        </p>
+      </div>
+
+      {/* SOAT */}
+      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+        <div className="flex items-center gap-2 mb-2">
+          <FileText className="w-4 h-4 text-primary" />
+          <Label className="text-sm font-semibold">SOAT</Label>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Estado *</Label>
+            <Select 
+              value={documentacion.soat.status} 
+              onValueChange={(val) => updateDocumentacion('soat', 'status', val)}
+            >
+              <SelectTrigger className="rounded-xl">
+                <SelectValue placeholder="Seleccionar estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="vigente">Vigente</SelectItem>
+                <SelectItem value="vencido">Vencido</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.soatStatus && (
+              <span className="text-destructive text-xs flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3 h-3" />{errors.soatStatus}
+              </span>
+            )}
+          </div>
+          
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Fecha de vencimiento *</Label>
+            <div className="relative">
+              <Input
+                type="date"
+                value={documentacion.soat.fechaVencimiento}
+                onChange={(e) => updateDocumentacion('soat', 'fechaVencimiento', e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+            {errors.soatFecha && (
+              <span className="text-destructive text-xs flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3 h-3" />{errors.soatFecha}
+              </span>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {/* Tecnomecánica */}
+      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+        <div className="flex items-center gap-2 mb-2">
+          <FileText className="w-4 h-4 text-primary" />
+          <Label className="text-sm font-semibold">Tecnomecánica</Label>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Estado *</Label>
+            <Select 
+              value={documentacion.tecnomecanica.status} 
+              onValueChange={(val) => updateDocumentacion('tecnomecanica', 'status', val)}
+            >
+              <SelectTrigger className="rounded-xl">
+                <SelectValue placeholder="Seleccionar estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="vigente">Vigente</SelectItem>
+                <SelectItem value="vencida">Vencida</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.tecnoStatus && (
+              <span className="text-destructive text-xs flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3 h-3" />{errors.tecnoStatus}
+              </span>
+            )}
+          </div>
+          
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Fecha de vencimiento *</Label>
+            <Input
+              type="date"
+              value={documentacion.tecnomecanica.fechaVencimiento}
+              onChange={(e) => updateDocumentacion('tecnomecanica', 'fechaVencimiento', e.target.value)}
+              className="rounded-xl"
+            />
+            {errors.tecnoFecha && (
+              <span className="text-destructive text-xs flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3 h-3" />{errors.tecnoFecha}
+              </span>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {/* Multas */}
+      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+        <div className="flex items-center gap-2 mb-2">
+          <AlertCircle className="w-4 h-4 text-primary" />
+          <Label className="text-sm font-semibold">Multas</Label>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">¿Tiene multas? *</Label>
+            <Select 
+              value={documentacion.multas.tiene} 
+              onValueChange={(val) => updateDocumentacion('multas', 'tiene', val)}
+            >
+              <SelectTrigger className="rounded-xl">
+                <SelectValue placeholder="Seleccionar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no">No</SelectItem>
+                <SelectItem value="si">Sí</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.multasTiene && (
+              <span className="text-destructive text-xs flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3 h-3" />{errors.multasTiene}
+              </span>
+            )}
+          </div>
+          
+          {documentacion.multas.tiene === 'si' && (
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Descripción de multas *</Label>
+              <Textarea
+                value={documentacion.multas.descripcion}
+                onChange={(e) => updateDocumentacion('multas', 'descripcion', e.target.value)}
+                placeholder="Describe las multas del vehículo..."
+                className="rounded-xl"
+              />
+              {errors.multasDesc && (
+                <span className="text-destructive text-xs flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3 h-3" />{errors.multasDesc}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Navigation */}
+      <div className="flex gap-3 pt-4">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevStep} 
+          className="flex-1 rounded-xl gap-1"
+        >
+          <ChevronLeft className="w-4 h-4" /> Atrás
+        </Button>
+        <Button 
+          onClick={handleNextStep} 
+          className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"
+        >
+          Siguiente <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Step 3: Evaluación (existing evaluation form)
+  const renderStep2 = () => (
+    <div className="space-y-5">
+      <Card className="p-4 border border-border/60 text-center rounded-2xl">
+        <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
+        <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
+        <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
+      </Card>
+
+      <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2">Evaluación por categoría (0–100)</p>
+      <div className="space-y-4">
+        {PERITAJE_CATEGORIES.map(cat => {
+          const val = peritaje[cat.key];
+          const score = val.score === '' ? 0 : +val.score;
+          return (
+            <div key={cat.key} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium">{cat.label} *</Label>
+                <span className={cn("text-sm font-bold tabular-nums", val.score !== '' ? getScoreColor(score) : 'text-muted-foreground')}>{val.score !== '' ? score : '—'}/100</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Slider min={0} max={100} step={1} value={[val.score === '' ? 0 : +val.score]} onValueChange={([v]) => setScore(cat.key, 'score', String(v))} className="flex-1" />
+                <Input className="w-16 rounded-xl text-center text-sm" type="number" min={0} max={100} placeholder="0" value={val.score} onChange={e => { let v = e.target.value; if (v !== '' && +v > 100) v = '100'; if (v !== '' && +v < 0) v = '0'; setScore(cat.key, 'score', v); }} />
+              </div>
+              <Input className="rounded-xl text-xs" placeholder={`Comentario sobre ${cat.label.toLowerCase()} (obligatorio)`} value={val.description} onChange={e => setScore(cat.key, 'description', e.target.value)} />
+              {errors[cat.key] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[cat.key]}</span>}
+              {errors[`${cat.key}_desc`] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[`${cat.key}_desc`]}</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex gap-3 pt-4">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevStep} 
+          className="flex-1 rounded-xl gap-1"
+        >
+          <ChevronLeft className="w-4 h-4" /> Atrás
+        </Button>
+        <Button 
+          onClick={handleNextStep} 
+          className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"
+        >
+          Siguiente <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Step 4: Finalizar - PDF, precio de salida y confirmación
+  const renderStep3 = () => {
+    const suggestedPrice = vehicle?.specs?._startingPrice;
+    
+    return (
+    <div className="space-y-5">
+      <Card className="p-4 border border-border/60 text-center rounded-2xl">
+        <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
+        <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
+        <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
+      </Card>
+
+      {/* Precio de salida */}
+      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+        <Label className="text-sm font-semibold">Precio de salida para subasta *</Label>
+        {suggestedPrice && (
+          <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+            <p className="text-xs text-blue-700 font-medium">
+              💡 Precio sugerido por el dealer: ${Number(suggestedPrice).toLocaleString('es-CO')} COP
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              Puedes mantener este precio o ajustarlo según tu evaluación.
+            </p>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Define el precio inicial en COP para la subasta de este vehículo.
+        </p>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+          <Input
+            type="number"
+            min={0}
+            placeholder="50.000.000"
+            value={startingPrice}
+            onChange={(e) => setStartingPrice(e.target.value)}
+            className="pl-7 rounded-xl"
+            disabled={isReadonly}
+          />
+        </div>
+        {errors.startingPrice && (
+          <span className="text-destructive text-xs flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />{errors.startingPrice}
+          </span>
+        )}
+        {startingPrice && +startingPrice > 0 && (
+          <p className="text-xs text-muted-foreground">
+            Precio formateado: ${Number(startingPrice).toLocaleString('es-CO')} COP
+          </p>
+        )}
+      </Card>
+
+      {/* PDF Upload */}
+      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+        <Label className="text-sm font-semibold">Archivo adjunto del peritaje *</Label>
+        <p className="text-xs text-muted-foreground">
+          Adjunta el PDF con el informe completo del peritaje.
+        </p>
+        <div className="relative group cursor-pointer">
+          <div className={cn(
+            "border-2 border-dashed rounded-2xl p-6 text-center transition-all group-hover:border-secondary group-hover:bg-secondary/5",
+            errors.reportPdf ? "border-destructive/60" : "border-muted-foreground/40"
+          )}>
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl"
+              onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
+              disabled={isReadonly}
+            />
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center group-hover:bg-secondary/20 transition-all">
+                <Upload className="w-5 h-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {reportPdfFile ? 'Archivo listo' : 'Seleccionar PDF'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {reportPdfFile ? reportPdfFile.name : 'o arrastra aquí'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {errors.reportPdf && (
+          <span className="text-destructive text-xs flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />{errors.reportPdf}
+          </span>
+        )}
+        {inspection?.reportPdfUrl && !reportPdfFile && (
+          <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+            <span className="text-xs text-emerald-900 font-medium">Archivo guardado</span>
+            <a
+              href={inspection.reportPdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-emerald-700 hover:underline font-medium"
+            >
+              Ver
+            </a>
+          </div>
+        )}
+      </Card>
+
+      {showReject && (
+        <Card className="p-4 border border-destructive/30 rounded-2xl space-y-3">
+          <p className="text-sm font-semibold text-destructive">Razón del rechazo *</p>
+          <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="Describe por qué rechazas este peritaje..." className="rounded-xl" />
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowReject(false)} className="flex-1 rounded-xl">Cancelar</Button>
+            <Button onClick={handleReject} className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl gap-1"><X className="w-4 h-4" /> Confirmar rechazo</Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Navigation */}
+      <div className="flex gap-3 pt-2">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevStep} 
+          className="rounded-xl gap-1"
+        >
+          <ChevronLeft className="w-4 h-4" /> Atrás
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => setShowReject(true)} 
+          className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-1"
+        >
+          <X className="w-4 h-4" /> Rechazar
+        </Button>
+        <Button 
+          onClick={handleFinalize} 
+          disabled={uploadingPdf} 
+          className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"
+        >
+          <Check className="w-4 h-4" /> {uploadingPdf ? 'Subiendo...' : 'Finalizar'}
+        </Button>
+      </div>
+    </div>
+  );
+  };
+
   return (
     <div className="min-h-screen bg-background pb-28">
       <Header title={`${vehicle.brand} ${vehicle.model}`} subtitle={`${vehicle.year} · Placa: ${vehicle.placa}`} onBack={handleBack} />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-        {vehicle.photos?.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto">
-            {vehicle.photos.slice(0, 4).map((p, i) => (<img key={i} src={p} alt="" className="w-24 h-18 rounded-xl object-cover flex-shrink-0" />))}
-          </div>
-        )}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Step indicator */}
+        <StepIndicator />
 
-        <Card className="p-4 border border-border/60 text-center rounded-2xl">
-          <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
-          <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
-          <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
-        </Card>
-
-        <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2">Evaluación por categoría (0–100)</p>
-        <div className="space-y-4">
-          {PERITAJE_CATEGORIES.map(cat => {
-            const val = peritaje[cat.key];
-            const score = val.score === '' ? 0 : +val.score;
-            return (
-              <div key={cat.key} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-medium">{cat.label} *</Label>
-                  <span className={cn("text-sm font-bold tabular-nums", val.score !== '' ? getScoreColor(score) : 'text-muted-foreground')}>{val.score !== '' ? score : '—'}/100</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Slider min={0} max={100} step={1} value={[val.score === '' ? 0 : +val.score]} onValueChange={([v]) => setScore(cat.key, 'score', String(v))} className="flex-1" />
-                  <Input className="w-16 rounded-xl text-center text-sm" type="number" min={0} max={100} placeholder="0" value={val.score} onChange={e => { let v = e.target.value; if (v !== '' && +v > 100) v = '100'; if (v !== '' && +v < 0) v = '0'; setScore(cat.key, 'score', v); }} />
-                </div>
-                <Input className="rounded-xl text-xs" placeholder={`Comentario sobre ${cat.label.toLowerCase()} (obligatorio)`} value={val.description} onChange={e => setScore(cat.key, 'description', e.target.value)} />
-                {errors[cat.key] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[cat.key]}</span>}
-                {errors[`${cat.key}_desc`] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[`${cat.key}_desc`]}</span>}
-              </div>
-            );
-          })}
-        </div>
-
-        <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
-          <Label className="text-xs font-medium">Archivo adjunto del peritaje</Label>
-          <div className="relative group cursor-pointer">
-            <div className="border-2 border-dashed border-muted-foreground/40 rounded-2xl p-6 text-center transition-all group-hover:border-secondary group-hover:bg-secondary/5">
-              <input
-                type="file"
-                accept=".pdf,application/pdf"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl"
-                onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
-                disabled={isReadonly}
-              />
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center group-hover:bg-secondary/20 transition-all">
-                  <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {reportPdfFile ? 'Archivo listo' : 'Seleccionar PDF'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {reportPdfFile ? reportPdfFile.name : 'o arrastra aquí'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          {inspection?.reportPdfUrl && !reportPdfFile && (
-            <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-              <span className="text-xs text-emerald-900 font-medium">Archivo guardado</span>
-              <a
-                href={inspection.reportPdfUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-emerald-700 hover:underline font-medium"
-              >
-                Ver
-              </a>
-            </div>
-          )}
-        </Card>
-
-        {showReject && (
-          <Card className="p-4 border border-destructive/30 rounded-2xl space-y-3">
-            <p className="text-sm font-semibold text-destructive">Razón del rechazo *</p>
-            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="Describe por qué rechazas este peritaje..." className="rounded-xl" />
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowReject(false)} className="flex-1 rounded-xl">Cancelar</Button>
-              <Button onClick={handleReject} className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl gap-1"><X className="w-4 h-4" /> Confirmar rechazo</Button>
-            </div>
-          </Card>
-        )}
-
-        <div className="flex gap-3 pt-2">
-          <Button variant="outline" onClick={() => setShowReject(true)} className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-1"><X className="w-4 h-4" /> Rechazar</Button>
-          <Button onClick={handleFinalize} disabled={uploadingPdf} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1">
-            <Check className="w-4 h-4" /> {uploadingPdf ? 'Subiendo...' : 'Finalizar'}
-          </Button>
-        </div>
+        {/* Step content */}
+        {step === 0 && renderStep0()}
+        {step === 1 && renderStep1()}
+        {step === 2 && renderStep2()}
+        {step === 3 && renderStep3()}
       </div>
       <BottomNav />
 
