@@ -127,7 +127,7 @@ export default function HistorialPeritajeDetalle() {
           {inspection?.status === 'COMPLETED' && inspection?.scoreGlobal != null && (
             <div className="text-right">
               <p className="text-xs text-muted-foreground mb-1">Score global</p>
-              <p className={cn('text-3xl font-bold', getScoreColor(inspection.scoreGlobal))}>{inspection.scoreGlobal}<span className="text-sm text-muted-foreground">/100</span></p>
+              <p className={cn('text-3xl font-bold', getScoreColor(inspection.scoreGlobal * 10))}>{Math.round(inspection.scoreGlobal * 10)}<span className="text-sm text-muted-foreground">/100</span></p>
             </div>
           )}
         </Card>
@@ -135,12 +135,15 @@ export default function HistorialPeritajeDetalle() {
         {inspection?.status === 'COMPLETED' && inspection?.scores && (
           <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
             <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-3">Resultados por categoría</p>
-            {Object.entries(inspection.scores).map(([key, val]) => (
-              <div key={key} className="flex items-center justify-between py-1.5 border-b border-border/20 last:border-0">
-                <span className="text-sm text-foreground capitalize font-medium">{key}</span>
-                <span className={cn('text-sm font-bold tabular-nums', getScoreColor(val))}>{val}/100</span>
-              </div>
-            ))}
+            {Object.entries(inspection.scores).map(([key, val]) => {
+              const score100 = Math.round(val * 10); // Convert 0-10 to 0-100
+              return (
+                <div key={key} className="flex items-center justify-between py-1.5 border-b border-border/20 last:border-0">
+                  <span className="text-sm text-foreground capitalize font-medium">{key}</span>
+                  <span className={cn('text-sm font-bold tabular-nums', getScoreColor(score100))}>{score100}/100</span>
+                </div>
+              );
+            })}
             {inspection.comments && (
               <div className="mt-3 pt-3 border-t border-border/20">
                 <p className="text-xs font-medium text-muted-foreground mb-2">Comentarios</p>

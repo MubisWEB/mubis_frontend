@@ -327,9 +327,9 @@ export default function MisSubastas() {
 
   const enProceso = useMemo(() => applyFilters(vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status))), [vehicles, search, filters]);
   const rechazados = useMemo(() => applyFilters(vehicles.filter((v) => v.status === 'INSPECTION_REJECTED')), [vehicles, search, filters]);
-  const activas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'active')), [auctions, search, filters]);
-  const pendienteDecision = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'pending_decision')), [auctions, search, filters]);
-  const finalizadas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'ended' || a.status === 'closed')), [auctions, search, filters]);
+  const activas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'ACTIVE')), [auctions, search, filters]);
+  const pendienteDecision = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'PENDING_DECISION')), [auctions, search, filters]);
+  const finalizadas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'ENDED' || a.status === 'CLOSED')), [auctions, search, filters]);
 
 
   return (
@@ -353,24 +353,6 @@ export default function MisSubastas() {
         </div>
       </div>
 
-      <div className="px-4 md:px-8 pt-2 pb-2">
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {[
-          { key: 'activas', label: 'Activas', count: auctions.filter((a) => a.status === 'active').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'decision', label: 'Decisión', count: auctions.filter((a) => a.status === 'pending_decision').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'proceso', label: 'En proceso', count: vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'rechazados', label: 'Rechazados', count: vehicles.filter((v) => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
-          { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter((a) => a.status === 'ended' || a.status === 'closed').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' }].
-          map((stat) =>
-          <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-          className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
-              <p className={`text-xl md:text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
-              <p className={`text-[9px] md:text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Search & Sort */}
       <div className="px-4 md:px-8 pb-3 flex items-center gap-2">
         <div className="relative flex-1">
@@ -387,6 +369,24 @@ export default function MisSubastas() {
           <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
             <LayoutList className="w-4 h-4" />
           </button>
+        </div>
+      </div>
+
+      <div className="px-4 md:px-8 pt-2 pb-2">
+        <div className="grid grid-cols-5 gap-2 mb-4">
+          {[
+          { key: 'activas', label: 'Activas', count: auctions.filter((a) => a.status === 'ACTIVE').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+          { key: 'decision', label: 'Decisión', count: auctions.filter((a) => a.status === 'PENDING_DECISION').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+          { key: 'proceso', label: 'En proceso', count: vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
+          { key: 'rechazados', label: 'Rechazados', count: vehicles.filter((v) => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
+          { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter((a) => a.status === 'ENDED' || a.status === 'CLOSED').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' }].
+          map((stat) =>
+          <button key={stat.key} onClick={() => setActiveTab(stat.key)}
+          className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
+              <p className={`text-xl md:text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
+              <p className={`text-[9px] md:text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
+            </button>
+          )}
         </div>
       </div>
 
