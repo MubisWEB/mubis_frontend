@@ -169,7 +169,7 @@ export default function Cuenta() {
     }
   };
 
-  const PUBLICATION_PRICE_PER_UNIT = 15000;
+  const PUBLICATION_PRICE_PER_UNIT = 1000;
   const getPublicationPrice = (qty) => qty * PUBLICATION_PRICE_PER_UNIT;
 
   const menuItems = [
