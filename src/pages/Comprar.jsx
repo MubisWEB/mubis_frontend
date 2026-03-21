@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Flame, Radio, Bookmark, LayoutGrid, LayoutList, Trophy } from 'lucide-react';
+import { Search, SlidersHorizontal, Flame, Radio, Bookmark, LayoutGrid, LayoutList, Trophy, ChevronDown } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import VehicleCard from '@/components/VehicleCard';
 import FilterSheet from '@/components/FilterSheet';
@@ -153,80 +153,39 @@ export default function Comprar() {
     <div className="min-h-screen flex flex-col bg-background pb-32">
       <Header />
 
-      {/* Live Activity Banner */}
-      <div className="px-4 md:px-8 pt-3">
-        <Card className="border border-border shadow-sm rounded-xl overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-2.5">
-            <div className="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
-              <Radio className="w-3.5 h-3.5 text-secondary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold text-secondary uppercase tracking-wider">Actividad en vivo</p>
-              <AnimatePresence mode="wait">
-                {currentActivity ? (
-                  <motion.p key={currentActivity.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }} className="text-sm text-foreground truncate">
-                    {currentActivity.message}
-                  </motion.p>
-                ) : (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-muted-foreground">
-                    Sin actividad reciente
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </Card>
-      </div>
-      {/* Search & Sort bar */}
+      {/* Combined bar - Ganadas/Guardadas centered, Search right */}
       <div className="bg-background px-4 md:px-8 pt-3 pb-3">
-        <div className="flex items-center gap-3 mb-3">
-          <Badge variant="outline" className="px-2.5 py-1 text-xs border-border bg-muted/50 text-muted-foreground">
-            <Flame className="w-3 h-3 mr-1 text-secondary" />
-            {vehicles.length} activas
-          </Badge>
+        <div className="flex items-center justify-between gap-4">
+          {/* Ganadas y Guardadas - Center */}
+          <div className="flex-1 flex items-center justify-center gap-6">
+            <button
+              onClick={() => navigate('/Ganados')}
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
+              Ganadas
+            </button>
+            <button
+              onClick={() => navigate('/Guardadas')}
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
+              Guardadas
+            </button>
+          </div>
 
-          <button
-            onClick={() => navigate('/Ganados')}
-            className="ml-auto flex items-center gap-1 text-xs text-primary hover:opacity-80 transition-opacity"
-          >
-            <Trophy className="w-3.5 h-3.5" />
-            Ganadas
-          </button>
-
-          <button
-            onClick={() => navigate('/Guardadas')}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors"
-          >
-            <Bookmark className="w-3.5 h-3.5" />
-            Guardadas
-          </button>
-        </div>
-
-        <div className="relative mb-3">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar marca o modelo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="flex-1 rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm">
-              <SlidersHorizontal className="w-4 h-4 mr-1 text-muted-foreground" />
-              <SelectValue placeholder="Ordenar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Más nuevos</SelectItem>
-              <SelectItem value="ending_soon">Por terminar</SelectItem>
-              <SelectItem value="most_bids">Más populares</SelectItem>
-              <SelectItem value="price_low">Precio: menor</SelectItem>
-              <SelectItem value="price_high">Precio: mayor</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="md:hidden">
-            <FilterSheet filters={filters} setFilters={setFilters} />
+          {/* Search bar - Right */}
+          <div className="flex items-center gap-3">
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar marca o modelo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+              />
+            </div>
+            <div className="md:hidden">
+              <FilterSheet filters={filters} setFilters={setFilters} />
+            </div>
           </div>
         </div>
       </div>
@@ -234,22 +193,32 @@ export default function Comprar() {
       {/* Main content */}
       <div className="px-4 md:px-8 pt-2 pb-4 md:flex gap-6">
         <aside className="hidden md:block w-64 flex-shrink-0">
-          <FilterPanel filters={filters} setFilters={setFilters} />
+          <FilterPanel 
+            filters={filters} 
+            setFilters={setFilters} 
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            showViewMode={false}
+            showSavedLinks={false}
+          />
         </aside>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-lg font-bold text-foreground font-sans">Subastas</p>
+            <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{filteredVehicles.length} vehículos</span>
-              <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
-                <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-                  <LayoutList className="w-4 h-4" />
-                </button>
-              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm w-auto">
+                  <SelectValue placeholder="Ordenar Por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Más nuevos</SelectItem>
+                  <SelectItem value="ending_soon">Por terminar</SelectItem>
+                  <SelectItem value="most_bids">Más populares</SelectItem>
+                  <SelectItem value="price_low">Precio: menor</SelectItem>
+                  <SelectItem value="price_high">Precio: mayor</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {loading ? (

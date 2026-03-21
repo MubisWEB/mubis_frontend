@@ -38,7 +38,7 @@ function SellerFilterPanel({ filters, setFilters }) {
   const handleReset = () => {const e = { brand: '', yearFrom: '', yearTo: '' };setLocal(e);setFilters(e);};
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 sticky top-4">
+    <div className="bg-card border border-border rounded-2xl p-5 sticky top-4 self-start">
       <div className="flex items-center gap-2 mb-5">
         <Filter className="w-4 h-4 text-secondary" />
         <h3 className="text-base font-bold text-foreground">Filtros</h3>
