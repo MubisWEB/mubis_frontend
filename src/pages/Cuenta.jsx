@@ -158,14 +158,47 @@ export default function Cuenta() {
   const handleRecharge = async () => {
     if (!user) return;
     try {
-      const result = await publicationsApi.recharge(user.id, rechargeQty);
-      const newBalance = result?.balance ?? (pubBalance + rechargeQty);
-      setPubBalance(newBalance);
-      toast.success(`¡Recarga exitosa!`, { description: `${rechargeQty} publicaciones añadidas. Balance: ${newBalance}` });
-      setRechargeOpen(false);
-      setRechargeQty(10);
+      // Create checkout session with Wompi
+      const checkout = await publicationsApi.createCheckout(rechargeQty);
+      
+      // Show success message
+      toast.success('Abriendo pasarela de pago...', { 
+        description: `Total: ${formatCOP(checkout.amount)}` 
+      });
+
+      // Open Wompi checkout in new window/tab
+      const paymentWindow = window.open(
+        checkout.checkoutUrl, 
+        'wompi_checkout',
+        'width=600,height=800,left=200,top=100'
+      );
+
+      // Check if popup was blocked
+      if (!paymentWindow || paymentWindow.closed || typeof paymentWindow.closed === 'undefined') {
+        toast.error('Por favor habilita los popups para continuar con el pago');
+        return;
+      }
+
+      // Monitor payment window closure
+      const checkWindowClosed = setInterval(async () => {
+        if (paymentWindow.closed) {
+          clearInterval(checkWindowClosed);
+          
+          // Reload balance after payment window closes
+          try {
+            const balanceData = await publicationsApi.getBalance();
+            setPubBalance(balanceData?.balance ?? balanceData ?? 0);
+            toast.success('Balance actualizado');
+            setRechargeOpen(false);
+            setRechargeQty(10);
+          } catch (err) {
+            console.error('Error reloading balance:', err);
+          }
+        }
+      }, 500);
     } catch (err) {
-      toast.error('Error al recargar publicaciones');
+      console.error('Error creating checkout:', err);
+      toast.error('Error al crear la sesión de pago');
     }
   };
 

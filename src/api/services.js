@@ -153,6 +153,8 @@ export const casesApi = {
 export const publicationsApi = {
   getBalance: async () => (await api.get('/publications/balance')).data,
   recharge: async (userId, quantity) => (await api.post('/publications/recharge', { userId, quantity })).data,
+  createCheckout: async (quantity) => (await api.post('/publications/checkout', { quantity })).data,
+  getTransactionStatus: async (reference) => (await api.get(`/publications/transaction/${reference}`)).data,
 };
 
 // ── PRONTO PAGO ───────────────────────────────────────────────────────────────
