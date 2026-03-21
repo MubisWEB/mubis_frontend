@@ -410,9 +410,9 @@ export default function PeritajeDetalle() {
 
   // ── Dealer: read-only view ────────────────────────────────────────────────
   if (isDealer) {
-    const statusLabel = inspection?.status === 'COMPLETED' ? 'Peritaje completado'
-      : inspection?.status === 'REJECTED' ? 'Peritaje rechazado'
-      : inspection?.status === 'IN_PROGRESS' ? 'En peritaje'
+    const statusLabel = inspection?.status === 'COMPLETED' ? 'Aprobado'
+      : inspection?.status === 'REJECTED' ? 'Rechazado'
+      : inspection?.status === 'IN_PROGRESS' ? 'Pendiente de peritaje'
       : 'Pendiente de peritaje';
     const statusClass = inspection?.status === 'COMPLETED' ? 'bg-primary/10 text-primary'
       : inspection?.status === 'REJECTED' ? 'bg-destructive/10 text-destructive'
@@ -432,7 +432,7 @@ export default function PeritajeDetalle() {
 
           <Card className="p-4 border border-border/60 rounded-2xl flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Estado del peritaje</p>
+              <p className="text-xs text-muted-foreground mb-1">Estado del vehículo</p>
               <span className={`text-sm font-bold px-3 py-1 rounded-full ${statusClass}`}>{statusLabel}</span>
             </div>
             {inspection?.status === 'COMPLETED' && inspection?.scoreGlobal != null && (

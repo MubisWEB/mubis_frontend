@@ -56,7 +56,7 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
     }
   };
 
-  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
+  const defaultImage = 'https://via.placeholder.com/800x500/E5E5E5/9CA3AF?text=Sin+Imagen';
   const detailUrl = `/DetalleSubasta/${vehicle.id}`;
 
   if (variant === 'grid') {
