@@ -235,7 +235,7 @@ export default function Ganados() {
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
           <button
-            onClick={() => navigate('/Cuenta')}
+            onClick={() => navigate('/Comprar')}
             className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4 text-foreground" />

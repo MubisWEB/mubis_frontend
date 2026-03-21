@@ -111,20 +111,43 @@ export default function Comprar() {
   const handleBid = (vehicle) => { setSelectedVehicle(vehicle); setBidModalOpen(true); };
 
   const handleSubmitBid = async (maxAmount) => {
-    if (!selectedVehicle || !user) return;
+    if (!selectedVehicle || !user) return { success: false, message: 'Usuario no autenticado' };
     try {
       const result = await bidsApi.place(selectedVehicle.id, maxAmount);
+      
+      // El backend ahora retorna: visibleBid, currentBid, bidsCount, leaderId, outbid
       setVehicles(prev => prev.map(v =>
         v.id === selectedVehicle.id
-          ? { ...v, current_bid: result.visibleBid, bids_count: result.bidsCount, isLeading: result.leaderId === user.id, myMaxBid: maxAmount }
+          ? { 
+              ...v, 
+              current_bid: result.currentBid,
+              bids_count: result.bidsCount,
+              isLeading: result.leaderId === user.id,
+              myMaxBid: maxAmount 
+            }
           : v
       ));
+      
+      // Actualizar también el selectedVehicle para que el modal muestre datos correctos
+      setSelectedVehicle(prev => ({
+        ...prev,
+        current_bid: result.currentBid,
+        bids_count: result.bidsCount,
+        isLeading: result.leaderId === user.id
+      }));
+      
       loadActivity();
+      
       if (result.outbid) {
-        toast.error('No lideras esta subasta', { description: `Ya existe una puja máxima superior. Puja visible: ${formatMoneyShort(result.visibleBid)}` });
+        toast.error('No lideras esta subasta', { 
+          description: `Ya existe una puja máxima superior. Puja visible: ${formatMoneyShort(result.visibleBid)}` 
+        });
       } else {
-        toast.success('¡Lideras la subasta!', { description: `Puja visible: ${formatMoneyShort(result.visibleBid)} · ${selectedVehicle.brand} ${selectedVehicle.model}` });
+        toast.success('¡Lideras la subasta!', { 
+          description: `Puja visible: ${formatMoneyShort(result.visibleBid)} · ${selectedVehicle.brand} ${selectedVehicle.model}` 
+        });
       }
+      
       return result;
     } catch (err) {
       const msg = err?.response?.data?.message || 'Error al pujar';
@@ -155,18 +178,21 @@ export default function Comprar() {
 
       {/* Combined bar - Ganadas/Guardadas centered, Search right */}
       <div className="bg-background px-4 md:px-8 pt-3 pb-3">
-        <div className="flex items-center justify-between gap-4">
-          {/* Ganadas y Guardadas - Center */}
-          <div className="flex-1 flex items-center justify-center gap-6">
+        <div className="flex items-center gap-4">
+          {/* Spacer left */}
+          <div className="w-64 hidden md:block"></div>
+          
+          {/* Ganadas y Guardadas - Screen Center */}
+          <div className="flex-1 flex items-center justify-center gap-8">
             <button
               onClick={() => navigate('/Ganados')}
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-base font-semibold text-foreground hover:text-primary transition-colors"
             >
               Ganadas
             </button>
             <button
               onClick={() => navigate('/Guardadas')}
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-base font-semibold text-foreground hover:text-primary transition-colors"
             >
               Guardadas
             </button>
@@ -174,7 +200,7 @@ export default function Comprar() {
 
           {/* Search bar - Right */}
           <div className="flex items-center gap-3">
-            <div className="relative w-full md:w-64">
+            <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar marca o modelo..."
