@@ -107,7 +107,7 @@ export const auctionsApi = {
 // ── BIDS ──────────────────────────────────────────────────────────────────────
 
 export const bidsApi = {
-  place: async (auctionId, maxAmount) => (await api.post('/bids', { auctionId, maxAmount })).data,
+  place: async (auctionId, maxAmount, isDirect = false) => (await api.post('/bids', { auctionId, maxAmount, isDirect })).data,
   getMine: async () => (await api.get('/bids/mine')).data,
   getByAuction: async (auctionId) => (await api.get(`/bids/auction/${auctionId}`)).data,
   getAll: async () => (await api.get('/admin/movements')).data,

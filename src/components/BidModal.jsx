@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,8 +16,20 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  // Resetear estado cuando se abre el modal o cambia el vehículo
+  useEffect(() => {
+    if (open) {
+      setAmount('');
+      setResult(null);
+      setBidType('max');
+    }
+  }, [open, vehicle?.id]);
+
   const currentBid = vehicle?.current_bid || vehicle?.starting_price || 0;
-  const minBid = currentBid + 200000;
+  const hasExistingBids = (vehicle?.bids_count || 0) > 0;
+  // Si no hay pujas, el mínimo es el precio actual
+  // Si ya hay pujas, el mínimo es precio actual + incremento
+  const minBid = hasExistingBids ? currentBid + 200000 : currentBid;
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CO', {
@@ -33,11 +45,18 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
   };
 
   const handleSubmit = async () => {
-    const bidAmount = parseInt(amount.replace(/\D/g, ''));
-    if (bidAmount < minBid) return;
+    const numericValue = amount.replace(/\D/g, '');
+    const bidAmount = numericValue ? parseInt(numericValue) : 0;
+    
+    // Validar que hay un monto válido
+    if (!numericValue || isNaN(bidAmount) || bidAmount < minBid) {
+      return;
+    }
     
     setLoading(true);
-    const res = await onSubmit?.(bidAmount);
+    // Pasar el tipo de puja: isDirect = true si es puja directa
+    const isDirect = bidType === 'direct';
+    const res = await onSubmit?.(bidAmount, isDirect);
     setLoading(false);
     setResult(res || null);
     if (res?.success && !res?.outbid) {
@@ -69,8 +88,9 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
 
   if (!vehicle) return null;
 
-  const bidAmount = parseInt(amount.replace(/\D/g, '') || '0');
-  const isValidBid = bidAmount >= minBid;
+  const numericAmount = amount.replace(/\D/g, '');
+  const bidAmount = numericAmount ? parseInt(numericAmount) : 0;
+  const isValidBid = bidAmount > 0 && bidAmount >= minBid;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>

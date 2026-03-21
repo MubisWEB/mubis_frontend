@@ -110,10 +110,10 @@ export default function Comprar() {
 
   const handleBid = (vehicle) => { setSelectedVehicle(vehicle); setBidModalOpen(true); };
 
-  const handleSubmitBid = async (maxAmount) => {
+  const handleSubmitBid = async (maxAmount, isDirect = false) => {
     if (!selectedVehicle || !user) return { success: false, message: 'Usuario no autenticado' };
     try {
-      const result = await bidsApi.place(selectedVehicle.id, maxAmount);
+      const result = await bidsApi.place(selectedVehicle.id, maxAmount, isDirect);
       
       // El backend ahora retorna: visibleBid, currentBid, bidsCount, leaderId, outbid
       setVehicles(prev => prev.map(v =>
