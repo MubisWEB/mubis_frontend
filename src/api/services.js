@@ -8,6 +8,11 @@ export const authApi = {
     return data;
   },
 
+  getCompanies: async () => {
+    const { data } = await publicApi.get('/auth/companies');
+    return data;
+  },
+
   login: async (email, password, tenantSlug) => {
     const { data } = await publicApi.post('/auth/login', { email, password, tenantSlug });
     localStorage.setItem('accessToken', data.accessToken);
@@ -215,6 +220,15 @@ export const analyticsApi = {
 // ── BRANCHES ──────────────────────────────────────────────────────────────────
 
 export const branchesApi = {
+  // Public endpoint for registration
+  getBranchesByCity: async (city, tenantSlug) => {
+    const params = new URLSearchParams();
+    if (city) params.append('city', city);
+    if (tenantSlug) params.append('tenantSlug', tenantSlug);
+    const { data } = await publicApi.get(`/branches/by-city?${params.toString()}`);
+    return data;
+  },
+  // Authenticated endpoints
   getAll: async () => (await api.get('/branches')).data,
   getById: async (id) => (await api.get(`/branches/${id}`)).data,
   create: async (data) => (await api.post('/branches', data)).data,
