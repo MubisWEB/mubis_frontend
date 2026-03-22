@@ -77,7 +77,7 @@ export default function Guardadas() {
       <Header />
       <div className="px-4 md:px-8 pt-4 pb-4">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+          <button onClick={() => navigate('/Comprar')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
             <ArrowLeft className="w-4 h-4 text-foreground" />
           </button>
           <div>

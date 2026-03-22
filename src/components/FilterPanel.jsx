@@ -9,11 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Trophy, Bookmark, LayoutGrid, LayoutList } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const brands = ['Toyota', 'Chevrolet', 'Mazda', 'Renault', 'Kia', 'Hyundai', 'Volkswagen', 'Ford', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi'];
 
-export default function FilterPanel({ filters, setFilters }) {
+export default function FilterPanel({ filters, setFilters, viewMode, setViewMode, showViewMode = false, showSavedLinks = false }) {
+  const navigate = useNavigate();
   const [localFilters, setLocalFilters] = useState(filters);
 
   const handleApply = () => {
@@ -29,7 +31,7 @@ export default function FilterPanel({ filters, setFilters }) {
   const hasFilters = Object.values(filters).some(v => v);
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 sticky top-4">
+    <div className="bg-card border border-border rounded-2xl p-5 sticky top-4 self-start">
       <div className="flex items-center gap-2 mb-5">
         <Filter className="w-4 h-4 text-secondary" />
         <h3 className="text-base font-bold text-foreground">Filtros</h3>
@@ -41,6 +43,28 @@ export default function FilterPanel({ filters, setFilters }) {
       </div>
 
       <div className="space-y-5">
+        {/* Layout selector - commented out for future use
+        {showViewMode && (
+          <div className="pb-4 border-b border-border">
+            <Label className="text-foreground font-semibold text-sm mb-2 block">Vista</Label>
+            <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
+              <button 
+                onClick={() => setViewMode('grid')} 
+                className={`flex-1 p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <LayoutGrid className="w-4 h-4 mx-auto" />
+              </button>
+              <button 
+                onClick={() => setViewMode('list')} 
+                className={`flex-1 p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <LayoutList className="w-4 h-4 mx-auto" />
+              </button>
+            </div>
+          </div>
+        )}
+        */}
+
         <div>
           <Label className="text-foreground font-semibold text-sm mb-2 block">Marca</Label>
           <Select

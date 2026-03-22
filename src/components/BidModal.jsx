@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,16 +7,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, TrendingUp, Users, Shield, Eye, EyeOff } from 'lucide-react';
+import { TrendingUp, Users, Shield, Zap, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function BidModal({ vehicle, open, onClose, onSubmit }) {
+  const [bidType, setBidType] = useState('max'); // 'max' or 'direct'
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  // Resetear estado cuando se abre el modal o cambia el vehículo
+  useEffect(() => {
+    if (open) {
+      setAmount('');
+      setResult(null);
+      setBidType('max');
+    }
+  }, [open, vehicle?.id]);
+
   const currentBid = vehicle?.current_bid || vehicle?.starting_price || 0;
-  const minBid = currentBid + 200000;
+  const hasExistingBids = (vehicle?.bids_count || 0) > 0;
+  // Si no hay pujas, el mínimo es el precio actual
+  // Si ya hay pujas, el mínimo es precio actual + incremento
+  const minBid = hasExistingBids ? currentBid + 200000 : currentBid;
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CO', {
@@ -32,17 +45,25 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
   };
 
   const handleSubmit = async () => {
-    const bidAmount = parseInt(amount.replace(/\D/g, ''));
-    if (bidAmount < minBid) return;
+    const numericValue = amount.replace(/\D/g, '');
+    const bidAmount = numericValue ? parseInt(numericValue) : 0;
+    
+    // Validar que hay un monto válido
+    if (!numericValue || isNaN(bidAmount) || bidAmount < minBid) {
+      return;
+    }
     
     setLoading(true);
-    const res = await onSubmit?.(bidAmount);
+    // Pasar el tipo de puja: isDirect = true si es puja directa
+    const isDirect = bidType === 'direct';
+    const res = await onSubmit?.(bidAmount, isDirect);
     setLoading(false);
     setResult(res || null);
     if (res?.success && !res?.outbid) {
       setTimeout(() => {
         setAmount('');
         setResult(null);
+        setBidType('max');
         onClose();
       }, 1500);
     }
@@ -51,14 +72,9 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
   const handleClose = () => {
     setAmount('');
     setResult(null);
+    setBidType('max');
     onClose();
   };
-
-  const suggestedBids = [
-    minBid,
-    minBid + 500000,
-    minBid + 1000000
-  ];
 
   const handleAmountChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
@@ -70,20 +86,17 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
     setResult(null);
   };
 
-  const selectSuggestedBid = (bid) => {
-    setAmount(bid.toLocaleString('es-CO'));
-    setResult(null);
-  };
-
   if (!vehicle) return null;
 
-  const bidAmount = parseInt(amount.replace(/\D/g, '') || '0');
-  const isValidBid = bidAmount >= minBid;
+  const numericAmount = amount.replace(/\D/g, '');
+  const bidAmount = numericAmount ? parseInt(numericAmount) : 0;
+  const isValidBid = bidAmount > 0 && bidAmount >= minBid;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[380px] rounded-3xl p-0 overflow-hidden" aria-describedby={undefined}>
+      <DialogContent className="sm:max-w-[420px] rounded-3xl p-0 overflow-hidden" aria-describedby={undefined}>
         <DialogTitle className="sr-only">{vehicle.brand} {vehicle.model} — Realizar puja</DialogTitle>
+        
         {/* Header con imagen */}
         <div className="relative h-32 bg-gradient-to-br from-violet-600 to-violet-800">
           <img
@@ -102,10 +115,10 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
         </div>
 
         <div className="p-5 space-y-4">
-          {/* Puja actual visible */}
+          {/* Puja actual */}
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
             <div>
-              <p className="text-muted-foreground text-xs">Puja visible actual</p>
+              <p className="text-muted-foreground text-xs">Puja actual</p>
               <p className="text-xl font-bold text-foreground">
                 {formatShortPrice(currentBid)}
               </p>
@@ -121,22 +134,68 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
             </div>
           </div>
 
-          {/* Explicación proxy bidding */}
-          <div className="flex items-start gap-2 p-2.5 bg-violet-50 dark:bg-violet-950/30 rounded-xl border border-violet-200 dark:border-violet-800">
-            <EyeOff className="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">Puja automática</p>
-              <p className="text-[11px] text-violet-600 dark:text-violet-400 leading-relaxed">
-                Introduce tu máximo. El sistema solo sube la puja lo necesario para que lideres. Tu máximo es privado.
-              </p>
+          {/* Tipo de puja - Selector */}
+          <div>
+            <Label className="text-foreground font-semibold text-sm mb-3 block">Tipo de puja</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setBidType('max')}
+                className={`p-3 rounded-xl border-2 transition-all ${
+                  bidType === 'max'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
+                    : 'border-border hover:border-green-300'
+                }`}
+              >
+                <Shield className={`w-5 h-5 mx-auto mb-1 ${bidType === 'max' ? 'text-green-500' : 'text-muted-foreground'}`} />
+                <p className={`text-sm font-semibold ${bidType === 'max' ? 'text-green-700 dark:text-green-300' : 'text-foreground'}`}>
+                  Puja máxima
+                </p>
+              </button>
+              <button
+                onClick={() => setBidType('direct')}
+                className={`p-3 rounded-xl border-2 transition-all ${
+                  bidType === 'direct'
+                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30'
+                    : 'border-border hover:border-amber-300'
+                }`}
+              >
+                <Zap className={`w-5 h-5 mx-auto mb-1 ${bidType === 'direct' ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                <p className={`text-sm font-semibold ${bidType === 'direct' ? 'text-amber-700 dark:text-amber-300' : 'text-foreground'}`}>
+                  Puja directa
+                </p>
+              </button>
             </div>
           </div>
 
-          {/* Input de oferta máxima */}
+          {/* Explicación del tipo seleccionado */}
+          <div className={`flex items-start gap-2 p-3 rounded-xl border ${
+            bidType === 'max'
+              ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+              : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+          }`}>
+            <Info className={`w-4 h-4 mt-0.5 flex-shrink-0 ${bidType === 'max' ? 'text-green-500' : 'text-amber-500'}`} />
+            <div>
+              {bidType === 'max' ? (
+                <p className="text-xs text-green-600 dark:text-green-400 leading-relaxed">
+                  <span className="font-semibold">Puja máxima:</span> El sistema puja automáticamente por ti hasta tu máximo. Solo se muestra lo necesario para liderar.
+                </p>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400 leading-relaxed">
+                  <span className="font-semibold">Puja directa:</span> Tu monto se muestra públicamente de inmediato. Otros verán exactamente cuánto ofreciste.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Input de monto */}
           <div>
             <Label className="text-foreground font-semibold text-sm mb-2 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-violet-500" />
-              Tu puja máxima (COP)
+              {bidType === 'max' ? (
+                <Shield className="w-3.5 h-3.5 text-green-500" />
+              ) : (
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+              )}
+              {bidType === 'max' ? 'Tu puja máxima (COP)' : 'Monto a pujar (COP)'}
             </Label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
@@ -145,34 +204,16 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
                 placeholder={minBid.toLocaleString('es-CO')}
                 value={amount}
                 onChange={handleAmountChange}
-                className="pl-8 rounded-xl h-12 text-lg font-bold text-center border-2 border-violet-200 focus:border-violet-500"
+                className={`pl-8 rounded-xl h-12 text-lg font-bold text-center border-2 ${
+                  bidType === 'max'
+                    ? 'border-green-200 focus:border-green-500'
+                    : 'border-amber-200 focus:border-amber-500'
+                }`}
               />
             </div>
-            <p className="text-muted-foreground text-xs mt-1.5 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
+            <p className="text-muted-foreground text-xs mt-1.5">
               Mínimo: {formatPrice(minBid)} · Incremento: $200.000
             </p>
-          </div>
-
-          {/* Pujas sugeridas */}
-          <div>
-            <Label className="text-muted-foreground text-xs mb-2 block">Pujas rápidas</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {suggestedBids.map((bid) => (
-                <motion.button
-                  key={bid}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => selectSuggestedBid(bid)}
-                  className={`py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                    bidAmount === bid 
-                      ? 'bg-violet-600 text-white' 
-                      : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50'
-                  }`}
-                >
-                  {formatShortPrice(bid)}
-                </motion.button>
-              ))}
-            </div>
           </div>
 
           {/* Result feedback */}
@@ -187,9 +228,9 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
               }`}
             >
               {result.outbid ? (
-                <>⚠️ Ya existe una puja máxima superior. Puja visible: {formatShortPrice(result.visibleBid)}</>
+                <>Ya existe una puja máxima superior. Puja visible: {formatShortPrice(result.visibleBid)}</>
               ) : (
-                <>✅ ¡Lideras! Puja visible: {formatShortPrice(result.visibleBid)}</>
+                <>Lideras la puja con: {formatShortPrice(result.visibleBid)}</>
               )}
             </motion.div>
           )}
@@ -200,17 +241,19 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
             disabled={loading || !isValidBid}
             className={`w-full font-bold h-12 rounded-xl text-base transition-all ${
               isValidBid 
-                ? 'bg-violet-600 hover:bg-violet-700 text-white' 
+                ? bidType === 'max'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-amber-600 hover:bg-amber-700 text-white'
                 : 'bg-muted text-muted-foreground cursor-not-allowed'
             }`}
           >
             {loading ? (
               <span className="flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Calculando...
+                Procesando...
               </span>
             ) : (
-              `Establecer máximo ${isValidBid ? formatShortPrice(bidAmount) : ''}`
+              `${bidType === 'max' ? 'Establecer puja máxima' : 'Pujar directamente'} ${isValidBid ? formatShortPrice(bidAmount) : ''}`
             )}
           </Button>
         </div>

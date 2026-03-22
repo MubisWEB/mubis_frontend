@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
+import PublishFAB from '@/components/PublishFAB';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
 import { vehiclesApi, auctionsApi, inspectionsApi, publicationsApi } from '@/api/services';
@@ -38,7 +39,7 @@ function SellerFilterPanel({ filters, setFilters }) {
   const handleReset = () => {const e = { brand: '', yearFrom: '', yearTo: '' };setLocal(e);setFilters(e);};
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 sticky top-4">
+    <div className="bg-card border border-border rounded-2xl p-5 sticky top-4 self-start">
       <div className="flex items-center gap-2 mb-5">
         <Filter className="w-4 h-4 text-secondary" />
         <h3 className="text-base font-bold text-foreground">Filtros</h3>
@@ -113,11 +114,14 @@ function SellerFilterSheet({ filters, setFilters }) {
 // ── Card components ──
 function VehicleProcessCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-red-500 text-black text-xs font-semibold">Rechazado</Badge>;
+    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
     if (v.status === 'PENDING_INSPECTION' || inspection && inspection.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
+  
+  // Solo mostrar docs para vehículos activos/completados
+  const shouldShowDocs = v.status === 'READY_FOR_AUCTION' || (inspection && inspection.status === 'COMPLETED');
   const docs = v.documentation;
   const soatOk = docs?.soat?.status === 'vigente';
   const tecnoOk = docs?.tecno?.status === 'vigente';
@@ -125,7 +129,7 @@ function VehicleProcessCard({ v, navigate, inspection }) {
   const docsOk = docs && soatOk && tecnoOk && multasOk;
 
   return (
-    <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
+    <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
       <div className="flex p-3 gap-3">
         <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
           {v.photos?.[0] && <img src={v.photos[0]} alt="" className="w-full h-full object-cover" />}
@@ -136,7 +140,7 @@ function VehicleProcessCard({ v, navigate, inspection }) {
             <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            {docs &&
+            {shouldShowDocs && docs &&
             <Badge className={`text-[10px] ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
                 {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
               </Badge>
@@ -149,26 +153,28 @@ function VehicleProcessCard({ v, navigate, inspection }) {
         </div>
       </div>
     </Card>);
-
 }
 
 function VehicleProcessGridCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
-    if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive text-xs">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-secondary/10 text-secondary text-xs">En peritaje</Badge>;
+    if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-red-500 text-black text-xs font-semibold">Rechazado</Badge>;
+    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
     if (v.status === 'PENDING_INSPECTION' || inspection && inspection.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
+  
+  // Solo mostrar docs para vehículos activos/completados
+  const shouldShowDocs = v.status === 'READY_FOR_AUCTION' || (inspection && inspection.status === 'COMPLETED');
   const docs = v.documentation;
   const docsOk = docs && docs.soat?.status === 'vigente' && docs.tecno?.status === 'vigente' && docs.multas?.tiene === 'no';
-  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
+  const defaultImage = 'https://via.placeholder.com/800x500/E5E5E5/9CA3AF?text=Sin+Imagen';
 
   return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
+    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={v.photos?.[0] || defaultImage} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        <img src={v.photos?.[0] || defaultImage} alt={`${v.brand} ${v.model}`} className="w-full h-full object-cover" />
         <div className="absolute top-2 left-2">{getStatusBadge()}</div>
-        {docs &&
+        {shouldShowDocs && docs &&
         <div className="absolute top-2 right-2">
             <Badge className={`text-[10px] backdrop-blur-sm ${docsOk ? 'bg-primary/80 text-primary-foreground' : 'bg-background/80 text-foreground'}`}>
               {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
@@ -181,7 +187,6 @@ function VehicleProcessGridCard({ v, navigate, inspection }) {
         <p className="text-muted-foreground text-xs mt-0.5">{v.year} · {v.placa}</p>
       </div>
     </Card>);
-
 }
 
 function AuctionCard({ auction, navigate }) {
@@ -193,20 +198,30 @@ function AuctionCard({ auction, navigate }) {
     const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
-  const isEnded = auction.status === 'ended' || auction.status === 'closed';
-  const isPending = auction.status === 'pending_decision';
+  
+  // Para decisión, calcular tiempo restante desde decisionDeadline
+  const getDecisionTimeLeft = () => {
+    if (!auction.decisionDeadline) return '30min';
+    const diff = new Date(auction.decisionDeadline) - new Date();
+    if (diff <= 0) return 'Expiró';
+    const minutes = Math.floor(diff / (1000 * 60));
+    return `${minutes}min`;
+  };
+  
+  const isEnded = auction.status === 'ENDED' || auction.status === 'CLOSED';
+  const isPending = auction.status === 'PENDING_DECISION';
 
   return (
-    <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
+    <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
       <div className="flex p-3 gap-3">
         <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
           {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
           {isEnded ?
-          auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge> :
+          auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0 hover:bg-muted"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge> :
           isPending ?
-          <Badge className="absolute top-1 left-1 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">⏳ Decidir</Badge> :
-
-          <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
+          <Badge className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] px-1.5 py-0 hover:bg-orange-500"><Clock className="w-2.5 h-2.5 mr-0.5" />Decidir</Badge> :
+          auction.status === 'ACTIVE' &&
+          <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
           }
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -217,12 +232,14 @@ function AuctionCard({ auction, navigate }) {
           <div className="flex items-center gap-2 mt-1">
             <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
             <span className="text-muted-foreground text-xs flex items-center"><Users className="w-3 h-3 mr-0.5" />{auction.bids_count || 0}</span>
-            {!isEnded && <span className="text-muted-foreground text-xs flex items-center"><Clock className="w-3 h-3 mr-0.5" />{getTimeLeft(auction.ends_at)}</span>}
+            {isPending ? 
+              <span className="text-destructive text-xs flex items-center"><Clock className="w-3 h-3 mr-0.5" />{getDecisionTimeLeft()}</span> :
+              !isEnded && <span className="text-muted-foreground text-xs flex items-center"><Clock className="w-3 h-3 mr-0.5" />{getTimeLeft(auction.ends_at)}</span>
+            }
           </div>
         </div>
       </div>
     </Card>);
-
 }
 
 function AuctionGridCard({ auction, navigate }) {
@@ -234,20 +251,37 @@ function AuctionGridCard({ auction, navigate }) {
     const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
+  
+  // Para decisión, calcular tiempo restante desde decisionDeadline
+  const getDecisionTimeLeft = () => {
+    if (!auction.decisionDeadline) return '30min';
+    const diff = new Date(auction.decisionDeadline) - new Date();
+    if (diff <= 0) return 'Expiró';
+    const minutes = Math.floor(diff / (1000 * 60));
+    return `${minutes}min`;
+  };
+  
   const isEnded = auction.status === 'ended' || auction.status === 'closed';
-  const defaultImage = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop';
+  const isPending = auction.status === 'pending_decision';
+  const defaultImage = 'https://via.placeholder.com/800x500/E5E5E5/9CA3AF?text=Sin+Imagen';
 
   return (
-    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
+    <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
         {isEnded ?
-        auction.winnerId ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge> :
-
-        <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">Activa</Badge>
+        auction.winnerId ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5 hover:bg-muted"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge> :
+        isPending ?
+        <Badge className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-0.5 hover:bg-orange-500"><Clock className="w-3 h-3 mr-1" />Decidir</Badge> :
+        auction.status === 'ACTIVE' &&
+        <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary">Activa</Badge>
         }
-        {!isEnded &&
-        <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-background/80 text-foreground">
+        {isPending ? 
+          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-red-500/90 text-white">
+            <Clock className="w-3 h-3" /><span className="font-semibold">{getDecisionTimeLeft()}</span>
+          </div> :
+          !isEnded &&
+          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-background/80 text-foreground">
             <Clock className="w-3 h-3" /><span className="font-semibold">{getTimeLeft(auction.ends_at)}</span>
           </div>
         }
@@ -264,7 +298,6 @@ function AuctionGridCard({ auction, navigate }) {
         </div>
       </div>
     </Card>);
-
 }
 
 // ── Main page ──
@@ -335,58 +368,93 @@ export default function MisSubastas() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header />
-      <div className="px-4 md:px-8 pt-5 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
-
+      
+      {/* Combined bar - Publications left, Tabs centered, Search right */}
+      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
+        <div className="flex items-center gap-4">
+          {/* Publications Available - Left */}
+          <div className="hidden md:flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
+            <span className="text-2xl font-bold text-secondary">{pubBalance}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Publicaciones</p>
-              <p className="text-lg font-bold text-secondary">{pubBalance}</p>
-            </div>
-            <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-              <Plus className="w-4 h-4" /> Publicar carro
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Sort */}
-      <div className="px-4 md:px-8 pb-3 flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
-        </div>
-        <div className="md:hidden">
-          <SellerFilterSheet filters={filters} setFilters={setFilters} />
-        </div>
-        <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
-          <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-            <LayoutList className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 md:px-8 pt-2 pb-2">
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {[
-          { key: 'activas', label: 'Activas', count: auctions.filter((a) => a.status === 'ACTIVE').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'decision', label: 'Decisión', count: auctions.filter((a) => a.status === 'PENDING_DECISION').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'proceso', label: 'En proceso', count: vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'rechazados', label: 'Rechazados', count: vehicles.filter((v) => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
-          { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter((a) => a.status === 'ENDED' || a.status === 'CLOSED').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' }].
-          map((stat) =>
-          <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-          className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card hover:bg-muted/30'}`}>
-              <p className={`text-xl md:text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
-              <p className={`text-[9px] md:text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
+          
+          {/* Tabs - Screen Center */}
+          <div className="flex-1 flex items-center justify-center gap-4 md:gap-6 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('activas')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'activas' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Activas
             </button>
-          )}
+            <button
+              onClick={() => setActiveTab('decision')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'decision' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Decisión
+            </button>
+            <button
+              onClick={() => setActiveTab('proceso')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'proceso' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              En proceso
+            </button>
+            <button
+              onClick={() => setActiveTab('rechazados')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'rechazados' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Rechazados
+            </button>
+            <button
+              onClick={() => setActiveTab('finalizadas')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'finalizadas' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Finalizadas
+            </button>
+          </div>
+
+          {/* Search and Actions - Right */}
+          <div className="flex items-center gap-3">
+            <div className="relative w-48 md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar marca o modelo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+              />
+            </div>
+            <div className="md:hidden">
+              <SellerFilterSheet filters={filters} setFilters={setFilters} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Publications Badge */}
+      <div className="md:hidden px-4 pb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
+          <span className="text-xl font-bold text-secondary">{pubBalance}</span>
         </div>
       </div>
 
@@ -473,12 +541,14 @@ export default function MisSubastas() {
                 <DollarSign className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes publicaciones</h3>
-              <p className="text-muted-foreground text-sm">Usa el botón "Publicar carro" arriba para iniciar</p>
+              <p className="text-muted-foreground text-sm">Usa el botón <Plus className="inline w-4 h-4" /> para publicar tu primer vehículo</p>
             </div>
           }
         </div>
       </div>
 
+      {/* Floating Action Button (FAB) - Publicar Carro */}
+      <PublishFAB onClick={() => setDialogOpen(true)} />
       <PublicarCarroDialog open={dialogOpen} onOpenChange={setDialogOpen} onPublished={loadData} />
       <BottomNav />
     </div>);

@@ -8,6 +8,11 @@ export const authApi = {
     return data;
   },
 
+  getCompanies: async () => {
+    const { data } = await publicApi.get('/auth/companies');
+    return data;
+  },
+
   login: async (email, password, tenantSlug) => {
     const { data } = await publicApi.post('/auth/login', { email, password, tenantSlug });
     localStorage.setItem('accessToken', data.accessToken);
@@ -102,7 +107,7 @@ export const auctionsApi = {
 // ── BIDS ──────────────────────────────────────────────────────────────────────
 
 export const bidsApi = {
-  place: async (auctionId, maxAmount) => (await api.post('/bids', { auctionId, maxAmount })).data,
+  place: async (auctionId, maxAmount, isDirect = false) => (await api.post('/bids', { auctionId, maxAmount, isDirect })).data,
   getMine: async () => (await api.get('/bids/mine')).data,
   getByAuction: async (auctionId) => (await api.get(`/bids/auction/${auctionId}`)).data,
   getAll: async () => (await api.get('/admin/movements')).data,
@@ -148,6 +153,8 @@ export const casesApi = {
 export const publicationsApi = {
   getBalance: async () => (await api.get('/publications/balance')).data,
   recharge: async (userId, quantity) => (await api.post('/publications/recharge', { userId, quantity })).data,
+  createCheckout: async (quantity) => (await api.post('/publications/checkout', { quantity })).data,
+  getTransactionStatus: async (reference) => (await api.get(`/publications/transaction/${reference}`)).data,
 };
 
 // ── PRONTO PAGO ───────────────────────────────────────────────────────────────
@@ -215,6 +222,15 @@ export const analyticsApi = {
 // ── BRANCHES ──────────────────────────────────────────────────────────────────
 
 export const branchesApi = {
+  // Public endpoint for registration
+  getBranchesByCity: async (city, tenantSlug) => {
+    const params = new URLSearchParams();
+    if (city) params.append('city', city);
+    if (tenantSlug) params.append('tenantSlug', tenantSlug);
+    const { data } = await publicApi.get(`/branches/by-city?${params.toString()}`);
+    return data;
+  },
+  // Authenticated endpoints
   getAll: async () => (await api.get('/branches')).data,
   getById: async (id) => (await api.get(`/branches/${id}`)).data,
   create: async (data) => (await api.post('/branches', data)).data,
