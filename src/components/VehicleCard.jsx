@@ -63,7 +63,7 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
 
   if (variant === 'grid') {
     return (
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <Link to={detailUrl} className="block relative aspect-[4/3] bg-muted overflow-hidden">
           <img src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           {vehicle.isLeading && (
@@ -110,7 +110,7 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
 
   return (
     <div>
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <div className="flex p-3 gap-3">
           <Link to={detailUrl} className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
             <img src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
