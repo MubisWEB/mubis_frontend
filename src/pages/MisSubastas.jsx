@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
+import PublishFAB from '@/components/PublishFAB';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
 import { vehiclesApi, auctionsApi, inspectionsApi, publicationsApi } from '@/api/services';
@@ -367,58 +368,93 @@ export default function MisSubastas() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header />
-      <div className="px-4 md:px-8 pt-5 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-foreground font-sans">Mis vehículos</h1>
-
+      
+      {/* Combined bar - Publications left, Tabs centered, Search right */}
+      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
+        <div className="flex items-center gap-4">
+          {/* Publications Available - Left */}
+          <div className="hidden md:flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
+            <span className="text-2xl font-bold text-secondary">{pubBalance}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Publicaciones</p>
-              <p className="text-lg font-bold text-secondary">{pubBalance}</p>
-            </div>
-            <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1.5">
-              <Plus className="w-4 h-4" /> Publicar carro
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Sort */}
-      <div className="px-4 md:px-8 pb-3 flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar marca o modelo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm" />
-        </div>
-        <div className="md:hidden">
-          <SellerFilterSheet filters={filters} setFilters={setFilters} />
-        </div>
-        <div className="hidden md:flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
-          <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-            <LayoutList className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 md:px-8 pt-2 pb-2">
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {[
-          { key: 'activas', label: 'Activas', count: auctions.filter((a) => a.status === 'ACTIVE').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'decision', label: 'Decisión', count: auctions.filter((a) => a.status === 'PENDING_DECISION').length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'proceso', label: 'En proceso', count: vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status)).length, colorClass: 'text-secondary', activeBg: 'bg-secondary/15 border-secondary' },
-          { key: 'rechazados', label: 'Rechazados', count: vehicles.filter((v) => v.status === 'INSPECTION_REJECTED').length, colorClass: 'text-destructive', activeBg: 'bg-destructive/15 border-destructive' },
-          { key: 'finalizadas', label: 'Finalizadas', count: auctions.filter((a) => a.status === 'ENDED' || a.status === 'CLOSED').length, colorClass: 'text-primary', activeBg: 'bg-primary/15 border-primary' }].
-          map((stat) =>
-          <button key={stat.key} onClick={() => setActiveTab(stat.key)}
-          className={`text-center p-2 md:p-3 rounded-xl border transition-all ${activeTab === stat.key ? stat.activeBg : 'border-border bg-card'}`}>
-              <p className={`text-xl md:text-2xl font-bold ${stat.colorClass}`}>{stat.count}</p>
-              <p className={`text-[9px] md:text-[10px] ${activeTab === stat.key ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{stat.label}</p>
+          
+          {/* Tabs - Screen Center */}
+          <div className="flex-1 flex items-center justify-center gap-4 md:gap-6 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('activas')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'activas' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Activas
             </button>
-          )}
+            <button
+              onClick={() => setActiveTab('decision')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'decision' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Decisión
+            </button>
+            <button
+              onClick={() => setActiveTab('proceso')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'proceso' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              En proceso
+            </button>
+            <button
+              onClick={() => setActiveTab('rechazados')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'rechazados' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Rechazados
+            </button>
+            <button
+              onClick={() => setActiveTab('finalizadas')}
+              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'finalizadas' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Finalizadas
+            </button>
+          </div>
+
+          {/* Search and Actions - Right */}
+          <div className="flex items-center gap-3">
+            <div className="relative w-48 md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar marca o modelo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+              />
+            </div>
+            <div className="md:hidden">
+              <SellerFilterSheet filters={filters} setFilters={setFilters} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Publications Badge */}
+      <div className="md:hidden px-4 pb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
+          <span className="text-xl font-bold text-secondary">{pubBalance}</span>
         </div>
       </div>
 
@@ -505,12 +541,14 @@ export default function MisSubastas() {
                 <DollarSign className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes publicaciones</h3>
-              <p className="text-muted-foreground text-sm">Usa el botón "Publicar carro" arriba para iniciar</p>
+              <p className="text-muted-foreground text-sm">Usa el botón <Plus className="inline w-4 h-4" /> para publicar tu primer vehículo</p>
             </div>
           }
         </div>
       </div>
 
+      {/* Floating Action Button (FAB) - Publicar Carro */}
+      <PublishFAB onClick={() => setDialogOpen(true)} />
       <PublicarCarroDialog open={dialogOpen} onOpenChange={setDialogOpen} onPublished={loadData} />
       <BottomNav />
     </div>);
