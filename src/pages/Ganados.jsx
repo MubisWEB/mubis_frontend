@@ -41,6 +41,43 @@ export default function Ganados() {
     load();
   }, []);
 
+  const formatPrice = (price) => {
+    if (!price) return '$0';
+    if (price >= 1000000) return `$${(price / 1000000).toFixed(1)}M`;
+    return new Intl.NumberFormat('es-CO', { 
+      style: 'currency', 
+      currency: 'COP', 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    }).format(price);
+  };
+
+  const handleExtend = (auction) => {
+    // Navigate to detail page to handle extension
+    navigate(`/DetalleSubasta/${auction.id}?from=ganados`);
+  };
+
+  const calculateTimeRemaining = (auction) => {
+    if (!auction.completionDeadline) return 0;
+    const deadline = new Date(auction.completionDeadline);
+    const now = new Date();
+    return deadline - now;
+  };
+
+  const isAuctionCompleted = (auction) => {
+    return auction.status === 'completed' || auction.paymentStatus === 'completed';
+  };
+
+  const isAuctionCancelled = (auction) => {
+    return auction.status === 'cancelled';
+  };
+
+  const canExtendDeadline = (auction) => {
+    if (isAuctionCompleted(auction) || isAuctionCancelled(auction)) return false;
+    const remaining = calculateTimeRemaining(auction);
+    return remaining > 0 && remaining < 24 * 60 * 60 * 1000; // Less than 24 hours
+  };
+
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header />
@@ -101,7 +138,13 @@ export default function Ganados() {
               <WonAuctionMobileCard 
                 key={auction.id} 
                 auction={auction}
-                onNavigate={() => navigate(`/subasta/${auction.id}`)}
+                formatPrice={formatPrice}
+                navigate={navigate}
+                isCompleted={isAuctionCompleted(auction)}
+                canExtend={canExtendDeadline(auction)}
+                remaining={calculateTimeRemaining(auction)}
+                onExtend={handleExtend}
+                isCancelled={isAuctionCancelled(auction)}
               />
             ))}
           </motion.div>
