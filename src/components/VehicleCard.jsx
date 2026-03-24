@@ -6,6 +6,7 @@ import { Clock, Users, Flame, Trophy, Bookmark, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { watchlistApi } from '@/api/services';
+import { getVehicleImage, DEFAULT_VEHICLE_IMAGE } from '@/constants/vehicleImages';
 import { toast } from 'sonner';
 
 export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, variant = 'compact' }) {
@@ -56,14 +57,15 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
     }
   };
 
-  const defaultImage = 'https://via.placeholder.com/800x500/E5E5E5/9CA3AF?text=Sin+Imagen';
+  // Get vehicle image from hardcoded URLs
+  const vehicleImage = getVehicleImage(vehicle.brand, vehicle.model) || DEFAULT_VEHICLE_IMAGE;
   const detailUrl = `/DetalleSubasta/${vehicle.id}`;
 
   if (variant === 'grid') {
     return (
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <Link to={detailUrl} className="block relative aspect-[4/3] bg-muted overflow-hidden">
-          <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           {vehicle.isLeading && (
             <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5">
               <Trophy className="w-3 h-3 mr-1" />LÍDER
@@ -108,10 +110,10 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
 
   return (
     <div>
-      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
+      <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <div className="flex p-3 gap-3">
           <Link to={detailUrl} className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
-            <img src={vehicle.photos?.[0] || defaultImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
+            <img src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
             {vehicle.isLeading && (
               <Badge className="absolute top-1 left-1 bg-green-600 text-white text-[10px] px-1.5 py-0">
                 <Trophy className="w-2.5 h-2.5 mr-0.5" />LIDER

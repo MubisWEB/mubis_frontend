@@ -167,7 +167,7 @@ function VehicleProcessGridCard({ v, navigate, inspection }) {
   const shouldShowDocs = v.status === 'READY_FOR_AUCTION' || (inspection && inspection.status === 'COMPLETED');
   const docs = v.documentation;
   const docsOk = docs && docs.soat?.status === 'vigente' && docs.tecno?.status === 'vigente' && docs.multas?.tiene === 'no';
-  const defaultImage = 'https://via.placeholder.com/800x500/E5E5E5/9CA3AF?text=Sin+Imagen';
+  const defaultImage = '';
 
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${inspection?.id || v.id}`)}>
@@ -263,7 +263,7 @@ function AuctionGridCard({ auction, navigate }) {
   
   const isEnded = auction.status === 'ended' || auction.status === 'closed';
   const isPending = auction.status === 'pending_decision';
-  const defaultImage = 'https://via.placeholder.com/800x500/E5E5E5/9CA3AF?text=Sin+Imagen';
+  const defaultImage = '';
 
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
