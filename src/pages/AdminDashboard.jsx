@@ -1,33 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, UserCheck, Clock, TrendingUp, ClipboardCheck, FileText, MessageCircle, Package2, Target, Building2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DollarSign, TrendingUp, Car, Banknote,
+  Users, FileText, MessageCircle, Package2, Target, Building2, Upload,
+  BarChart3, ArrowUpRight, ArrowDownRight,
+} from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell, Legend,
+} from 'recharts';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { adminApi, casesApi } from '@/api/services';
+import { superadminApi, companiesApi, casesApi, adminApi } from '@/api/services';
+
+const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
+const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
+
+const CHART_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i);
+const MONTHS = [
+  { value: '1', label: 'Enero' }, { value: '2', label: 'Febrero' }, { value: '3', label: 'Marzo' },
+  { value: '4', label: 'Abril' }, { value: '5', label: 'Mayo' }, { value: '6', label: 'Junio' },
+  { value: '7', label: 'Julio' }, { value: '8', label: 'Agosto' }, { value: '9', label: 'Septiembre' },
+  { value: '10', label: 'Octubre' }, { value: '11', label: 'Noviembre' }, { value: '12', label: 'Diciembre' },
+];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
+  const [companies, setCompanies] = useState([]);
   const [openCasesCount, setOpenCasesCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
   const [error, setError] = useState(null);
 
-  const loadStats = async () => {
+  // Filters
+  const [period, setPeriod] = useState('monthly');
+  const [year, setYear] = useState(String(currentYear));
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1));
+  const [companyId, setCompanyId] = useState('all');
+
+  const loadData = async () => {
     try {
-      const [s, allCases] = await Promise.all([
-        adminApi.getStats(),
+      const params = { period, year };
+      if (period === 'monthly') params.month = month;
+      if (companyId !== 'all') params.companyId = companyId;
+
+      const [dash, comps, allCases, stats] = await Promise.all([
+        superadminApi.getDashboard(params),
+        companiesApi.getAll().catch(() => []),
         casesApi.getAll().catch(() => []),
+        adminApi.getStats().catch(() => null),
       ]);
-      setStats(s);
+
+      setDashboard(dash);
+      setCompanies((comps || []).filter(c => c.active));
       setOpenCasesCount((allCases || []).filter(c => c.status === 'OPEN').length);
+      if (stats) {
+        const p = (stats.dealers?.pending || 0) + (stats.peritos?.pending || 0) + (stats.recompradores?.pending || 0);
+        setPendingCount(p);
+      }
       setError(null);
     } catch (err) {
-      console.error('Error loading admin stats:', err);
-      if (!stats) setError('No se pudieron cargar las estadísticas');
+      console.error('Error loading dashboard:', err);
+      if (!dashboard) setError('No se pudieron cargar las estadísticas');
     } finally {
       setLoading(false);
     }
@@ -35,41 +78,43 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setLoading(true);
-    setError(null);
-    loadStats();
-    const interval = setInterval(loadStats, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    loadData();
+  }, [period, year, month, companyId]);
 
-  if (loading) {
+  // Auto-refresh every 30s
+  useEffect(() => {
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [period, year, month, companyId]);
+
+  const kpis = dashboard?.kpis || {};
+  const salesByCompany = dashboard?.salesByCompany || [];
+  const salesByBranch = dashboard?.salesByBranch || [];
+  const salesTrend = dashboard?.salesTrend || [];
+  const topDealers = dashboard?.topDealers || [];
+
+  // Pie chart data for company distribution
+  const companyPieData = useMemo(() =>
+    salesByCompany.map(c => ({ name: c.companyName, value: c.transactionCount })),
+    [salesByCompany]
+  );
+
+  if (loading && !dashboard) {
     return (
       <div className="min-h-screen bg-muted pb-28">
-        <Header title="Panel Admin" subtitle="Gestión de usuarios y subastas" />
-        <div className="max-w-7xl mx-auto px-4 pt-4">
-          <div className="grid grid-cols-2 gap-3 mb-4">
+        <Header title="SuperAdmin" subtitle="Panel de control" />
+        <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
             {[0, 1, 2, 3].map(i => (
               <div key={i} className="p-4 rounded-xl border border-border bg-card">
                 <Skeleton width="50%" height={13} />
-                <Skeleton width="40%" height={32} style={{ marginTop: 8 }} />
+                <Skeleton width="70%" height={28} style={{ marginTop: 8 }} />
               </div>
             ))}
           </div>
-          <div className="rounded-xl border border-border bg-card p-4 mb-4">
-            <Skeleton width="40%" height={16} style={{ marginBottom: 12 }} />
-            {[0, 1, 2].map(i => (
-              <Skeleton key={i} height={36} borderRadius={8} style={{ marginBottom: 8 }} />
-            ))}
-          </div>
           <div className="rounded-xl border border-border bg-card p-4">
-            <Skeleton width="40%" height={16} style={{ marginBottom: 12 }} />
-            <div className="grid grid-cols-3 gap-3">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="p-2 bg-muted rounded-lg">
-                  <Skeleton height={24} />
-                  <Skeleton width="60%" height={12} style={{ marginTop: 4 }} />
-                </div>
-              ))}
-            </div>
+            <Skeleton width="40%" height={16} style={{ marginBottom: 16 }} />
+            <Skeleton height={180} borderRadius={8} />
           </div>
         </div>
         <BottomNav />
@@ -77,120 +122,298 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!stats) return (
-    <div className="min-h-screen bg-muted pb-28">
-      <Header title="Panel Admin" subtitle="Gestión de usuarios y subastas" />
-      <div className="max-w-7xl mx-auto px-4 pt-8 text-center">
-        <p className="text-muted-foreground mb-4">{error || 'No se pudieron cargar las estadísticas'}</p>
-        <Button onClick={() => { setLoading(true); loadStats(); }} variant="outline" className="rounded-full">
-          Reintentar
-        </Button>
+  if (!dashboard && error) {
+    return (
+      <div className="min-h-screen bg-muted pb-28">
+        <Header title="SuperAdmin" subtitle="Panel de control" />
+        <div className="max-w-7xl mx-auto px-4 pt-8 text-center">
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => { setLoading(true); loadData(); }} variant="outline" className="rounded-full">
+            Reintentar
+          </Button>
+        </div>
+        <BottomNav />
       </div>
-      <BottomNav />
-    </div>
-  );
-
-  const totalUsers = (stats.dealers?.total || 0) + (stats.peritos?.total || 0) + (stats.recompradores?.total || 0);
-  const totalVerified = (stats.dealers?.verified || 0) + (stats.peritos?.verified || 0) + (stats.recompradores?.verified || 0);
-  const totalPending = (stats.dealers?.pending || 0) + (stats.peritos?.pending || 0) + (stats.recompradores?.pending || 0);
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted pb-28">
-      <Header title="Panel Admin" subtitle="Gestión de usuarios y subastas" />
+      <Header title="SuperAdmin" subtitle="Panel de control" />
 
-      <div className="max-w-7xl mx-auto px-4 pt-4">
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <Card className="p-4 text-center border border-border shadow-sm">
-            <Users className="w-6 h-6 text-secondary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{totalUsers}</p>
-            <p className="text-xs text-muted-foreground">Total Usuarios</p>
+      <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
+
+        {/* Filters */}
+        <Card className="p-3 border border-border shadow-sm">
+          <div className="flex gap-2 flex-wrap">
+            <Select value={period} onValueChange={setPeriod}>
+              <SelectTrigger className="w-[120px] h-9 text-xs rounded-lg border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Mensual</SelectItem>
+                <SelectItem value="yearly">Anual</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={year} onValueChange={setYear}>
+              <SelectTrigger className="w-[90px] h-9 text-xs rounded-lg border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {YEARS.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {period === 'monthly' && (
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger className="w-[120px] h-9 text-xs rounded-lg border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+
+            <Select value={companyId} onValueChange={setCompanyId}>
+              <SelectTrigger className="flex-1 min-w-[140px] h-9 text-xs rounded-lg border-border">
+                <SelectValue placeholder="Todas las empresas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las empresas</SelectItem>
+                {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="p-4 border border-border shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-primary" />
+              </div>
+            </div>
+            <p className="text-lg font-bold text-foreground">{COP(kpis.totalSales)}</p>
+            <p className="text-xs text-muted-foreground">Ventas totales</p>
           </Card>
-          <Card className="p-4 text-center border border-border shadow-sm">
-            <UserCheck className="w-6 h-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{totalVerified}</p>
-            <p className="text-xs text-muted-foreground">Verificados</p>
+
+          <Card className="p-4 border border-border shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-secondary" />
+              </div>
+            </div>
+            <p className="text-lg font-bold text-foreground">{NUM(kpis.totalTransactions)}</p>
+            <p className="text-xs text-muted-foreground">Transacciones</p>
           </Card>
-          <Card className="p-4 text-center border border-border shadow-sm">
-            <Clock className="w-6 h-6 text-accent-foreground mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{totalPending}</p>
-            <p className="text-xs text-muted-foreground">Pendientes</p>
+
+          <Card className="p-4 border border-border shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <Car className="w-4 h-4 text-accent-foreground" />
+              </div>
+            </div>
+            <p className="text-lg font-bold text-foreground">{NUM(kpis.activeVehicles)}</p>
+            <p className="text-xs text-muted-foreground">Vehículos activos</p>
           </Card>
-          <Card className="p-4 text-center border border-border shadow-sm">
-            <TrendingUp className="w-6 h-6 text-secondary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{stats.auctions?.active || 0}</p>
-            <p className="text-xs text-muted-foreground">Subastas Activas</p>
+
+          <Card className="p-4 border border-border shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Banknote className="w-4 h-4 text-primary" />
+              </div>
+            </div>
+            <p className="text-lg font-bold text-foreground">{COP(kpis.totalBrokerage)}</p>
+            <p className="text-xs text-muted-foreground">Corretaje generado</p>
           </Card>
         </div>
 
-        {/* Breakdown by role */}
-        <Card className="p-4 mb-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans">Usuarios por rol</h2>
-          <div className="space-y-2">
-            {[
-              { label: 'Dealers', data: stats.dealers || {} },
-              { label: 'Peritos', data: stats.peritos || {} },
-              { label: 'Recompradores', data: stats.recompradores || {} },
-            ].map(({ label, data }) => (
-              <div key={label} className="flex items-center justify-between p-2 bg-muted rounded-lg text-sm">
-                <span className="font-medium text-foreground">{label}</span>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-primary/10 text-primary text-xs">{data.verified || 0} ✓</Badge>
-                  {(data.pending || 0) > 0 && <Badge className="bg-accent/10 text-accent-foreground text-[13px] font-semibold min-h-[28px] px-2.5 py-1 border border-accent/20">{data.pending} pend.</Badge>}
-                  {(data.rejected || 0) > 0 && <Badge className="bg-destructive/10 text-destructive text-[13px] font-semibold min-h-[28px] px-2.5 py-1 border border-destructive/20">{data.rejected} rech.</Badge>}
-                  <span className="text-muted-foreground text-xs">{data.total || 0} total</span>
+        {/* Sales Trend */}
+        {salesTrend.length > 0 && (
+          <Card className="p-4 border border-border shadow-sm">
+            <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-secondary" /> Tendencia de ventas
+            </h2>
+            <div className="h-52">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="period" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${(v / 1e6).toFixed(0)}M`} />
+                  <Tooltip
+                    formatter={(value, name) => [COP(value), name === 'totalSales' ? 'Ventas' : 'Transacciones']}
+                    contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', fontSize: 12 }}
+                  />
+                  <Line type="monotone" dataKey="totalSales" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} name="Ventas" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        )}
+
+        {/* Sales by Company */}
+        {salesByCompany.length > 0 && (
+          <Card className="p-4 border border-border shadow-sm">
+            <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-secondary" /> Ventas por empresa
+            </h2>
+            <div className="h-52">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={salesByCompany} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${(v / 1e6).toFixed(0)}M`} />
+                  <YAxis type="category" dataKey="companyName" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={100} />
+                  <Tooltip
+                    formatter={(value) => [COP(value), 'Ventas']}
+                    contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', fontSize: 12 }}
+                  />
+                  <Bar dataKey="totalSales" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Company table */}
+            <div className="mt-4 space-y-2">
+              {salesByCompany.map((c, i) => (
+                <div key={c.companyId} className="flex items-center justify-between p-2.5 bg-muted rounded-lg text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+                    <span className="font-medium text-foreground">{c.companyName}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-muted-foreground">{c.transactionCount} transac.</span>
+                    <span className="font-semibold text-foreground">{COP(c.totalSales)}</span>
+                    <Badge className="bg-primary/10 text-primary text-[10px]">{COP(c.brokerage)}</Badge>
+                  </div>
                 </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Sales by Branch */}
+        {salesByBranch.length > 0 && (
+          <Card className="p-4 border border-border shadow-sm">
+            <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-primary" /> Ventas por sucursal
+            </h2>
+            <div className="space-y-2">
+              {salesByBranch.map((b, i) => (
+                <div key={b.branchId} className="flex items-center justify-between p-2.5 bg-muted rounded-lg text-sm">
+                  <div>
+                    <span className="font-medium text-foreground">{b.branchName}</span>
+                    <span className="text-xs text-muted-foreground ml-2">{b.companyName}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-muted-foreground">{b.transactionCount} transac.</span>
+                    <span className="font-semibold text-foreground">{COP(b.totalSales)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Distribution Pie + Top Dealers */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Company distribution */}
+          {companyPieData.length > 0 && (
+            <Card className="p-4 border border-border shadow-sm">
+              <h2 className="font-bold text-foreground mb-3">Distribución de transacciones</h2>
+              <div className="h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={companyPieData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} paddingAngle={2} dataKey="value">
+                      {companyPieData.map((_, i) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))}
-          </div>
-        </Card>
+            </Card>
+          )}
 
-        <Card className="p-4 mb-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans">Acciones Rápidas</h2>
-          <div className="space-y-2">
-            <Button onClick={() => navigate('/AdminDealers')} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 justify-between rounded-full">
-              <span>Ver Todos los Usuarios</span><Users className="w-4 h-4" />
-            </Button>
-            <Button onClick={() => navigate('/AdminSolicitudes')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Solicitudes Pendientes</span>
-              {totalPending > 0 && <Badge className="bg-accent text-accent-foreground text-[13px] font-semibold min-h-[28px] px-2.5 py-1">{totalPending}</Badge>}
-            </Button>
-            <Button onClick={() => navigate('/AdminCasos')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Casos de Soporte</span>
-              {openCasesCount > 0 ? <Badge className="bg-destructive/10 text-destructive text-[13px] font-semibold min-h-[28px] px-2.5 py-1">{openCasesCount}</Badge> : null}
-            </Button>
-            <Button onClick={() => navigate('/AdminSubastas')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Subastas</span><Badge className="bg-secondary/10 text-secondary text-[13px] font-semibold min-h-[28px] px-2.5 py-1">{stats.auctions?.total || 0}</Badge>
-            </Button>
-            <Button onClick={() => navigate('/AdminInventario')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Gestión de Inventario</span><Package2 className="w-4 h-4" />
-            </Button>
-            <Button onClick={() => navigate('/AdminMetas')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Metas de Ventas</span><Target className="w-4 h-4" />
-            </Button>
-            <Button onClick={() => navigate('/AdminSucursales')} variant="outline" className="w-full justify-between rounded-full">
-              <span>Sucursales</span><Building2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </Card>
+          {/* Top Dealers */}
+          {topDealers.length > 0 && (
+            <Card className="p-4 border border-border shadow-sm">
+              <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
+                <Users className="w-4 h-4 text-secondary" /> Top Dealers
+              </h2>
+              <div className="space-y-2">
+                {topDealers.slice(0, 10).map((d, i) => (
+                  <div key={d.dealerId} className="flex items-center justify-between p-2.5 bg-muted rounded-lg text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-xs font-bold text-secondary">
+                        {i + 1}
+                      </span>
+                      <div>
+                        <span className="font-medium text-foreground">{d.dealerName}</span>
+                        <p className="text-[10px] text-muted-foreground">{d.company}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-semibold text-foreground">{d.vehiclesSold} vendidos</p>
+                      <p className="text-[10px] text-muted-foreground">{COP(d.totalRevenue)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
 
-        {/* Inspections summary */}
+        {/* Quick Actions */}
         <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans flex items-center gap-2">
-            <ClipboardCheck className="w-4 h-4 text-secondary" /> Peritajes
-          </h2>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="p-2 bg-muted rounded-lg">
-              <p className="text-lg font-bold text-foreground">{stats.inspections?.total || 0}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
-            </div>
-            <div className="p-2 bg-muted rounded-lg">
-              <p className="text-lg font-bold text-accent-foreground">{stats.inspections?.pending || 0}</p>
-              <p className="text-xs text-muted-foreground">Pendientes</p>
-            </div>
-            <div className="p-2 bg-muted rounded-lg">
-              <p className="text-lg font-bold text-primary">{stats.inspections?.completed || 0}</p>
-              <p className="text-xs text-muted-foreground">Completados</p>
-            </div>
+          <h2 className="font-bold text-foreground mb-3">Acciones rápidas</h2>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={() => navigate('/AdminDealers')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Users className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Usuarios</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminSolicitudes')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5 relative">
+              <FileText className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Solicitudes</span>
+              {pendingCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full p-0 px-1.5">
+                  {pendingCount}
+                </Badge>
+              )}
+            </Button>
+            <Button onClick={() => navigate('/AdminCasos')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5 relative">
+              <MessageCircle className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Soporte</span>
+              {openCasesCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full p-0 px-1.5">
+                  {openCasesCount}
+                </Badge>
+              )}
+            </Button>
+            <Button onClick={() => navigate('/AdminEmpresas')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Building2 className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Empresas</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminCargaMasiva')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Upload className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Carga masiva</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminSucursales')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Building2 className="w-5 h-5 text-primary" />
+              <span className="text-xs">Sucursales</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminSubastas')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Car className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Subastas</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminInventario')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Package2 className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Inventario</span>
+            </Button>
           </div>
         </Card>
       </div>

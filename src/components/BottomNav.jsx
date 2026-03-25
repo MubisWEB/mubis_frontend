@@ -20,9 +20,9 @@ const NAV_CONFIGS = {
     { icon: History, label: 'Historial', path: '/HistorialPeritajes' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
-  admin: [
+  superadmin: [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/AdminDashboard' },
-    { icon: Users, label: 'Dealers', path: '/AdminDealers' },
+    { icon: Users, label: 'Usuarios', path: '/AdminDealers' },
     { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],

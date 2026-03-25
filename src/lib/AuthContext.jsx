@@ -11,7 +11,7 @@ const normalizeUser = (user) =>
 
 export const getRedirectForRole = (role) => {
   switch (role?.toLowerCase()) {
-    case 'admin':       return '/AdminDashboard';
+    case 'superadmin':  return '/AdminDashboard';
     case 'perito':      return '/PeritajesPendientes';
     case 'dealer':      return '/MisSubastas';
     case 'recomprador': return '/Comprar';

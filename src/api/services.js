@@ -8,8 +8,14 @@ export const authApi = {
     return data;
   },
 
-  getCompanies: async () => {
-    const { data } = await publicApi.get('/auth/companies');
+  getCompanies: async (tenantSlug) => {
+    const params = tenantSlug ? `?tenantSlug=${tenantSlug}` : '';
+    const { data } = await publicApi.get(`/auth/companies${params}`);
+    return data;
+  },
+
+  setPassword: async (token, password) => {
+    const { data } = await publicApi.post('/auth/set-password', { token, password });
     return data;
   },
 
@@ -57,10 +63,18 @@ export const authApi = {
   },
 };
 
-// ── USERS (admin) ─────────────────────────────────────────────────────────────
+// ── USERS (superadmin) ───────────────────────────────────────────────────────
 
 export const usersApi = {
-  getAll: async () => (await api.get('/users')).data,
+  getAll: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.company) params.append('company', filters.company);
+    if (filters.branch) params.append('branch', filters.branch);
+    if (filters.role) params.append('role', filters.role);
+    if (filters.verification_status) params.append('verification_status', filters.verification_status);
+    const query = params.toString();
+    return (await api.get(`/users${query ? `?${query}` : ''}`)).data;
+  },
   getById: async (id) => (await api.get(`/users/${id}`)).data,
   update: async (id, updates) => (await api.patch(`/users/${id}`, updates)).data,
   verify: async (id, status) => (await api.patch(`/users/${id}/verify`, { status })).data,
@@ -165,7 +179,7 @@ export const prontoPagoApi = {
   getByAuction: async (auctionId) => (await api.get(`/pronto-pago/auction/${auctionId}`)).data,
 };
 
-// ── ADMIN ─────────────────────────────────────────────────────────────────────
+// ── ADMIN (legacy) ───────────────────────────────────────────────────────────
 
 export const adminApi = {
   getStats: async () => (await api.get('/admin/stats')).data,
@@ -175,6 +189,37 @@ export const adminApi = {
   getMovements: async () => (await api.get('/admin/movements')).data,
   getAnalytics: async () => (await api.get('/admin/analytics')).data,
   getCases: async () => (await api.get('/support/cases')).data,
+};
+
+// ── COMPANIES ────────────────────────────────────────────────────────────────
+
+export const companiesApi = {
+  getAll: async () => (await api.get('/companies')).data,
+  getById: async (id) => (await api.get(`/companies/${id}`)).data,
+  create: async (name) => (await api.post('/companies', { name })).data,
+  update: async (id, updates) => (await api.patch(`/companies/${id}`, updates)).data,
+  remove: async (id) => (await api.delete(`/companies/${id}`)).data,
+};
+
+// ── SUPERADMIN ───────────────────────────────────────────────────────────────
+
+export const superadminApi = {
+  getDashboard: async (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.period) qs.append('period', params.period);
+    if (params.year) qs.append('year', params.year);
+    if (params.month) qs.append('month', params.month);
+    if (params.companyId) qs.append('companyId', params.companyId);
+    const query = qs.toString();
+    return (await api.get(`/superadmin/dashboard${query ? `?${query}` : ''}`)).data;
+  },
+  bulkUpload: async (file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return (await api.post('/superadmin/bulk-upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })).data;
+  },
 };
 
 // ── AUDIT / ACTIVITY ──────────────────────────────────────────────────────────

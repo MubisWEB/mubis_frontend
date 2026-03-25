@@ -38,7 +38,7 @@ export default function Login() {
     try {
       const user = await login(email, password, tenantSlug);
       toast.success("¡Bienvenido de nuevo!");
-      if (user.role !== 'admin' && user.verification_status !== 'VERIFIED') {
+      if (user.role !== 'superadmin' && user.verification_status !== 'VERIFIED') {
         navigate('/PendienteVerificacion');
         return;
       }
