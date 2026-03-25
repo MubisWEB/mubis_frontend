@@ -369,92 +369,90 @@ export default function MisSubastas() {
     <div className="min-h-screen bg-background pb-32">
       <Header />
       
-      {/* Combined bar - Publications left, Tabs centered, Search right */}
-      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
-        <div className="flex items-center gap-4">
-          {/* Publications Available - Left */}
-          <div className="hidden md:flex items-center gap-2">
+      {/* Navigation bar */}
+      <div className="bg-background px-4 md:px-8 pt-3 pb-3 space-y-3">
+        {/* Mobile: Tabs row - horizontally scrollable */}
+        <div className="flex md:hidden overflow-x-auto gap-1 pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+          {[
+            { key: 'activas', label: 'Activas', count: activas.length },
+            { key: 'decision', label: 'Decisión', count: pendienteDecision.length },
+            { key: 'proceso', label: 'En proceso', count: enProceso.length },
+            { key: 'rechazados', label: 'Rechazados', count: rechazados.length },
+            { key: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap px-3 py-2 rounded-full transition-colors flex-shrink-0 ${
+                activeTab === tab.key
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {tab.label}
+              {tab.count > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === tab.key ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{tab.count}</span>}
+            </button>
+          ))}
+        </div>
+
+        {/* Mobile: Search + Filter row */}
+        <div className="flex md:hidden items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar marca o modelo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm w-full"
+            />
+          </div>
+          <SellerFilterSheet filters={filters} setFilters={setFilters} />
+        </div>
+
+        {/* Mobile: Publications badge */}
+        <div className="flex md:hidden items-center gap-2">
+          <span className="text-sm text-muted-foreground">Publicaciones:</span>
+          <span className="text-lg font-bold text-secondary">{pubBalance}</span>
+        </div>
+
+        {/* Desktop: Publications left, Tabs center, Search right */}
+        <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
             <span className="text-2xl font-bold text-secondary">{pubBalance}</span>
           </div>
-          
-          {/* Tabs - Screen Center */}
-          <div className="flex-1 flex items-center justify-center gap-4 md:gap-6 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('activas')}
-              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
-                activeTab === 'activas' 
-                  ? 'text-foreground border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Activas
-            </button>
-            <button
-              onClick={() => setActiveTab('decision')}
-              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
-                activeTab === 'decision' 
-                  ? 'text-foreground border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Decisión
-            </button>
-            <button
-              onClick={() => setActiveTab('proceso')}
-              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
-                activeTab === 'proceso' 
-                  ? 'text-foreground border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              En proceso
-            </button>
-            <button
-              onClick={() => setActiveTab('rechazados')}
-              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
-                activeTab === 'rechazados' 
-                  ? 'text-foreground border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Rechazados
-            </button>
-            <button
-              onClick={() => setActiveTab('finalizadas')}
-              className={`text-sm md:text-base font-semibold whitespace-nowrap transition-colors ${
-                activeTab === 'finalizadas' 
-                  ? 'text-foreground border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Finalizadas
-            </button>
+
+          <div className="flex-1 flex items-center justify-center gap-6">
+            {[
+              { key: 'activas', label: 'Activas' },
+              { key: 'decision', label: 'Decisión' },
+              { key: 'proceso', label: 'En proceso' },
+              { key: 'rechazados', label: 'Rechazados' },
+              { key: 'finalizadas', label: 'Finalizadas' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`text-base font-semibold whitespace-nowrap transition-colors ${
+                  activeTab === tab.key
+                    ? 'text-foreground border-b-2 border-primary pb-1'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Search and Actions - Right */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-48 md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar marca o modelo..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
-              />
-            </div>
-            <div className="md:hidden">
-              <SellerFilterSheet filters={filters} setFilters={setFilters} />
-            </div>
+          <div className="relative w-64 flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar marca o modelo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+            />
           </div>
-        </div>
-      </div>
-
-      {/* Mobile Publications Badge */}
-      <div className="md:hidden px-4 pb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
-          <span className="text-xl font-bold text-secondary">{pubBalance}</span>
         </div>
       </div>
 

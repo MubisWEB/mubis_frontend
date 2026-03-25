@@ -33,7 +33,11 @@ export default function Guardadas() {
     try {
       setLoading(true);
       const data = await watchlistApi.getAll();
-      setVehicles(data || []);
+      // Backend returns { id, auctionId, auction: { ... } } — extract & flatten
+      const active = (data || [])
+        .map(item => item.auction || item)
+        .filter(a => a && a.status === 'ACTIVE');
+      setVehicles(active);
     } catch (err) {
       console.error('Error loading watchlist:', err);
     } finally {
