@@ -176,12 +176,27 @@ export default function Comprar() {
     <div className="min-h-screen flex flex-col bg-background pb-32">
       <Header />
 
-      {/* Combined bar - Ganadas/Guardadas centered, Search right */}
-      <div className="bg-background px-4 md:px-8 pt-3 pb-3">
+      {/* Combined bar - Search centered, nav links and filters */}
+      <div className="bg-background px-4 md:px-8 pt-3 pb-3 space-y-3">
+        {/* Row 1 (mobile): Search bar full width + Filter button */}
+        <div className="flex md:hidden items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar marca o modelo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm w-full"
+            />
+          </div>
+          <FilterSheet filters={filters} setFilters={setFilters} />
+        </div>
+
+        {/* Row (mobile) / Single row (desktop): Ganadas/Guardadas centered, Search right on desktop */}
         <div className="flex items-center gap-4">
-          {/* Spacer left */}
+          {/* Spacer left - desktop only, matches sidebar width */}
           <div className="w-64 hidden md:block"></div>
-          
+
           {/* Ganadas y Guardadas - Screen Center */}
           <div className="flex-1 flex items-center justify-center gap-8">
             <button
@@ -198,8 +213,8 @@ export default function Comprar() {
             </button>
           </div>
 
-          {/* Search bar - Right */}
-          <div className="flex items-center gap-3">
+          {/* Search bar - Right, desktop only */}
+          <div className="hidden md:flex items-center gap-3">
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -208,9 +223,6 @@ export default function Comprar() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
               />
-            </div>
-            <div className="md:hidden">
-              <FilterSheet filters={filters} setFilters={setFilters} />
             </div>
           </div>
         </div>

@@ -166,7 +166,7 @@ export const casesApi = {
 
 export const publicationsApi = {
   getBalance: async () => (await api.get('/publications/balance')).data,
-  recharge: async (userId, quantity) => (await api.post('/publications/recharge', { userId, quantity })).data,
+  recharge: async (userId, amount) => (await api.post('/publications/recharge', { userId, amount })).data,
   createCheckout: async (quantity) => (await api.post('/publications/checkout', { quantity })).data,
   getTransactionStatus: async (reference) => (await api.get(`/publications/transaction/${reference}`)).data,
 };
@@ -314,8 +314,7 @@ export const b2bApi = {
 // ── PRICING ───────────────────────────────────────────────────────────────────
 
 export const pricingApi = {
-  getByVehicle: async (id) => (await api.get(`/pricing/vehicle/${id}`)).data,
-  estimate: async (params) => (await api.get('/pricing', { params })).data,
+  suggest: async (params) => (await api.post('/pricing/suggest', params)).data,
 };
 
 // ── MEDIA ─────────────────────────────────────────────────────────────────────
