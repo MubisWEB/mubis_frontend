@@ -62,16 +62,42 @@ export default function Ganados() {
     load();
   }, []);
 
-  const filtered = useMemo(() => {
-    let list = [...wonAuctions];
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter(a => (`${a.brand} ${a.model}`).toLowerCase().includes(q));
-    }
-    if (sortBy === 'price_high') list.sort((a, b) => (b.current_bid || 0) - (a.current_bid || 0));
-    else if (sortBy === 'price_low') list.sort((a, b) => (a.current_bid || 0) - (b.current_bid || 0));
-    return list;
-  }, [wonAuctions, search, sortBy]);
+  const formatPrice = (price) => {
+    if (!price) return '$0';
+    if (price >= 1000000) return `$${(price / 1000000).toFixed(1)}M`;
+    return new Intl.NumberFormat('es-CO', { 
+      style: 'currency', 
+      currency: 'COP', 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    }).format(price);
+  };
+
+  const handleExtend = (auction) => {
+    // Navigate to detail page to handle extension
+    navigate(`/DetalleSubasta/${auction.id}?from=ganados`);
+  };
+
+  const calculateTimeRemaining = (auction) => {
+    if (!auction.completionDeadline) return 0;
+    const deadline = new Date(auction.completionDeadline);
+    const now = new Date();
+    return deadline - now;
+  };
+
+  const isAuctionCompleted = (auction) => {
+    return auction.status === 'completed' || auction.paymentStatus === 'completed';
+  };
+
+  const isAuctionCancelled = (auction) => {
+    return auction.status === 'cancelled';
+  };
+
+  const canExtendDeadline = (auction) => {
+    if (isAuctionCompleted(auction) || isAuctionCancelled(auction)) return false;
+    const remaining = calculateTimeRemaining(auction);
+    return remaining > 0 && remaining < 24 * 60 * 60 * 1000; // Less than 24 hours
+  };
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -167,68 +193,25 @@ export default function Ganados() {
             )}
           </div>
         ) : (
-          <>
-            {/* Mobile: always compact cards */}
-            <div className="space-y-3 md:hidden">
-              {filtered.map((auction) => {
-                const state = getAuctionState(auction);
-                return (
-                  <motion.div key={auction.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <WonAuctionMobileCard
-                      auction={auction}
-                      formatPrice={formatPrice}
-                      navigate={navigate}
-                      isCompleted={state.isCompleted}
-                      isCancelled={state.isCancelled}
-                      canExtend={state.canExtend}
-                      remaining={state.remaining}
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Desktop: grid or list */}
-            {viewMode === 'grid' ? (
-              <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map((auction) => {
-                  const state = getAuctionState(auction);
-                  return (
-                    <motion.div key={auction.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <WonAuctionGridCard
-                        auction={auction}
-                        formatPrice={formatPrice}
-                        navigate={navigate}
-                        isCompleted={state.isCompleted}
-                        isCancelled={state.isCancelled}
-                        canExtend={state.canExtend}
-                        remaining={state.remaining}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="hidden md:flex md:flex-col gap-4">
-                {filtered.map((auction) => {
-                  const state = getAuctionState(auction);
-                  return (
-                    <motion.div key={auction.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <WonAuctionListCard
-                        auction={auction}
-                        formatPrice={formatPrice}
-                        navigate={navigate}
-                        isCompleted={state.isCompleted}
-                        isCancelled={state.isCancelled}
-                        canExtend={state.canExtend}
-                        remaining={state.remaining}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </>
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            {wonAuctions.map((auction) => (
+              <WonAuctionMobileCard 
+                key={auction.id} 
+                auction={auction}
+                formatPrice={formatPrice}
+                navigate={navigate}
+                isCompleted={isAuctionCompleted(auction)}
+                canExtend={canExtendDeadline(auction)}
+                remaining={calculateTimeRemaining(auction)}
+                onExtend={handleExtend}
+                isCancelled={isAuctionCancelled(auction)}
+              />
+            ))}
+          </motion.div>
         )}
       </div>
 
