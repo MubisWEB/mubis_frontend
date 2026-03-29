@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion } from 'framer-motion';
-import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck } from 'lucide-react';
+import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck, Menu } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import PublishFAB from '@/components/PublishFAB';
@@ -261,8 +261,8 @@ function AuctionGridCard({ auction, navigate }) {
     return `${minutes}min`;
   };
   
-  const isEnded = auction.status === 'ended' || auction.status === 'closed';
-  const isPending = auction.status === 'pending_decision';
+  const isEnded = auction.status === 'ENDED' || auction.status === 'CLOSED';
+  const isPending = auction.status === 'PENDING_DECISION';
   const defaultImage = '';
 
   return (
@@ -314,6 +314,7 @@ export default function MisSubastas() {
   const [viewMode, setViewMode] = useState('grid');
   const [pubBalance, setPubBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -369,31 +370,66 @@ export default function MisSubastas() {
     <div className="min-h-screen bg-background pb-32">
       <Header />
       
-      {/* Top Bar with Dropdown State Selector (Mobile) + Search */}
+      {/* Top Bar with Menu + Filter (Mobile) */}
       <div className="bg-background px-4 pt-3 pb-3 md:hidden">
-        <div className="flex items-center gap-3">
-          {/* Estado Selector (Mobile Dropdown) */}
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full max-w-[200px] h-10 rounded-full border-border bg-secondary/10 font-semibold">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="activas">🔴 Activas</SelectItem>
-              <SelectItem value="decision">⏰ Decisión</SelectItem>
-              <SelectItem value="proceso">🔧 En proceso</SelectItem>
-              <SelectItem value="rechazados">❌ Rechazados</SelectItem>
-              <SelectItem value="finalizadas">✅ Finalizadas</SelectItem>
-            </SelectContent>
-          </Select>
-          
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Hamburger Menu Trigger */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <button className="w-10 h-10 flex items-center justify-center rounded-full border border-border bg-white">
+                  <Menu className="w-5 h-5 text-black" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 bg-white border-r border-neutral-200 p-0">
+                <SheetHeader className="px-6 pt-8 pb-6 border-b border-neutral-100">
+                  <SheetTitle className="text-left text-lg font-semibold tracking-tight text-black">Categorias</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col py-2">
+                  {[
+                    { value: 'activas', label: 'Activas', count: activas.length },
+                    { value: 'decision', label: 'Decision', count: pendienteDecision.length },
+                    { value: 'proceso', label: 'En proceso', count: enProceso.length },
+                    { value: 'rechazados', label: 'Rechazados', count: rechazados.length },
+                    { value: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => { setActiveTab(item.value); setMobileMenuOpen(false); }}
+                      className={`flex items-center justify-between px-6 py-3.5 text-left transition-colors ${
+                        activeTab === item.value
+                          ? 'bg-neutral-100 text-black font-semibold'
+                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                      }`}
+                    >
+                      <span className="text-[15px] tracking-wide">{item.label}</span>
+                      {item.count > 0 && (
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          activeTab === item.value
+                            ? 'bg-black text-white'
+                            : 'bg-neutral-200 text-neutral-600'
+                        }`}>{item.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </nav>
+                <div className="mt-auto px-6 py-6 border-t border-neutral-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-500">Publicaciones</span>
+                    <span className="text-lg font-bold text-black">{pubBalance}</span>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Active tab label */}
+            <span className="text-base font-semibold text-foreground">
+              {{ activas: 'Activas', decision: 'Decision', proceso: 'En proceso', rechazados: 'Rechazados', finalizadas: 'Finalizadas' }[activeTab]}
+            </span>
+          </div>
+
           {/* Filter Button (Mobile) */}
           <SellerFilterSheet filters={filters} setFilters={setFilters} />
-        </div>
-        
-        {/* Publications Badge (Mobile) */}
-        <div className="flex items-center gap-2 mt-3">
-          <span className="text-sm text-muted-foreground">Publicaciones:</span>
-          <span className="text-xl font-bold text-secondary">{pubBalance}</span>
         </div>
       </div>
 
