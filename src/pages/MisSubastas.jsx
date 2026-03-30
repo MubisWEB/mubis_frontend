@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion } from 'framer-motion';
-import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck } from 'lucide-react';
+import { Clock, Users, Eye, DollarSign, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, SlidersHorizontal, Filter, X, ChevronRight, LayoutGrid, LayoutList, Gavel, Timer, ClipboardX, CheckCheck, Menu } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import PublishFAB from '@/components/PublishFAB';
@@ -115,8 +115,8 @@ function SellerFilterSheet({ filters, setFilters }) {
 function VehicleProcessCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-red-500 text-black text-xs font-semibold">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || inspection && inspection.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
+    // Solo mostrar "En peritaje" para vehículos en proceso (no diferenciar pendiente vs in_progress)
+    if (v.status === 'IN_PROGRESS' || v.status === 'PENDING_INSPECTION' || inspection && (inspection.status === 'IN_PROGRESS' || inspection.status === 'PENDING')) return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   
@@ -158,8 +158,8 @@ function VehicleProcessCard({ v, navigate, inspection }) {
 function VehicleProcessGridCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-red-500 text-black text-xs font-semibold">Rechazado</Badge>;
-    if (v.status === 'IN_PROGRESS' || inspection && inspection.status === 'IN_PROGRESS') return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
-    if (v.status === 'PENDING_INSPECTION' || inspection && inspection.status === 'PENDING') return <Badge className="bg-purple-100 text-purple-800 text-xs font-semibold">Pendiente</Badge>;
+    // Solo mostrar "En peritaje" para vehículos en proceso (no diferenciar pendiente vs in_progress)
+    if (v.status === 'IN_PROGRESS' || v.status === 'PENDING_INSPECTION' || inspection && (inspection.status === 'IN_PROGRESS' || inspection.status === 'PENDING')) return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
   
@@ -216,13 +216,13 @@ function AuctionCard({ auction, navigate }) {
       <div className="flex p-3 gap-3">
         <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
           {auction.photos?.[0] && <img src={auction.photos[0]} alt="" className="w-full h-full object-cover" />}
-          {isEnded ?
-          auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0 hover:bg-muted"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge> :
-          isPending ?
-          <Badge className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] px-1.5 py-0 hover:bg-orange-500"><Clock className="w-2.5 h-2.5 mr-0.5" />Decidir</Badge> :
-          auction.status === 'ACTIVE' &&
-          <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
-          }
+          {isEnded ? (
+            auction.winnerId ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary z-10"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0 hover:bg-muted z-10"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
+          ) : isPending ? (
+            <Badge className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] px-1.5 py-0 hover:bg-orange-500 shadow-md z-10"><Clock className="w-2.5 h-2.5 mr-0.5" />Decidir</Badge>
+          ) : auction.status === 'ACTIVE' ? (
+            <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary z-10">{auction.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
+          ) : null}
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
@@ -261,27 +261,27 @@ function AuctionGridCard({ auction, navigate }) {
     return `${minutes}min`;
   };
   
-  const isEnded = auction.status === 'ended' || auction.status === 'closed';
-  const isPending = auction.status === 'pending_decision';
+  const isEnded = auction.status === 'ENDED' || auction.status === 'CLOSED';
+  const isPending = auction.status === 'PENDING_DECISION';
   const defaultImage = '';
 
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${auction.id}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <img src={auction.photos?.[0] || defaultImage} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
-        {isEnded ?
-        auction.winnerId ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5 hover:bg-muted"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge> :
-        isPending ?
-        <Badge className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-0.5 hover:bg-orange-500"><Clock className="w-3 h-3 mr-1" />Decidir</Badge> :
-        auction.status === 'ACTIVE' &&
-        <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary">Activa</Badge>
-        }
+        {isEnded ? (
+          auction.winnerId ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary shadow-md z-10"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5 hover:bg-muted shadow-md z-10"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge>
+        ) : isPending ? (
+          <Badge className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-0.5 hover:bg-orange-500 shadow-lg z-10"><Clock className="w-3 h-3 mr-1" />Decidir</Badge>
+        ) : auction.status === 'ACTIVE' ? (
+          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary shadow-md z-10">Activa</Badge>
+        ) : null}
         {isPending ? 
-          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-red-500/90 text-white">
+          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-red-500/90 text-white shadow-md z-10">
             <Clock className="w-3 h-3" /><span className="font-semibold">{getDecisionTimeLeft()}</span>
           </div> :
           !isEnded &&
-          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-background/80 text-foreground">
+          <div className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-background/80 text-foreground z-10">
             <Clock className="w-3 h-3" /><span className="font-semibold">{getTimeLeft(auction.ends_at)}</span>
           </div>
         }
@@ -314,6 +314,7 @@ export default function MisSubastas() {
   const [viewMode, setViewMode] = useState('grid');
   const [pubBalance, setPubBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -369,82 +370,135 @@ export default function MisSubastas() {
     <div className="min-h-screen bg-background pb-32">
       <Header />
       
-      {/* Navigation bar */}
-      <div className="bg-background px-4 md:px-8 pt-3 pb-3 space-y-3">
-        {/* Mobile: Tabs row - horizontally scrollable */}
-        <div className="flex md:hidden overflow-x-auto gap-1 pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-          {[
-            { key: 'activas', label: 'Activas', count: activas.length },
-            { key: 'decision', label: 'Decisión', count: pendienteDecision.length },
-            { key: 'proceso', label: 'En proceso', count: enProceso.length },
-            { key: 'rechazados', label: 'Rechazados', count: rechazados.length },
-            { key: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
-          ].map(tab => (
+      {/* Top Bar with Menu + Filter (Mobile) */}
+      <div className="bg-background px-4 pt-3 pb-3 md:hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Hamburger Menu Trigger */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <button className="w-10 h-10 flex items-center justify-center rounded-full border border-border bg-white">
+                  <Menu className="w-5 h-5 text-black" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 bg-white border-r border-neutral-200 p-0">
+                <SheetHeader className="px-6 pt-8 pb-6 border-b border-neutral-100">
+                  <SheetTitle className="text-left text-lg font-semibold tracking-tight text-black">Categorias</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col py-2">
+                  {[
+                    { value: 'activas', label: 'Activas', count: activas.length },
+                    { value: 'decision', label: 'Decision', count: pendienteDecision.length },
+                    { value: 'proceso', label: 'En proceso', count: enProceso.length },
+                    { value: 'rechazados', label: 'Rechazados', count: rechazados.length },
+                    { value: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => { setActiveTab(item.value); setMobileMenuOpen(false); }}
+                      className={`flex items-center justify-between px-6 py-3.5 text-left transition-colors ${
+                        activeTab === item.value
+                          ? 'bg-neutral-100 text-black font-semibold'
+                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                      }`}
+                    >
+                      <span className="text-[15px] tracking-wide">{item.label}</span>
+                      {item.count > 0 && (
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          activeTab === item.value
+                            ? 'bg-black text-white'
+                            : 'bg-neutral-200 text-neutral-600'
+                        }`}>{item.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </nav>
+                <div className="mt-auto px-6 py-6 border-t border-neutral-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-500">Publicaciones</span>
+                    <span className="text-lg font-bold text-black">{pubBalance}</span>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Active tab label */}
+            <span className="text-base font-semibold text-foreground">
+              {{ activas: 'Activas', decision: 'Decision', proceso: 'En proceso', rechazados: 'Rechazados', finalizadas: 'Finalizadas' }[activeTab]}
+            </span>
+          </div>
+
+          {/* Filter Button (Mobile) */}
+          <SellerFilterSheet filters={filters} setFilters={setFilters} />
+        </div>
+      </div>
+
+      {/* Combined bar - Publications left, Tabs centered, Search right (Desktop) */}
+      <div className="hidden md:block bg-background px-8 pt-3 pb-3">
+        <div className="flex items-center gap-4">
+          {/* Publications Available - Left */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
+            <span className="text-2xl font-bold text-secondary">{pubBalance}</span>
+          </div>
+          
+          {/* Tabs - Screen Center */}
+          <div className="flex-1 flex items-center justify-center gap-6">
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap px-3 py-2 rounded-full transition-colors flex-shrink-0 ${
-                activeTab === tab.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+              onClick={() => setActiveTab('activas')}
+              className={`text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'activas' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab.label}
               {tab.count > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === tab.key ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{tab.count}</span>}
             </button>
-          ))}
-        </div>
-
-        {/* Mobile: Search + Filter row */}
-        <div className="flex md:hidden items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar marca o modelo..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm w-full"
-            />
-          </div>
-          <SellerFilterSheet filters={filters} setFilters={setFilters} />
-        </div>
-
-        {/* Mobile: Publications badge */}
-        <div className="flex md:hidden items-center gap-2">
-          <span className="text-sm text-muted-foreground">Publicaciones:</span>
-          <span className="text-lg font-bold text-secondary">{pubBalance}</span>
-        </div>
-
-        {/* Desktop: Publications left, Tabs center, Search right */}
-        <div className="hidden md:flex items-center gap-4">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-sm text-muted-foreground">Publicaciones disponibles:</span>
-            <span className="text-2xl font-bold text-secondary">{pubBalance}</span>
-          </div>
-
-          <div className="flex-1 flex items-center justify-center gap-6">
-            {[
-              { key: 'activas', label: 'Activas' },
-              { key: 'decision', label: 'Decisión' },
-              { key: 'proceso', label: 'En proceso' },
-              { key: 'rechazados', label: 'Rechazados' },
-              { key: 'finalizadas', label: 'Finalizadas' },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`text-base font-semibold whitespace-nowrap transition-colors ${
-                  activeTab === tab.key
-                    ? 'text-foreground border-b-2 border-primary pb-1'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            <button
+              onClick={() => setActiveTab('decision')}
+              className={`text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'decision' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Decisión
+            </button>
+            <button
+              onClick={() => setActiveTab('proceso')}
+              className={`text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'proceso' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              En proceso
+            </button>
+            <button
+              onClick={() => setActiveTab('rechazados')}
+              className={`text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'rechazados' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Rechazados
+            </button>
+            <button
+              onClick={() => setActiveTab('finalizadas')}
+              className={`text-base font-semibold whitespace-nowrap transition-colors ${
+                activeTab === 'finalizadas' 
+                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Finalizadas
+            </button>
           </div>
 
-          <div className="relative w-64 flex-shrink-0">
+          {/* Search - Right */}
+          <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar marca o modelo..."
@@ -453,8 +507,8 @@ export default function MisSubastas() {
               className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
             />
           </div>
+          <SellerFilterSheet filters={filters} setFilters={setFilters} />
         </div>
-      </div>
 
       {/* Main content */}
       <div className="px-4 md:px-8 pb-4 md:flex gap-6">
@@ -467,11 +521,13 @@ export default function MisSubastas() {
           {activeTab === 'proceso' && (
           enProceso.length === 0 ? <EmptyState icon={Timer} title="Sin vehículos en proceso" subtitle="Los vehículos enviados a peritaje aparecerán aquí." /> :
           <>
+                {/* Mobile: Always list view */}
                 <div className="space-y-2 md:hidden">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
+                
+                {/* Desktop: Grid or List based on viewMode */}
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
-
-            <div className="hidden md:flex md:flex-col gap-4">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
+            <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
+            <div className="hidden md:flex flex-col gap-4">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
             }
               </>)
 
@@ -480,11 +536,13 @@ export default function MisSubastas() {
           {activeTab === 'rechazados' && (
           rechazados.length === 0 ? <EmptyState icon={ClipboardX} title="Sin peritajes rechazados" subtitle="¡Buena señal! Ningún vehículo ha sido rechazado." /> :
           <>
+                {/* Mobile: Always list view */}
                 <div className="space-y-2 md:hidden">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
+                
+                {/* Desktop: Grid or List based on viewMode */}
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
-
-            <div className="hidden md:flex md:flex-col gap-4">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
+            <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
+            <div className="hidden md:flex flex-col gap-4">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
             }
               </>)
 
@@ -493,11 +551,13 @@ export default function MisSubastas() {
           {activeTab === 'activas' && (
           activas.length === 0 ? <EmptyState icon={Gavel} title="Sin subastas activas" subtitle="Publica un vehículo para que aparezca en subasta aquí." /> :
           <>
+                {/* Mobile: Always list view */}
                 <div className="space-y-3 md:hidden">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                
+                {/* Desktop: Grid or List based on viewMode */}
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{activas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
-
-            <div className="hidden md:flex md:flex-col gap-4">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+            <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{activas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
+            <div className="hidden md:flex flex-col gap-4">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             }
               </>)
 
@@ -506,11 +566,13 @@ export default function MisSubastas() {
           {activeTab === 'decision' && (
           pendienteDecision.length === 0 ? <EmptyState icon={Trophy} title="Sin decisiones pendientes" subtitle="Cuando una subasta finalice con ofertas, la verás aquí para decidir." /> :
           <>
+                {/* Mobile: Always list view */}
                 <div className="space-y-3 md:hidden">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                
+                {/* Desktop: Grid or List based on viewMode */}
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
-
-            <div className="hidden md:flex md:flex-col gap-4">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+            <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
+            <div className="hidden md:flex flex-col gap-4">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             }
               </>)
 
@@ -519,11 +581,13 @@ export default function MisSubastas() {
           {activeTab === 'finalizadas' && (
           finalizadas.length === 0 ? <EmptyState icon={CheckCheck} title="Sin subastas finalizadas" subtitle="El historial de tus subastas cerradas aparecerá aquí." /> :
           <>
+                {/* Mobile: Always list view */}
                 <div className="space-y-3 md:hidden">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+                
+                {/* Desktop: Grid or List based on viewMode */}
                 {viewMode === 'grid' ?
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
-
-            <div className="hidden md:flex md:flex-col gap-4">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
+            <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
+            <div className="hidden md:flex flex-col gap-4">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             }
               </>)
 

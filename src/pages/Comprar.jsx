@@ -176,27 +176,51 @@ export default function Comprar() {
     <div className="min-h-screen flex flex-col bg-background pb-32">
       <Header />
 
-      {/* Combined bar - Search centered, nav links and filters */}
-      <div className="bg-background px-4 md:px-8 pt-3 pb-3 space-y-3">
-        {/* Row 1 (mobile): Search bar full width + Filter button */}
-        <div className="flex md:hidden items-center gap-2">
+      {/* Top Bar Mobile - Search + Ganadas/Guardadas dropdown */}
+      <div className="bg-background px-4 pt-3 pb-3 md:hidden">
+        <div className="flex items-center gap-3 mb-3">
+          {/* Search bar (Mobile) */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar marca o modelo..."
+              placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm w-full"
+              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
             />
           </div>
+          
+          {/* Filter Button (Mobile) */}
           <FilterSheet filters={filters} setFilters={setFilters} />
         </div>
+        
+        {/* Ganadas / Guardadas buttons (Mobile) */}
+        <div className="flex gap-3">
+          <Button
+            onClick={() => navigate('/Ganados')}
+            variant="outline"
+            className="flex-1 h-10 rounded-full border-border font-semibold"
+          >
+            <Trophy className="w-4 h-4 mr-1" />
+            Ganadas
+          </Button>
+          <Button
+            onClick={() => navigate('/Guardadas')}
+            variant="outline"
+            className="flex-1 h-10 rounded-full border-border font-semibold"
+          >
+            <Bookmark className="w-4 h-4 mr-1" />
+            Guardadas
+          </Button>
+        </div>
+      </div>
 
-        {/* Row (mobile) / Single row (desktop): Ganadas/Guardadas centered, Search right on desktop */}
+      {/* Combined bar Desktop - Ganadas/Guardadas centered, Search right */}
+      <div className="hidden md:block bg-background px-8 pt-3 pb-3">
         <div className="flex items-center gap-4">
-          {/* Spacer left - desktop only, matches sidebar width */}
-          <div className="w-64 hidden md:block"></div>
-
+          {/* Spacer left */}
+          <div className="w-64"></div>
+          
           {/* Ganadas y Guardadas - Screen Center */}
           <div className="flex-1 flex items-center justify-center gap-8">
             <button
@@ -213,17 +237,15 @@ export default function Comprar() {
             </button>
           </div>
 
-          {/* Search bar - Right, desktop only */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar marca o modelo..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
-              />
-            </div>
+          {/* Search bar - Right */}
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar marca o modelo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+            />
           </div>
         </div>
       </div>
@@ -273,19 +295,22 @@ export default function Comprar() {
             </div>
           ) : (
             <>
+              {/* Mobile: Always list view */}
               <div className="space-y-3 md:hidden">
                 {filteredVehicles.map((vehicle, index) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
                 ))}
               </div>
+              
+              {/* Desktop: Grid or List based on viewMode */}
               {viewMode === 'grid' ? (
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">
                   {filteredVehicles.map((vehicle, index) => (
                     <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
                   ))}
                 </div>
               ) : (
-                <div className="hidden md:flex md:flex-col gap-4">
+                <div className="hidden md:flex flex-col gap-4">
                   {filteredVehicles.map((vehicle, index) => (
                     <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
                   ))}
