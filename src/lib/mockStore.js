@@ -41,7 +41,7 @@ const PHOTOS = [
 
 // ── Seed data ──
 const SEED_USERS = [
-  { id: 'u-admin-1', email: 'admin@mubis.com', password: 'admin123', role: 'admin', nombre: 'Admin Mubis', company: 'Mubis', branch: 'Principal', telefono: '3000000000', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
+  { id: 'u-admin-1', email: 'admin@mubis.com', password: 'admin123', role: 'superadmin', nombre: 'SuperAdmin Mubis', company: 'Mubis', branch: 'Principal', telefono: '3000000000', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
   { id: 'u-dealer-1', email: 'dealer@test.com', password: 'dealer123', role: 'dealer', nombre: 'Autonal Colombia', company: 'Autonal', branch: 'Bogotá Norte', telefono: '3001112233', ciudad: 'Bogotá', nit: '900123456-7', verification_status: 'VERIFIED' },
   { id: 'u-dealer-2', email: 'dealer2@test.com', password: 'dealer123', role: 'dealer', nombre: 'Los Coches', company: 'Los Coches', branch: 'Medellín Centro', telefono: '3159998877', ciudad: 'Medellín', nit: '900234567-8', verification_status: 'VERIFIED' },
   { id: 'u-dealer-3', email: 'dealer3@test.com', password: 'dealer123', role: 'dealer', nombre: 'Motor Uno', company: 'Motor Uno', branch: 'Bogotá Norte', telefono: '3201234000', ciudad: 'Bogotá', nit: '900444555-1', verification_status: 'VERIFIED' },
@@ -383,9 +383,9 @@ ensureSeeded();
 export function getUsers() { return load(KEYS.users) || []; }
 export function getUserByEmail(email) { return getUsers().find(u => u.email === email); }
 export function getUserById(id) { return getUsers().find(u => u.id === id); }
-export function getVerifiedUsers() { return getUsers().filter(u => u.verification_status === 'VERIFIED' && u.role !== 'admin'); }
+export function getVerifiedUsers() { return getUsers().filter(u => u.verification_status === 'VERIFIED' && u.role !== 'superadmin'); }
 export function getUsersByRole(role) { return getUsers().filter(u => u.role === role); }
-export function getUsersByStatus(status) { return getUsers().filter(u => u.verification_status === status && u.role !== 'admin'); }
+export function getUsersByStatus(status) { return getUsers().filter(u => u.verification_status === status && u.role !== 'superadmin'); }
 
 export function registerUser(userData) {
   const users = getUsers();
@@ -881,7 +881,7 @@ export function loginUser(email, password) {
     const admin = getUserByEmail(email);
     if (admin && admin.password === password) return admin;
     if (password === 'admin123') {
-      return { id: 'u-admin-1', email, role: 'admin', nombre: 'Admin Mubis', company: 'Mubis', branch: 'Principal', verification_status: 'VERIFIED' };
+      return { id: 'u-admin-1', email, role: 'superadmin', nombre: 'SuperAdmin Mubis', company: 'Mubis', branch: 'Principal', verification_status: 'VERIFIED' };
     }
     return null;
   }
@@ -935,7 +935,7 @@ export function getVerificationStatus() {
 
 export function getRedirectForRole(role) {
   switch (role) {
-    case 'admin': return '/AdminDashboard';
+    case 'superadmin': return '/AdminDashboard';
     case 'perito': return '/PeritajesPendientes';
     case 'recomprador': return '/Comprar';
     case 'dealer': return '/Comprar';
@@ -945,7 +945,7 @@ export function getRedirectForRole(role) {
 
 // ── Admin stats ──
 export function getAdminStats() {
-  const users = getUsers().filter(u => u.role !== 'admin');
+  const users = getUsers().filter(u => u.role !== 'superadmin');
   const auctions = getAuctions();
   const inspections = getInspections();
 

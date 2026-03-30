@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, ArrowLeft } from 'lucide-react';
+import { Trophy, ArrowLeft, LayoutGrid, LayoutList, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { auctionsApi } from '@/api/services';
 import Skeleton from 'react-loading-skeleton';
-import { WonAuctionMobileCard } from '@/components/WonAuctionCard';
+import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 
 const WonCardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -21,10 +23,29 @@ const WonCardSkeleton = () => (
   </div>
 );
 
+const formatPrice = (price) => {
+  const n = Number(price) || 0;
+  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+};
+
+function getAuctionState(auction) {
+  const now = Date.now();
+  const endsAt = auction.ends_at || auction.auction_end;
+  const remaining = endsAt ? new Date(endsAt).getTime() - now : 0;
+  const isCompleted = auction.status === 'COMPLETED' || auction.status === 'ENDED';
+  const isCancelled = auction.status === 'CANCELLED';
+  const canExtend = !isCompleted && !isCancelled && remaining <= 0;
+  return { remaining, isCompleted, isCancelled, canExtend };
+}
+
 export default function Ganados() {
   const navigate = useNavigate();
   const [wonAuctions, setWonAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('grid');
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
 
   useEffect(() => {
     const load = async () => {
@@ -83,11 +104,11 @@ export default function Ganados() {
       <Header />
 
       {/* Header section */}
-      <div className="bg-card border-b border-border px-4 py-5">
+      <div className="bg-card border-b border-border px-4 md:px-8 py-5">
         <div className="flex items-center gap-3 mb-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => navigate('/Comprar')}
             className="rounded-full hover:bg-muted"
           >
@@ -99,34 +120,77 @@ export default function Ganados() {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          {wonAuctions.length === 0 
-            ? 'Aún no has ganado ninguna subasta' 
+          {wonAuctions.length === 0
+            ? 'Aún no has ganado ninguna subasta'
             : `${wonAuctions.length} ${wonAuctions.length === 1 ? 'subasta ganada' : 'subastas ganadas'}`
           }
         </p>
       </div>
 
+      {/* Toolbar */}
+      <div className="px-4 md:px-8 pt-4 pb-2 flex items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar marca o modelo..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm w-auto">
+              <SelectValue placeholder="Ordenar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Más recientes</SelectItem>
+              <SelectItem value="price_high">Precio: mayor</SelectItem>
+              <SelectItem value="price_low">Precio: menor</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="hidden md:flex items-center border border-border rounded-2xl overflow-hidden">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="px-4 py-6">
+      <div className="px-4 md:px-8 py-4">
         {loading ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
               <WonCardSkeleton key={i} />
             ))}
           </div>
-        ) : wonAuctions.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16">
             <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-30" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No hay subastas ganadas</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {search ? 'Sin resultados' : 'No hay subastas ganadas'}
+            </h3>
             <p className="text-muted-foreground text-sm mb-6">
-              Cuando ganes una subasta, aparecerá aquí
+              {search ? 'Intenta con otro término de búsqueda' : 'Cuando ganes una subasta, aparecerá aquí'}
             </p>
-            <Button 
-              onClick={() => navigate('/Comprar')}
-              className="rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
-            >
-              Explorar subastas
-            </Button>
+            {!search && (
+              <Button
+                onClick={() => navigate('/Comprar')}
+                className="rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
+              >
+                Explorar subastas
+              </Button>
+            )}
           </div>
         ) : (
           <motion.div 

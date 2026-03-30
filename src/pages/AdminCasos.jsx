@@ -129,6 +129,8 @@ export function AdminCasoDetalle() {
   const { caseId } = useParams();
   const navigate = useNavigate();
   const [caseData, setCaseData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newMsg, setNewMsg] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -136,7 +138,13 @@ export function AdminCasoDetalle() {
     try {
       const data = await casesApi.getById(caseId);
       setCaseData(data);
-    } catch { /* ignore */ }
+      setError(null);
+    } catch (err) {
+      console.error('Error loading case:', err);
+      setError('No se pudo cargar el caso');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { if (caseId) loadCase(); }, [caseId]);
@@ -162,9 +170,22 @@ export function AdminCasoDetalle() {
     } catch { toast.error('Error al actualizar estado'); }
   };
 
-  if (!caseData) return (
+  if (loading) return (
     <div className="min-h-screen bg-muted flex items-center justify-center">
-      <p className="text-muted-foreground">Caso no encontrado</p>
+      <div className="w-8 h-8 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin" />
+    </div>
+  );
+
+  if (error || !caseData) return (
+    <div className="min-h-screen bg-muted pb-28">
+      <Header title="Caso de soporte" backTo="/AdminCasos" />
+      <div className="max-w-7xl mx-auto px-4 pt-8 text-center">
+        <p className="text-muted-foreground mb-4">{error || 'Caso no encontrado'}</p>
+        <Button onClick={() => { setLoading(true); loadCase(); }} variant="outline" className="rounded-full">
+          Reintentar
+        </Button>
+      </div>
+      <BottomNav />
     </div>
   );
 

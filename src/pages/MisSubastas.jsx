@@ -452,7 +452,8 @@ export default function MisSubastas() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Activas
+              {tab.label}
+              {tab.count > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === tab.key ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{tab.count}</span>}
             </button>
             <button
               onClick={() => setActiveTab('decision')}
@@ -506,8 +507,8 @@ export default function MisSubastas() {
               className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
             />
           </div>
+          <SellerFilterSheet filters={filters} setFilters={setFilters} />
         </div>
-      </div>
 
       {/* Main content */}
       <div className="px-4 md:px-8 pb-4 md:flex gap-6">

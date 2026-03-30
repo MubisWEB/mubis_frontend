@@ -93,7 +93,7 @@ export default function Configuracion() {
                 <SwitchRow icon={Trophy} label="Nueva actividad relevante" settingKey="new_activity" />
               </>
             )}
-            {role === 'admin' && (
+            {role === 'superadmin' && (
               <SwitchRow icon={Users} label="Nuevas solicitudes de verificación" settingKey="new_verification_request" />
             )}
             {role === 'perito' && (
