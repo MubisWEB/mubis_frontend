@@ -73,6 +73,17 @@ export default function Ganados() {
     }).format(price);
   };
 
+  const filtered = useMemo(() => {
+    let result = wonAuctions;
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(a => `${a.brand} ${a.model}`.toLowerCase().includes(q));
+    }
+    if (sortBy === 'price_high') result = [...result].sort((a, b) => (b.currentPrice || 0) - (a.currentPrice || 0));
+    else if (sortBy === 'price_low') result = [...result].sort((a, b) => (a.currentPrice || 0) - (b.currentPrice || 0));
+    return result;
+  }, [wonAuctions, search, sortBy]);
+
   const handleExtend = (auction) => {
     // Navigate to detail page to handle extension
     navigate(`/DetalleSubasta/${auction.id}?from=ganados`);
@@ -198,7 +209,7 @@ export default function Ganados() {
             animate={{ opacity: 1 }}
             className="space-y-4"
           >
-            {wonAuctions.map((auction) => (
+            {filtered.map((auction) => (
               <WonAuctionMobileCard 
                 key={auction.id} 
                 auction={auction}
