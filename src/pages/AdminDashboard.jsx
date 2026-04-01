@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DollarSign, TrendingUp, Car, Banknote,
-  Users, FileText, MessageCircle, Package2, Target, Building2, Upload,
+  Users, FileText, MessageCircle, Package2, Target, Building2, Upload, Image,
   BarChart3, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import {
@@ -413,6 +413,10 @@ export default function AdminDashboard() {
             <Button onClick={() => navigate('/AdminInventario')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
               <Package2 className="w-5 h-5 text-secondary" />
               <span className="text-xs">Inventario</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminBanners')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Image className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Banners</span>
             </Button>
           </div>
         </Card>

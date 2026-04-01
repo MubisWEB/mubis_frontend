@@ -46,6 +46,7 @@ import AdminCasos, { AdminCasoDetalle } from './pages/AdminCasos';
 import AdminInventario from './pages/AdminInventario';
 import AdminMetas from './pages/AdminMetas';
 import AdminSucursales from './pages/AdminSucursales';
+import BannerManagement from './pages/BannerManagement';
 import MiRendimiento from './pages/MiRendimiento';
 import MisMetas from './pages/MisMetas';
 import B2BCatalogo from './pages/B2BCatalogo';
@@ -122,6 +123,7 @@ const App = () => (
           <Route path="/AdminSucursales" element={<RequireRole roles={['superadmin']}><AdminSucursales /></RequireRole>} />
           <Route path="/AdminEmpresas" element={<RequireRole roles={['superadmin']}><AdminEmpresas /></RequireRole>} />
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />
+          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin']}><BannerManagement /></RequireRole>} />
 
           {/* Dealer */}
           <Route path="/MiRendimiento" element={<RequireRole roles={['dealer']}><MiRendimiento /></RequireRole>} />

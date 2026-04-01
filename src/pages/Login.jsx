@@ -8,18 +8,25 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
 import MubisLogo from "@/components/MubisLogo";
-import { useAuth, getRedirectForRole } from "@/lib/AuthContext";
+import { useAuth, getRedirectForRole, isAdminRole } from "@/lib/AuthContext";
 import { authApi } from "@/api/services";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, user, isLoadingAuth } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [tenantSlug, setTenantSlug] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Redirect already authenticated users
+  useEffect(() => {
+    if (!isLoadingAuth && isAuthenticated && user) {
+      navigate(getRedirectForRole(user.role), { replace: true });
+    }
+  }, [isLoadingAuth, isAuthenticated, user, navigate]);
 
   useEffect(() => {
     authApi.getTenants().then((list) => {
@@ -36,13 +43,13 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      const user = await login(email, password, tenantSlug);
+      const loggedUser = await login(email, password, tenantSlug);
       toast.success("¡Bienvenido de nuevo!");
-      if (user.role !== 'superadmin' && user.verification_status !== 'VERIFIED') {
-        navigate('/PendienteVerificacion');
+      if (!isAdminRole(loggedUser.role) && loggedUser.verification_status !== 'VERIFIED') {
+        navigate('/PendienteVerificacion', { replace: true });
         return;
       }
-      navigate(getRedirectForRole(user.role));
+      navigate(getRedirectForRole(loggedUser.role), { replace: true });
     } catch {
       toast.error("Credenciales incorrectas");
     } finally {
