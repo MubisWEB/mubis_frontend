@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store, History } from 'lucide-react';
+import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store, History, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const NAV_CONFIGS = {
@@ -31,12 +31,17 @@ const NAV_CONFIGS = {
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const userRole = user?.role || 'dealer';
   const navItems = NAV_CONFIGS[userRole] || NAV_CONFIGS.dealer;
 
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-50">
@@ -57,6 +62,13 @@ export default function BottomNav() {
             </button>
           );
         })}
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all text-destructive hover:text-red-400"
+        >
+          <LogOut className="w-6 h-6 stroke-2" />
+          <span className="text-xs font-medium">Salir</span>
+        </button>
       </div>
     </div>
   );
