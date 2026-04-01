@@ -63,6 +63,8 @@ export default function PeritajeDetalle() {
   const [step, setStep] = useState(0);
   const [vehiclePhotos, setVehiclePhotos] = useState([]);
   const [photoFiles, setPhotoFiles] = useState([]);
+  const [tarjetaPropiedadPhoto, setTarjetaPropiedadPhoto] = useState(null);
+  const [tarjetaPropiedadFile, setTarjetaPropiedadFile] = useState(null);
   const [documentacion, setDocumentacion] = useState({
     soat: { status: '', fechaVencimiento: '' },
     tecnomecanica: { status: '', fechaVencimiento: '' },
@@ -70,6 +72,7 @@ export default function PeritajeDetalle() {
   });
   const [startingPrice, setStartingPrice] = useState('');
   const photoInputRef = useRef(null);
+  const tarjetaInputRef = useRef(null);
 
   const getDraftKey = () => `peritaje_draft_${vehicleId}`;
 
@@ -80,6 +83,7 @@ export default function PeritajeDetalle() {
       || !!reportPdfFile 
       || vehiclePhotos.length > 0 
       || photoFiles.length > 0
+      || !!tarjetaPropiedadFile
       || documentacion.soat.status !== ''
       || documentacion.tecnomecanica.status !== ''
       || documentacion.multas.tiene !== '';
@@ -227,8 +231,10 @@ export default function PeritajeDetalle() {
     PERITAJE_CATEGORIES.forEach(c => {
       const s = peritaje[c.key].score;
       if (s === '' || isNaN(s) || +s < 0 || +s > 100) e[c.key] = 'Score 0-100';
-      if (!peritaje[c.key].description.trim()) e[`${c.key}_desc`] = 'Comentario obligatorio';
     });
+    if (!reportPdfFile && !inspection?.reportPdfUrl) {
+      e.reportPdf = 'Debes adjuntar el archivo PDF del peritaje';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -237,9 +243,11 @@ export default function PeritajeDetalle() {
   const validateStep = (stepNum) => {
     const e = {};
     if (stepNum === 0) {
-      // Step 1: Fotos - at least 1 photo required
       if (vehiclePhotos.length === 0 && photoFiles.length === 0) {
         e.photos = 'Debes agregar al menos una foto del vehículo';
+      }
+      if (!tarjetaPropiedadPhoto && !tarjetaPropiedadFile) {
+        e.tarjetaPropiedad = 'La foto de la tarjeta de propiedad es obligatoria';
       }
     } else if (stepNum === 1) {
       // Step 2: Documentación
@@ -253,12 +261,8 @@ export default function PeritajeDetalle() {
       // Step 3: Evaluación - uses existing validate
       return validate();
     } else if (stepNum === 3) {
-      // Step 4: Finalizar - precio de salida y PDF requeridos
       if (!startingPrice || isNaN(startingPrice) || +startingPrice <= 0) {
-        e.startingPrice = 'Ingresa un precio de salida válido';
-      }
-      if (!reportPdfFile && !inspection?.reportPdfUrl) {
-        e.reportPdf = 'Debes adjuntar el archivo PDF del peritaje';
+        e.startingPrice = 'Ingresa un precio recomendado válido';
       }
     }
     setErrors(e);
@@ -311,16 +315,19 @@ export default function PeritajeDetalle() {
       
       // Upload vehicle photos first
       let uploadedPhotoUrls = [];
-      if (photoFiles.length > 0) {
-        const photoUploadRes = await mediaApi.upload(photoFiles);
-        uploadedPhotoUrls = photoUploadRes?.urls || [];
+      const allPhotoFiles = [...photoFiles];
+      if (tarjetaPropiedadFile) allPhotoFiles.push(tarjetaPropiedadFile);
+      if (allPhotoFiles.length > 0) {
+        const photoUploadRes = await mediaApi.upload(allPhotoFiles);
+        // Handle both { urls: [...] } and direct [...] response formats
+        uploadedPhotoUrls = Array.isArray(photoUploadRes) ? photoUploadRes : (photoUploadRes?.urls || []);
       }
 
       // Upload PDF if selected
       let reportPdfUrl;
       if (reportPdfFile) {
         const uploadRes = await mediaApi.upload([reportPdfFile]);
-        reportPdfUrl = uploadRes?.urls?.[0];
+        reportPdfUrl = Array.isArray(uploadRes) ? uploadRes[0] : (uploadRes?.urls?.[0]);
       }
 
       // Build documentation for backend
@@ -600,6 +607,55 @@ export default function PeritajeDetalle() {
         </span>
       )}
 
+      {/* Tarjeta de propiedad */}
+      <div className="pt-4 border-t border-border/40">
+        <p className="text-sm font-semibold text-foreground mb-1">Tarjeta de propiedad *</p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Toma o selecciona una foto clara de la tarjeta de propiedad del vehículo.
+        </p>
+        {tarjetaPropiedadPhoto ? (
+          <div className="relative w-full max-w-xs aspect-[3/2] rounded-xl overflow-hidden border border-border/40 group">
+            <img src={tarjetaPropiedadPhoto} alt="Tarjeta de propiedad" className="w-full h-full object-cover" />
+            <button
+              onClick={() => { setTarjetaPropiedadPhoto(null); setTarjetaPropiedadFile(null); }}
+              className="absolute top-2 right-2 w-7 h-7 bg-destructive/90 text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 md:opacity-100 transition-opacity"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div
+            onClick={() => tarjetaInputRef.current?.click()}
+            className={cn(
+              "w-full max-w-xs aspect-[3/2] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all hover:border-secondary hover:bg-secondary/5",
+              errors.tarjetaPropiedad ? "border-destructive/60" : "border-muted-foreground/40"
+            )}
+          >
+            <Camera className="w-8 h-8 text-muted-foreground mb-1" />
+            <span className="text-sm text-muted-foreground">Foto tarjeta de propiedad</span>
+          </div>
+        )}
+        <input
+          ref={tarjetaInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setTarjetaPropiedadPhoto(URL.createObjectURL(file));
+              setTarjetaPropiedadFile(file);
+              setErrors(prev => ({ ...prev, tarjetaPropiedad: undefined }));
+            }
+          }}
+        />
+        {errors.tarjetaPropiedad && (
+          <span className="text-destructive text-xs flex items-center gap-1 mt-2">
+            <AlertCircle className="w-3 h-3" />{errors.tarjetaPropiedad}
+          </span>
+        )}
+      </div>
+
       {/* Navigation */}
       <div className="flex gap-3 pt-4">
         <Button 
@@ -782,125 +838,25 @@ export default function PeritajeDetalle() {
     </div>
   );
 
-  // Step 3: Evaluación (existing evaluation form)
+  // Step 3: Evaluación (PDF arriba + puntajes con comentarios opcionales)
   const renderStep2 = () => (
     <div className="space-y-5">
-      <Card className="p-4 border border-border/60 text-center rounded-2xl">
-        <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
-        <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
-        <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
-      </Card>
-
-      <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2">Evaluación por categoría (0–100)</p>
-      <div className="space-y-4">
-        {PERITAJE_CATEGORIES.map(cat => {
-          const val = peritaje[cat.key];
-          const score = val.score === '' ? 0 : +val.score;
-          return (
-            <div key={cat.key} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-medium">{cat.label} *</Label>
-                <span className={cn("text-sm font-bold tabular-nums", val.score !== '' ? getScoreColor(score) : 'text-muted-foreground')}>{val.score !== '' ? score : '—'}/100</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Slider min={0} max={100} step={1} value={[val.score === '' ? 0 : +val.score]} onValueChange={([v]) => setScore(cat.key, 'score', String(v))} className="flex-1" />
-                <Input className="w-16 rounded-xl text-center text-sm" type="number" min={0} max={100} placeholder="0" value={val.score} onChange={e => { let v = e.target.value; if (v !== '' && +v > 100) v = '100'; if (v !== '' && +v < 0) v = '0'; setScore(cat.key, 'score', v); }} />
-              </div>
-              <Input className="rounded-xl text-xs" placeholder={`Comentario sobre ${cat.label.toLowerCase()} (obligatorio)`} value={val.description} onChange={e => setScore(cat.key, 'description', e.target.value)} />
-              {errors[cat.key] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[cat.key]}</span>}
-              {errors[`${cat.key}_desc`] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[`${cat.key}_desc`]}</span>}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Navigation */}
-      <div className="flex gap-3 pt-4">
-        <Button 
-          variant="outline" 
-          onClick={handlePrevStep} 
-          className="flex-1 rounded-xl gap-1"
-        >
-          <ChevronLeft className="w-4 h-4" /> Atrás
-        </Button>
-        <Button 
-          onClick={handleNextStep} 
-          className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"
-        >
-          Siguiente <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Step 4: Finalizar - PDF, precio de salida y confirmación
-  const renderStep3 = () => {
-    const suggestedPrice = vehicle?.specs?._startingPrice;
-    
-    return (
-    <div className="space-y-5">
-      <Card className="p-4 border border-border/60 text-center rounded-2xl">
-        <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
-        <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
-        <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
-      </Card>
-
-      {/* Precio de salida */}
+      {/* PDF Upload - arriba */}
       <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
-        <Label className="text-sm font-semibold">Precio de salida para subasta *</Label>
-        {suggestedPrice && (
-          <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
-            <p className="text-xs text-blue-700 font-medium">
-              💡 Precio sugerido por el dealer: ${Number(suggestedPrice).toLocaleString('es-CO')} COP
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Puedes mantener este precio o ajustarlo según tu evaluación.
-            </p>
-          </div>
-        )}
+        <Label className="text-sm font-semibold">Archivo PDF del peritaje *</Label>
         <p className="text-xs text-muted-foreground">
-          Define el precio inicial en COP para la subasta de este vehículo.
-        </p>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
-          <Input
-            type="number"
-            min={0}
-            placeholder="50.000.000"
-            value={startingPrice}
-            onChange={(e) => setStartingPrice(e.target.value)}
-            className="pl-7 rounded-xl"
-            disabled={isReadonly}
-          />
-        </div>
-        {errors.startingPrice && (
-          <span className="text-destructive text-xs flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />{errors.startingPrice}
-          </span>
-        )}
-        {startingPrice && +startingPrice > 0 && (
-          <p className="text-xs text-muted-foreground">
-            Precio formateado: ${Number(startingPrice).toLocaleString('es-CO')} COP
-          </p>
-        )}
-      </Card>
-
-      {/* PDF Upload */}
-      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
-        <Label className="text-sm font-semibold">Archivo adjunto del peritaje *</Label>
-        <p className="text-xs text-muted-foreground">
-          Adjunta el PDF con el informe completo del peritaje.
+          Adjunta el PDF con el informe completo del peritaje antes de evaluar.
         </p>
         <div className="relative group cursor-pointer">
           <div className={cn(
-            "border-2 border-dashed rounded-2xl p-6 text-center transition-all group-hover:border-secondary group-hover:bg-secondary/5",
+            "border-2 border-dashed rounded-2xl p-5 text-center transition-all group-hover:border-secondary group-hover:bg-secondary/5",
             errors.reportPdf ? "border-destructive/60" : "border-muted-foreground/40"
           )}>
             <input
               type="file"
               accept=".pdf,application/pdf"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl"
-              onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
+              onChange={(e) => { setReportPdfFile(e.target.files?.[0] || null); setErrors(prev => ({ ...prev, reportPdf: undefined })); }}
               disabled={isReadonly}
             />
             <div className="flex flex-col items-center gap-2">
@@ -926,17 +882,118 @@ export default function PeritajeDetalle() {
         {inspection?.reportPdfUrl && !reportPdfFile && (
           <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
             <span className="text-xs text-emerald-900 font-medium">Archivo guardado</span>
-            <a
-              href={inspection.reportPdfUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-emerald-700 hover:underline font-medium"
-            >
-              Ver
-            </a>
+            <a href={inspection.reportPdfUrl} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 hover:underline font-medium">Ver</a>
           </div>
         )}
       </Card>
+
+      {/* Puntaje global */}
+      <Card className="p-4 border border-border/60 text-center rounded-2xl">
+        <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
+        <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
+        <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
+      </Card>
+
+      <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2">Evaluación por categoría (0–100)</p>
+      <div className="space-y-4">
+        {PERITAJE_CATEGORIES.map(cat => {
+          const val = peritaje[cat.key];
+          const score = val.score === '' ? 0 : +val.score;
+          return (
+            <div key={cat.key} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium">{cat.label} *</Label>
+                <span className={cn("text-sm font-bold tabular-nums", val.score !== '' ? getScoreColor(score) : 'text-muted-foreground')}>{val.score !== '' ? score : '—'}/100</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Slider min={0} max={100} step={1} value={[val.score === '' ? 0 : +val.score]} onValueChange={([v]) => setScore(cat.key, 'score', String(v))} className="flex-1" />
+                <Input className="w-16 rounded-xl text-center text-sm" type="number" min={0} max={100} placeholder="0" value={val.score} onChange={e => { let v = e.target.value; if (v !== '' && +v > 100) v = '100'; if (v !== '' && +v < 0) v = '0'; setScore(cat.key, 'score', v); }} />
+              </div>
+              <Input className="rounded-xl text-xs" placeholder={`Comentario sobre ${cat.label.toLowerCase()} (opcional)`} value={val.description} onChange={e => setScore(cat.key, 'description', e.target.value)} />
+              {errors[cat.key] && <span className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors[cat.key]}</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex gap-3 pt-4">
+        <Button
+          variant="outline"
+          onClick={handlePrevStep}
+          className="flex-1 rounded-xl gap-1"
+        >
+          <ChevronLeft className="w-4 h-4" /> Atrás
+        </Button>
+        <Button
+          onClick={handleNextStep}
+          className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-1"
+        >
+          Siguiente <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Step 4: Finalizar - PDF, precio de salida y confirmación
+  const renderStep3 = () => {
+    const suggestedPrice = vehicle?.specs?._startingPrice;
+    
+    return (
+    <div className="space-y-5">
+      <Card className="p-4 border border-border/60 text-center rounded-2xl">
+        <p className="text-xs text-muted-foreground mb-1">Puntaje global</p>
+        <p className={cn("text-4xl font-bold", getScoreColor(getGlobalScore()))}>{getGlobalScore()}<span className="text-lg text-muted-foreground">/100</span></p>
+        <p className="text-xs text-muted-foreground mt-1">Promedio de todas las categorías</p>
+      </Card>
+
+      {/* Precio recomendado */}
+      <Card className="p-4 border border-border/60 rounded-2xl space-y-3">
+        <Label className="text-sm font-semibold">Precio recomendado *</Label>
+        {suggestedPrice && (
+          <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+            <p className="text-xs text-blue-700 font-medium">
+              Precio sugerido por el dealer: ${Number(suggestedPrice).toLocaleString('es-CO')} COP
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              Puedes mantener este precio o ajustarlo según tu evaluación.
+            </p>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Define el precio recomendado en COP después de tu revisión. La subasta iniciará en $0.
+        </p>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+          <Input
+            type="number"
+            min={0}
+            placeholder="50.000.000"
+            value={startingPrice}
+            onChange={(e) => setStartingPrice(e.target.value)}
+            className="pl-7 rounded-xl"
+            disabled={isReadonly}
+          />
+        </div>
+        {errors.startingPrice && (
+          <span className="text-destructive text-xs flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />{errors.startingPrice}
+          </span>
+        )}
+        {startingPrice && +startingPrice > 0 && (
+          <p className="text-xs text-muted-foreground">
+            Precio formateado: ${Number(startingPrice).toLocaleString('es-CO')} COP
+          </p>
+        )}
+      </Card>
+
+      {/* PDF status indicator */}
+      {reportPdfFile && (
+        <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+          <FileText className="w-4 h-4 text-emerald-700" />
+          <span className="text-xs text-emerald-900 font-medium flex-1">PDF adjuntado: {reportPdfFile.name}</span>
+        </div>
+      )}
 
       {showReject && (
         <Card className="p-4 border border-destructive/30 rounded-2xl space-y-3">

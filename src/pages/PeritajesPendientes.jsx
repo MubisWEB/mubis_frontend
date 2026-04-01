@@ -75,21 +75,23 @@ export default function PeritajesPendientes() {
     <div className="min-h-screen bg-background pb-28">
       <Header />
 
-      <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-foreground font-sans">Peritajes pendientes</h1>
-            <p className="text-xs text-muted-foreground">Sucursal: {currentUser?.branch || 'N/A'}</p>
+      <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-4 max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground font-sans truncate">Peritajes pendientes</h1>
+            <p className="text-xs text-muted-foreground truncate">Sucursal: {currentUser?.branch || 'N/A'}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button variant="outline" size="icon" onClick={loadInspections} disabled={loading} className="h-8 w-8 rounded-full">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <Badge className="bg-amber-500 text-white hover:bg-amber-500">{inspections.length} pendientes</Badge>
+            <Badge className="bg-amber-500 text-white hover:bg-amber-500 whitespace-nowrap">{inspections.length} pendientes</Badge>
           </div>
         </div>
+
         {loading ? (
-          <div className="space-y-3">{[1,2,3].map(i => <InspRowSkeleton key={i} />)}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">{[1,2,3].map(i => <InspRowSkeleton key={i} />)}</div>
         ) : inspections.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -99,37 +101,39 @@ export default function PeritajesPendientes() {
             <p className="text-muted-foreground text-sm">Los peritajes de tu sucursal aparecerán aquí</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {inspections.map((insp, index) => {
               const isInProgress = insp.status === 'IN_PROGRESS';
               return (
               <motion.div key={insp.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                <Card className={`p-4 border shadow-sm rounded-2xl ${isInProgress ? 'border-secondary/40 bg-secondary/5' : 'border-border/60'}`}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-bold text-foreground text-base">{insp.vehicle?.brand} {insp.vehicle?.model}</h3>
-                      <p className="text-muted-foreground text-sm">{insp.vehicle?.year} · Placa: {insp.vehicle?.placa}</p>
+                <Card className={`p-4 border shadow-sm rounded-2xl h-full flex flex-col ${isInProgress ? 'border-secondary/40 bg-secondary/5' : 'border-border/60'}`}>
+                  <div className="flex items-start justify-between mb-3 gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-foreground text-base truncate">{insp.vehicle?.brand} {insp.vehicle?.model}</h3>
+                      <p className="text-muted-foreground text-sm truncate">{insp.vehicle?.year} · Placa: {insp.vehicle?.placa}</p>
                     </div>
                     {isInProgress
-                      ? <Badge className="bg-blue-600 text-white text-xs pointer-events-none">En progreso</Badge>
-                      : <Badge className="bg-amber-500 text-white text-xs pointer-events-none">Pendiente</Badge>
+                      ? <Badge className="bg-blue-600 text-white text-xs pointer-events-none flex-shrink-0">En progreso</Badge>
+                      : <Badge className="bg-amber-500 text-white text-xs pointer-events-none flex-shrink-0">Pendiente</Badge>
                     }
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Gauge className="w-3 h-3" />{Number(insp.vehicle?.mileage || 0).toLocaleString('es-CO')} km</span>
-                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{insp.vehicle?.city || insp.vehicle?.ubicacion}</span>
-                    <span className="flex items-center gap-1"><Building className="w-3 h-3" />{insp.dealerCompany}</span>
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(insp.requestedAt)}</span>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mb-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1 truncate"><Gauge className="w-3 h-3 flex-shrink-0" />{Number(insp.vehicle?.mileage || 0).toLocaleString('es-CO')} km</span>
+                    <span className="flex items-center gap-1 truncate"><MapPin className="w-3 h-3 flex-shrink-0" />{insp.vehicle?.city || insp.vehicle?.ubicacion}</span>
+                    <span className="flex items-center gap-1 truncate"><Building className="w-3 h-3 flex-shrink-0" />{insp.dealerCompany}</span>
+                    <span className="flex items-center gap-1 truncate"><Calendar className="w-3 h-3 flex-shrink-0" />{formatDate(insp.requestedAt)}</span>
                   </div>
-                  {isInProgress ? (
-                    <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl gap-2">
-                      <ClipboardCheck className="w-4 h-4" /> Continuar peritaje
-                    </Button>
-                  ) : (
-                    <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
-                      <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
-                    </Button>
-                  )}
+                  <div className="mt-auto">
+                    {isInProgress ? (
+                      <Button onClick={() => navigate(`/PeritajeDetalle/${insp.id}`)} className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl gap-2">
+                        <ClipboardCheck className="w-4 h-4" /> Continuar peritaje
+                      </Button>
+                    ) : (
+                      <Button onClick={() => handleTakeInspection(insp)} className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl gap-2">
+                        <ClipboardCheck className="w-4 h-4" /> Tomar peritaje
+                      </Button>
+                    )}
+                  </div>
                 </Card>
               </motion.div>
               );
