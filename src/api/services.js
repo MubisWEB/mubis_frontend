@@ -326,3 +326,19 @@ export const mediaApi = {
     return (await api.post('/media/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
   },
 };
+
+// ── BANNERS ───────────────────────────────────────────────────────────────────
+
+export const bannersApi = {
+  // Public endpoint
+  getActive: async (tenantSlug) => (await publicApi.get(`/banners/public/${tenantSlug}`)).data,
+  
+  // Admin endpoints (SUPERADMIN only)
+  getAll: async () => (await api.get('/banners')).data,
+  getById: async (id) => (await api.get(`/banners/${id}`)).data,
+  create: async (data) => (await api.post('/banners', data)).data,
+  update: async (id, data) => (await api.patch(`/banners/${id}`, data)).data,
+  toggle: async (id) => (await api.patch(`/banners/${id}/toggle`)).data,
+  reorder: async (ids) => (await api.patch('/banners/reorder', { ids })).data,
+  delete: async (id) => (await api.delete(`/banners/${id}`)).data,
+};

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gavel, Shield, Clock, DollarSign, Users } from 'lucide-react';
+import { bannersApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
+
+// Fallback banners (hardcoded) used when no banners from API
 
 const Banner1 = () => (
   <div className="w-full h-full bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 flex items-center justify-between px-6 sm:px-10 lg:px-16">
@@ -106,19 +110,114 @@ const Banner5 = () => (
   </div>
 );
 
-const banners = [Banner1, Banner2, Banner3, Banner4, Banner5];
+const fallbackBanners = [Banner1, Banner2, Banner3, Banner4, Banner5];
 
 export default function SponsorBanner() {
+  const { user } = useAuth();
   const [index, setIndex] = useState(0);
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadBanners = async () => {
+      try {
+        const tenantSlug = user?.tenantSlug || 'mubis-demo'; // fallback to mubis-demo
+        const data = await bannersApi.getActive(tenantSlug);
+        if (data && data.length > 0) {
+          setBanners(data);
+        } else {
+          setBanners(null); // Use fallback banners
+        }
+      } catch (error) {
+        console.error('Error loading banners:', error);
+        setBanners(null); // Use fallback banners on error
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadBanners();
+  }, [user]);
+
+  const bannersToShow = banners || fallbackBanners;
+  const bannersCount = Array.isArray(bannersToShow) ? bannersToShow.length : fallbackBanners.length;
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex(p => (p + 1) % banners.length);
+      setIndex(p => (p + 1) % bannersCount);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [bannersCount]);
 
-  const CurrentBanner = banners[index];
+  if (loading) {
+    return (
+      <div className="w-full px-4 sm:px-6 lg:px-8 my-4">
+        <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md bg-gray-100" style={{ aspectRatio: '970 / 150' }} />
+      </div>
+    );
+  }
+
+  // Using API banners
+  if (banners && banners.length > 0) {
+    const currentBanner = banners[index];
+    return (
+      <div className="w-full px-4 sm:px-6 lg:px-8 my-4">
+        <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md" style={{ aspectRatio: '970 / 150' }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBanner.id}
+              initial={{ opacity: 0, x: 60 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -60 }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              className="absolute inset-0"
+            >
+              <div 
+                className={`w-full h-full bg-gradient-to-r from-${currentBanner.gradientFrom || 'violet-600'} via-${currentBanner.gradientVia || 'purple-600'} to-${currentBanner.gradientTo || 'fuchsia-600'} flex items-center justify-between px-6 sm:px-10 lg:px-16 relative`}
+                onClick={() => currentBanner.linkUrl && window.open(currentBanner.linkUrl, '_blank')}
+                style={{ cursor: currentBanner.linkUrl ? 'pointer' : 'default' }}
+              >
+                {currentBanner.imageUrl && (
+                  <img
+                    src={currentBanner.imageUrl}
+                    alt={currentBanner.title || 'Banner'}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
+                {(currentBanner.title || currentBanner.subtitle) && (
+                  <div className="flex-1 z-10">
+                    {currentBanner.title && (
+                      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight drop-shadow-lg">
+                        {currentBanner.title}
+                      </h3>
+                    )}
+                    {currentBanner.subtitle && (
+                      <p className="text-white/90 text-sm sm:text-base mt-2 drop-shadow-lg">
+                        {currentBanner.subtitle}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Dots */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {banners.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIndex(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === index ? 'bg-white w-4' : 'bg-white/40 hover:bg-white/60'}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Using fallback banners
+  const CurrentBanner = fallbackBanners[index];
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 my-4">
@@ -138,7 +237,7 @@ export default function SponsorBanner() {
 
         {/* Dots */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-          {banners.map((_, i) => (
+          {fallbackBanners.map((_, i) => (
             <button
               key={i}
               onClick={() => setIndex(i)}

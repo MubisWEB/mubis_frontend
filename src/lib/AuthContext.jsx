@@ -9,9 +9,17 @@ const AuthContext = createContext();
 const normalizeUser = (user) =>
   user ? { ...user, role: user.role?.toLowerCase() } : null;
 
+// Roles administrativos que no requieren verificación
+const ADMIN_ROLES = ['superadmin', 'branch_admin', 'company_admin'];
+
+export const isAdminRole = (role) => ADMIN_ROLES.includes(role?.toLowerCase());
+
 export const getRedirectForRole = (role) => {
-  switch (role?.toLowerCase()) {
-    case 'superadmin':  return '/AdminDashboard';
+  const r = role?.toLowerCase();
+  if (r === 'superadmin') return '/AdminDashboard';
+  if (r === 'branch_admin') return '/BranchAdminDashboard';
+  if (r === 'company_admin') return '/CompanyAdminDashboard';
+  switch (r) {
     case 'perito':      return '/PeritajesPendientes';
     case 'dealer':      return '/MisSubastas';
     case 'recomprador': return '/Comprar';

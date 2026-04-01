@@ -453,6 +453,7 @@ export default function MisSubastas() {
               }`}
             >
               Activas
+              {activas.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'activas' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{activas.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('decision')}
@@ -463,6 +464,7 @@ export default function MisSubastas() {
               }`}
             >
               Decisión
+              {pendienteDecision.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'decision' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{pendienteDecision.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('proceso')}
@@ -473,6 +475,7 @@ export default function MisSubastas() {
               }`}
             >
               En proceso
+              {enProceso.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'proceso' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{enProceso.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('rechazados')}
@@ -483,6 +486,7 @@ export default function MisSubastas() {
               }`}
             >
               Rechazados
+              {rechazados.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'rechazados' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{rechazados.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('finalizadas')}
@@ -493,6 +497,7 @@ export default function MisSubastas() {
               }`}
             >
               Finalizadas
+              {finalizadas.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'finalizadas' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{finalizadas.length}</span>}
             </button>
           </div>
 
@@ -613,11 +618,12 @@ export default function MisSubastas() {
       <PublishFAB onClick={() => setDialogOpen(true)} />
       <PublicarCarroDialog open={dialogOpen} onOpenChange={setDialogOpen} onPublished={loadData} />
       <BottomNav />
-    </div>);
-
+    </div>
+  );
 }
 
-function EmptyState({ icon: Icon, title, subtitle }) {
+function EmptyState({ icon, title, subtitle }) {
+  const Icon = icon;
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
       <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
