@@ -8,6 +8,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
 import { adminApi, usersApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 
 const ROLE_LABELS = { dealer: 'Dealer', perito: 'Perito', recomprador: 'Recomprador' };
 
@@ -18,6 +19,12 @@ const TABS = [
 ];
 
 export default function AdminSolicitudes() {
+  const { user } = useAuth();
+  const isSuperadmin = user?.role === 'superadmin';
+  const backTo = user?.role === 'admin_general' ? '/AdminGeneralDashboard'
+    : user?.role === 'admin_sucursal' ? '/AdminSucursalDashboard'
+    : '/AdminDashboard';
+
   const [activeTab, setActiveTab] = useState('PENDING');
   const [roleFilter, setRoleFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -27,12 +34,14 @@ export default function AdminSolicitudes() {
 
   const loadData = async () => {
     try {
-      const [pending, users] = await Promise.all([
-        adminApi.getSolicitudes().catch(() => []),
-        usersApi.getAll().catch(() => []),
-      ]);
+      // usersApi.getPending filtra automáticamente por scope del admin en el backend
+      const pending = await usersApi.getPending().catch(() => []);
       setRequests(pending || []);
-      setAllUsers(users || []);
+      // Para tabs WAITLISTED / REJECTED solo superadmin ve todos; otros ven scope propio
+      if (isSuperadmin) {
+        const users = await usersApi.getAll().catch(() => []);
+        setAllUsers(users || []);
+      }
     } catch { /* ignore */ } finally {
       setLoading(false);
     }
@@ -108,7 +117,7 @@ export default function AdminSolicitudes() {
 
   return (
     <div className="min-h-screen bg-muted pb-28">
-      <Header title="Solicitudes" subtitle={`${pendingCount} pendientes · ${waitlistedCount} en espera`} backTo="/AdminDashboard" />
+      <Header title="Solicitudes" subtitle={`${pendingCount} pendientes · ${waitlistedCount} en espera`} backTo={backTo} />
 
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-3">
         {/* Status tabs */}

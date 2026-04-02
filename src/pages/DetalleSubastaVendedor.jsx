@@ -298,6 +298,13 @@ export default function DetalleSubastaVendedor() {
           <div className="flex items-center justify-between"><h2 className="font-bold text-foreground font-sans">Ganancia estimada</h2><TrendingUp className="w-5 h-5 text-primary" /></div>
           <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - (auction.starting_price || 0))}</p>
           <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price || 0)}</p>
+          {auction.suggestedPrice && (
+            <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+              <Badge className="bg-secondary/10 text-secondary border border-secondary/20 text-xs font-medium">
+                Precio sugerido por el perito: {formatPrice(auction.suggestedPrice)}
+              </Badge>
+            </div>
+          )}
         </Card>
 
         {inspection && inspection.status === 'COMPLETED' && (

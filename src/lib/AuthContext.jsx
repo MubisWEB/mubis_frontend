@@ -10,20 +10,21 @@ const normalizeUser = (user) =>
   user ? { ...user, role: user.role?.toLowerCase() } : null;
 
 // Roles administrativos que no requieren verificación
-const ADMIN_ROLES = ['superadmin', 'branch_admin', 'company_admin'];
+const ADMIN_ROLES = ['superadmin', 'branch_admin', 'company_admin', 'admin_general', 'admin_sucursal'];
 
 export const isAdminRole = (role) => ADMIN_ROLES.includes(role?.toLowerCase());
 
 export const getRedirectForRole = (role) => {
-  const r = role?.toLowerCase();
-  if (r === 'superadmin') return '/AdminDashboard';
-  if (r === 'branch_admin') return '/BranchAdminDashboard';
-  if (r === 'company_admin') return '/CompanyAdminDashboard';
-  switch (r) {
-    case 'perito':      return '/PeritajesPendientes';
-    case 'dealer':      return '/MisSubastas';
-    case 'recomprador': return '/Comprar';
-    default:            return '/login';
+  switch (role?.toLowerCase()) {
+    case 'superadmin':      return '/AdminDashboard';
+    case 'admin_general':   return '/AdminGeneralDashboard';
+    case 'admin_sucursal':  return '/AdminSucursalDashboard';
+    case 'branch_admin':    return '/BranchAdminDashboard';
+    case 'company_admin':   return '/CompanyAdminDashboard';
+    case 'perito':          return '/PeritajesPendientes';
+    case 'dealer':          return '/MisSubastas';
+    case 'recomprador':     return '/Comprar';
+    default:                return '/login';
   }
 };
 

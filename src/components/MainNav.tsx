@@ -27,6 +27,9 @@ const MainNav = () => {
     dealer: 'Mis subastas',
     recomprador: 'Comprar',
     admin: 'Dashboard',
+    superadmin: 'Dashboard',
+    admin_general: 'Panel General',
+    admin_sucursal: 'Panel Sucursal',
   };
 
   const authenticatedLabel = user?.role ? (roleLabel[user.role] || 'Ingresar') : 'Ingresar';
