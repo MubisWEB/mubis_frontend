@@ -24,7 +24,7 @@ export default function Login() {
   // Redirect already authenticated users
   useEffect(() => {
     if (!isLoadingAuth && isAuthenticated && user) {
-      navigate(getRedirectForRole(user.role), { replace: true });
+      navigate(getRedirectForRole(user.role, user.id), { replace: true });
     }
   }, [isLoadingAuth, isAuthenticated, user, navigate]);
 
@@ -49,7 +49,7 @@ export default function Login() {
         navigate('/PendienteVerificacion', { replace: true });
         return;
       }
-      navigate(getRedirectForRole(loggedUser.role), { replace: true });
+      navigate(getRedirectForRole(loggedUser.role, loggedUser.id), { replace: true });
     } catch {
       toast.error("Credenciales incorrectas");
     } finally {

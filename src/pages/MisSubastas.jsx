@@ -457,7 +457,7 @@ export default function MisSubastas() {
               }`}
             >
               Activas
-              {activas.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'activas' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{activas.length}</span>}
+              {activas.length > 0 && <span className={`md:hidden text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'activas' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{activas.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('decision')}
@@ -468,7 +468,7 @@ export default function MisSubastas() {
               }`}
             >
               Decisión
-              {pendienteDecision.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'decision' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{pendienteDecision.length}</span>}
+              {pendienteDecision.length > 0 && <span className={`md:hidden text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'decision' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{pendienteDecision.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('proceso')}
@@ -479,7 +479,7 @@ export default function MisSubastas() {
               }`}
             >
               En proceso
-              {enProceso.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'proceso' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{enProceso.length}</span>}
+              {enProceso.length > 0 && <span className={`md:hidden text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'proceso' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{enProceso.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('aprobacion')}
@@ -491,7 +491,7 @@ export default function MisSubastas() {
             >
               Aprobación
               {pendienteAprobacion.length > 0 && (
-                <span className="w-5 h-5 bg-amber-500 text-white rounded-full text-xs flex items-center justify-center font-bold">{pendienteAprobacion.length}</span>
+                <span className="md:hidden w-5 h-5 bg-amber-500 text-white rounded-full text-xs flex items-center justify-center font-bold">{pendienteAprobacion.length}</span>
               )}
             </button>
             <button
@@ -503,7 +503,7 @@ export default function MisSubastas() {
               }`}
             >
               Rechazados
-              {rechazados.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'rechazados' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{rechazados.length}</span>}
+              {rechazados.length > 0 && <span className={`md:hidden text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'rechazados' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{rechazados.length}</span>}
             </button>
             <button
               onClick={() => setActiveTab('finalizadas')}
@@ -514,7 +514,7 @@ export default function MisSubastas() {
               }`}
             >
               Finalizadas
-              {finalizadas.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'finalizadas' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{finalizadas.length}</span>}
+              {finalizadas.length > 0 && <span className={`md:hidden text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'finalizadas' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{finalizadas.length}</span>}
             </button>
           </div>
 

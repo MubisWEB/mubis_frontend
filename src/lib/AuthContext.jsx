@@ -14,7 +14,24 @@ const ADMIN_ROLES = ['superadmin', 'branch_admin', 'company_admin', 'admin_gener
 
 export const isAdminRole = (role) => ADMIN_ROLES.includes(role?.toLowerCase());
 
-export const getRedirectForRole = (role) => {
+export const getRedirectForRole = (role, userId = null) => {
+  // Si tenemos userId, intentar leer la preferencia guardada
+  if (userId) {
+    try {
+      const SETTINGS_KEY = `mubis_user_settings_${userId}`;
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (raw) {
+        const settings = JSON.parse(raw);
+        if (settings.default_landing_page) {
+          return settings.default_landing_page;
+        }
+      }
+    } catch (e) {
+      // Si hay error, continuar con el default del rol
+    }
+  }
+
+  // Default por rol
   switch (role?.toLowerCase()) {
     case 'superadmin':      return '/AdminDashboard';
     case 'admin_general':   return '/AdminGeneralDashboard';
@@ -22,7 +39,7 @@ export const getRedirectForRole = (role) => {
     case 'branch_admin':    return '/BranchAdminDashboard';
     case 'company_admin':   return '/CompanyAdminDashboard';
     case 'perito':          return '/PeritajesPendientes';
-    case 'dealer':          return '/MisSubastas';
+    case 'dealer':          return '/Comprar'; // Cambio: ahora va a Comprar por defecto
     case 'recomprador':     return '/Comprar';
     default:                return '/login';
   }

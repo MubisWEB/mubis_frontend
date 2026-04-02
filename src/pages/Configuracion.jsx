@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Mail, MessageCircle, Gavel, Trophy, ClipboardCheck, Users, Globe, ArrowLeft } from 'lucide-react';
+import { Bell, Mail, MessageCircle, Gavel, Trophy, ClipboardCheck, Users, Globe, ArrowLeft, Home } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS = {
   new_activity: true,
   new_verification_request: true,
   new_inspection_available: true,
+  default_landing_page: null, // null = usar default del rol
 };
 
 function loadSettings(userId) {
@@ -115,6 +116,30 @@ export default function Configuracion() {
             </div>
           </Card>
         </motion.div>
+
+        {/* Landing Page for Dealer/Recomprador */}
+        {(role === 'dealer' || role === 'recomprador') && (
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.20 }}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Navegación</p>
+            <Card className="border border-border shadow-sm rounded-xl px-4">
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <Home className="w-4 h-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium text-foreground">Página de inicio</Label>
+                </div>
+                <select 
+                  value={settings.default_landing_page || ''} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, default_landing_page: e.target.value || null }))}
+                  className="text-sm text-foreground bg-transparent border-none outline-none cursor-pointer"
+                >
+                  <option value="">Predeterminado</option>
+                  <option value="/Comprar">Comprar</option>
+                  {role === 'dealer' && <option value="/MisSubastas">Vender</option>}
+                </select>
+              </div>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Save */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}>
