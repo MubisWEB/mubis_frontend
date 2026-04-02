@@ -328,6 +328,18 @@ export const b2bApi = {
   setCredit: async (userId, data) => (await api.patch(`/b2b/credit/${userId}`, data)).data,
 };
 
+// ── PARTNERS ──────────────────────────────────────────────────────────────────
+
+export const partnersApi = {
+  getRecompradores: async () => (await api.get('/partners/recompradores')).data,
+  invite: async (recompradorId) => (await api.post(`/partners/invite/${recompradorId}`)).data,
+  getInvitations: async () => (await api.get('/partners/invitations')).data,
+  acceptInvitation: async (id) => (await api.patch(`/partners/invitations/${id}/accept`)).data,
+  rejectInvitation: async (id) => (await api.patch(`/partners/invitations/${id}/reject`)).data,
+  getMyPartners: async () => (await api.get('/partners/my-partners')).data,
+  remove: async (id) => (await api.delete(`/partners/${id}`)).data,
+};
+
 // ── PRICING ───────────────────────────────────────────────────────────────────
 
 export const pricingApi = {

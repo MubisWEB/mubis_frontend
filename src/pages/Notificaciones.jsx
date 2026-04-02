@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
-import { Bell, Gavel, Car, ClipboardCheck, UserCheck, CheckCheck, ArrowLeft } from 'lucide-react';
+import { Bell, Gavel, Car, ClipboardCheck, UserCheck, UserX, Users, CheckCheck, ArrowLeft } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +33,9 @@ const TYPE_ICONS = {
   inspection_completed: ClipboardCheck,
   inspection_rejected: ClipboardCheck,
   user_approved: UserCheck,
+  partner_invitation: Users,
+  partner_accepted: UserCheck,
+  partner_rejected: UserX,
 };
 
 function getNotificationRoute(n) {
@@ -46,6 +49,9 @@ function getNotificationRoute(n) {
   }
   if (n.vehicleId) {
     return `/PeritajeDetalle/${n.vehicleId}`;
+  }
+  if (['partner_invitation', 'partner_accepted', 'partner_rejected'].includes(n.type)) {
+    return '/Partners';
   }
   return null;
 }

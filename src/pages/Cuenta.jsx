@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -220,6 +220,7 @@ export default function Cuenta() {
       { icon: Target, label: 'Mis Metas', action: () => navigate('/MisMetas') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
 
@@ -236,6 +237,7 @@ export default function Cuenta() {
       { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
   if (role === 'admin_sucursal') {
@@ -245,6 +247,7 @@ export default function Cuenta() {
       { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
 

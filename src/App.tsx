@@ -61,6 +61,7 @@ import CompanyAdminUsuarios from './pages/CompanyAdminUsuarios';
 import AdminGeneralDashboard from './pages/AdminGeneralDashboard';
 import AdminSucursalDashboard from './pages/AdminSucursalDashboard';
 import AdminBanners from './pages/AdminBanners';
+import Partners from './pages/Partners';
 
 const queryClient = new QueryClient();
 
@@ -111,6 +112,7 @@ const App = () => (
           <Route path="/AyudaSoporte" element={<RequireAuth><AyudaSoporte /></RequireAuth>} />
           <Route path="/SoporteCasos" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><SoporteCasos /></RequireRole>} />
           <Route path="/SoporteCasos/:caseId" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><SoporteCasoDetalle /></RequireRole>} />
+          <Route path="/Partners" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><Partners /></RequireRole>} />
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
