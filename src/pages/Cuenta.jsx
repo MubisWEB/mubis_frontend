@@ -238,7 +238,15 @@ export default function Cuenta() {
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
     );
   }
-  if (role === 'admin_sucursal') menuItems.splice(0, 0, { icon: Building2, label: 'Panel de Sucursal', action: () => navigate('/AdminSucursalDashboard') });
+  if (role === 'admin_sucursal') {
+    menuItems.splice(0, 0, { icon: Building2, label: 'Panel de Sucursal', action: () => navigate('/AdminSucursalDashboard') });
+    menuItems.splice(1, 0,
+      { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
+      { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
+      { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
+      { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+    );
+  }
 
   if (isLoadingAuth) {
     return (

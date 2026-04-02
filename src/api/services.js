@@ -270,7 +270,10 @@ export const analyticsApi = {
   myPerformance: async () => (await api.get('/analytics/my')).data,
   inventoryPipeline: async () => (await api.get('/analytics/inventory')).data,
   // Dashboard para ADMIN_GENERAL (ve su concesionario completo)
-  companyDashboard: async () => (await api.get('/analytics/company-dashboard')).data,
+  companyDashboard: async (companyId) => {
+    const params = companyId ? `?companyId=${companyId}` : '';
+    return (await api.get(`/analytics/company-dashboard${params}`)).data;
+  },
   // Dashboard para ADMIN_SUCURSAL (ve su sucursal); branchId opcional para admin_general
   branchDashboard: async (branchId) => {
     const query = branchId ? `?branchId=${branchId}` : '';

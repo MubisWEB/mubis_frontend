@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Users, Car, DollarSign, TrendingUp, Clock, AlertTriangle,
-  CheckCircle, Building2, BarChart3, Plus, UserPlus, ArrowUpRight,
+  Users, Car, DollarSign, TrendingUp,
+  CheckCircle, Building2, BarChart3, UserPlus, ArrowUpRight,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -17,67 +17,11 @@ import {
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
-import { analyticsApi, auctionsApi, usersApi, branchesApi } from '@/api/services';
+import { analyticsApi, usersApi, branchesApi, companiesApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
-
-// ── Modal: Aprobar precio ────────────────────────────────────────────────────
-function ApprovePriceModal({ vehicle, onApproved }) {
-  const [price, setPrice] = useState(vehicle.suggestedPrice ? String(vehicle.suggestedPrice) : '');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async () => {
-    const parsed = Number(price.replace(/\D/g, ''));
-    if (!parsed || parsed < 1) { toast.error('Ingresa un precio válido'); return; }
-    try {
-      setLoading(true);
-      await auctionsApi.approvePrice(vehicle.id, parsed);
-      toast.success('Precio aprobado', { description: 'La subasta fue publicada exitosamente.' });
-      onApproved();
-    } catch (err) {
-      const msg = err?.response?.data?.message;
-      toast.error('Error al aprobar precio', { description: msg || 'Intenta de nuevo.' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <DialogContent className="max-w-sm rounded-2xl">
-      <DialogHeader>
-        <DialogTitle className="text-lg font-bold">Aprobar precio</DialogTitle>
-      </DialogHeader>
-      <div className="space-y-4 pt-2">
-        <div>
-          <p className="font-semibold text-foreground">{vehicle.brand} {vehicle.model} {vehicle.year}</p>
-          {vehicle.suggestedPrice && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Precio sugerido por el perito: <span className="font-semibold text-secondary">{COP(vehicle.suggestedPrice)}</span>
-            </p>
-          )}
-        </div>
-        <div>
-          <Label className="text-sm font-semibold mb-1.5 block">Precio aprobado (COP)</Label>
-          <Input
-            type="number"
-            placeholder="Ej. 45000000"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="rounded-xl border-border h-11"
-          />
-        </div>
-        <Button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-11 rounded-full"
-        >
-          {loading ? 'Publicando...' : 'Aprobar y publicar subasta'}
-        </Button>
-      </div>
-    </DialogContent>
-  );
-}
 
 // ── Modal: Crear Admin Sucursal ───────────────────────────────────────────────
 function CreateAdminModal({ branches, onCreated }) {
@@ -170,25 +114,26 @@ function KpiCard({ icon: Icon, label, value, sub, color = 'text-secondary', aler
 
 export default function AdminGeneralDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isSuperadmin = user?.role === 'superadmin';
+
   const [loading, setLoading] = useState(true);
   const [dashboard, setDashboard] = useState(null);
-  const [pendingVehicles, setPendingVehicles] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [branches, setBranches] = useState([]);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
-  const loadData = async () => {
+  const loadData = async (companyId) => {
     try {
       const [dash, users, branchList] = await Promise.all([
-        analyticsApi.companyDashboard().catch(() => null),
+        analyticsApi.companyDashboard(companyId || undefined).catch(() => null),
         usersApi.getPending().catch(() => []),
         branchesApi.getAll().catch(() => []),
       ]);
       setDashboard(dash);
       setPendingUsers(users || []);
       setBranches(branchList || []);
-      // pending vehicles come from dashboard.pendingPriceApproval vehicles list if available
-      // or we store the count and link to a dedicated view
     } catch (err) {
       console.error('Error loading company dashboard:', err);
     } finally {
@@ -197,10 +142,17 @@ export default function AdminGeneralDashboard() {
   };
 
   useEffect(() => {
-    loadData();
-    const iv = setInterval(loadData, 30000);
+    if (isSuperadmin) {
+      companiesApi.getAll().catch(() => []).then(list => setCompanies(list || []));
+    }
+    loadData(selectedCompanyId);
+    const iv = setInterval(() => loadData(selectedCompanyId), 30000);
     return () => clearInterval(iv);
-  }, []);
+  }, [selectedCompanyId]);
+
+  const handleCompanyChange = (val) => {
+    setSelectedCompanyId(val === 'all' ? '' : val);
+  };
 
   const branchChartData = (dashboard?.branches || []).map((b) => ({
     name: b.branch,
@@ -217,39 +169,37 @@ export default function AdminGeneralDashboard() {
 
       <div className="max-w-4xl mx-auto px-4 pt-4 space-y-4">
 
-        {/* Alertas de acciones pendientes */}
-        {(dashboard?.pendingPriceApproval > 0 || pendingUsers.length > 0) && (
-          <div className="space-y-2">
-            {dashboard?.pendingPriceApproval > 0 && (
-              <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-amber-800">
-                    {dashboard.pendingPriceApproval} vehículo{dashboard.pendingPriceApproval !== 1 ? 's' : ''} pendiente{dashboard.pendingPriceApproval !== 1 ? 's' : ''} de aprobación de precio
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate('/AdminAprobaciones')}
-                  className="text-xs font-semibold text-amber-700 underline underline-offset-2 flex-shrink-0"
-                >
-                  Ver
-                </button>
-              </div>
-            )}
-            {pendingUsers.length > 0 && (
-              <div className="flex items-center gap-3 bg-secondary/10 border border-secondary/20 rounded-xl px-4 py-3">
-                <Users className="w-5 h-5 text-secondary flex-shrink-0" />
-                <p className="text-sm font-semibold text-secondary flex-1">
-                  {pendingUsers.length} solicitud{pendingUsers.length !== 1 ? 'es' : ''} de usuario pendiente{pendingUsers.length !== 1 ? 's' : ''}
-                </p>
-                <button
-                  onClick={() => navigate('/AdminSolicitudes')}
-                  className="text-xs font-semibold text-secondary underline underline-offset-2 flex-shrink-0"
-                >
-                  Ver
-                </button>
-              </div>
-            )}
+        {/* Selector de empresa (solo superadmin) */}
+        {isSuperadmin && companies.length > 0 && (
+          <Card className="p-3 border border-border rounded-2xl bg-card">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Ver como empresa</p>
+            <Select value={selectedCompanyId || 'all'} onValueChange={handleCompanyChange}>
+              <SelectTrigger className="rounded-xl border-border h-10">
+                <SelectValue placeholder="Todas las empresas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las empresas</SelectItem>
+                {companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Card>
+        )}
+
+        {/* Alerta de usuarios pendientes */}
+        {pendingUsers.length > 0 && (
+          <div className="flex items-center gap-3 bg-secondary/10 border border-secondary/20 rounded-xl px-4 py-3">
+            <Users className="w-5 h-5 text-secondary flex-shrink-0" />
+            <p className="text-sm font-semibold text-secondary flex-1">
+              {pendingUsers.length} solicitud{pendingUsers.length !== 1 ? 'es' : ''} de usuario pendiente{pendingUsers.length !== 1 ? 's' : ''}
+            </p>
+            <button
+              onClick={() => navigate('/AdminSolicitudes')}
+              className="text-xs font-semibold text-secondary underline underline-offset-2 flex-shrink-0"
+            >
+              Ver
+            </button>
           </div>
         )}
 
@@ -268,14 +218,14 @@ export default function AdminGeneralDashboard() {
             <KpiCard icon={Users} label="Usuarios totales" value={NUM(dashboard?.users?.total)} sub={`D: ${byRole.DEALER || 0} · P: ${byRole.PERITO || 0} · R: ${byRole.RECOMPRADOR || 0}`} />
             <KpiCard icon={Car} label="Subastas activas" value={NUM(byStatus.ACTIVE)} sub={`${NUM(byStatus.ENDED || 0)} finalizadas`} />
             <KpiCard icon={DollarSign} label="Ingresos totales" value={COP(dashboard?.revenue?.total)} color="text-primary" />
-            <KpiCard icon={Clock} label="Pendiente aprobación" value={NUM(dashboard?.pendingPriceApproval)} alert={dashboard?.pendingPriceApproval > 0} />
+            <KpiCard icon={CheckCircle} label="Verificaciones pendientes" value={NUM(pendingUsers.length)} alert={pendingUsers.length > 0} />
           </div>
         )}
 
         {/* Botón crear admin */}
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-foreground">Sucursales</h2>
-          <CreateAdminModal branches={branches} onCreated={loadData} />
+          <CreateAdminModal branches={branches} onCreated={() => loadData(selectedCompanyId)} />
         </div>
 
         {/* Tabla de sucursales */}
@@ -359,7 +309,6 @@ export default function AdminGeneralDashboard() {
               <item.icon className={`w-5 h-5 mb-2 ${item.alert ? 'text-amber-600' : 'text-secondary'}`} />
               <p className={`text-sm font-semibold ${item.alert ? 'text-amber-800' : 'text-foreground'}`}>{item.label}</p>
               <p className={`text-xs mt-0.5 ${item.alert ? 'text-amber-600' : 'text-muted-foreground'}`}>{item.sub}</p>
-              {item.alert && <span className="absolute top-3 right-3 w-2 h-2 bg-amber-500 rounded-full" />}
             </button>
           ))}
         </div>

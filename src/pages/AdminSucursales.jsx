@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
-import { Building2, Plus, Pencil, Users, UserMinus, UserPlus, Loader2, MapPin, Phone } from 'lucide-react';
+import { Building2, Plus, Pencil, Users, UserMinus, UserPlus, Loader2, MapPin, Search } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { branchesApi, usersApi } from '@/api/services';
+import { branchesApi, usersApi, companiesApi } from '@/api/services';
 import { toast } from 'sonner';
 
 const EMPTY_FORM = { name: '', company: '', city: '', address: '', phone: '' };
@@ -167,13 +167,17 @@ function BranchDetail({ branch, allUsers, onClose, onRefresh }) {
 export default function AdminSucursales() {
   const [branches, setBranches] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [detailBranch, setDetailBranch] = useState(null);
+  const [filterCompany, setFilterCompany] = useState('');
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     fetchAll();
+    companiesApi.getAll().catch(() => []).then(list => setCompanies(list || []));
   }, []);
 
   async function fetchAll() {
@@ -219,6 +223,12 @@ export default function AdminSucursales() {
     }
   }
 
+  const filteredBranches = branches.filter(b => {
+    if (filterCompany && b.companyId !== filterCompany && b.company !== filterCompany) return false;
+    if (searchText && !b.name?.toLowerCase().includes(searchText.toLowerCase()) && !b.city?.toLowerCase().includes(searchText.toLowerCase())) return false;
+    return true;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -232,20 +242,43 @@ export default function AdminSucursales() {
       <Header title="Sucursales" subtitle={`${branches.length} sucursales`} backTo="/AdminDashboard" />
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        <div className="flex justify-end">
-          <Button onClick={() => { setEditing(null); setFormOpen(true); }} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full">
+        {/* Filtros */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o ciudad..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="pl-9 rounded-xl"
+            />
+          </div>
+          {companies.length > 0 && (
+            <Select value={filterCompany || 'all'} onValueChange={(v) => setFilterCompany(v === 'all' ? '' : v)}>
+              <SelectTrigger className="rounded-xl sm:w-52">
+                <SelectValue placeholder="Todas las empresas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las empresas</SelectItem>
+                {companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full shrink-0">
             <Plus className="w-4 h-4 mr-2" />Nueva sucursal
           </Button>
         </div>
 
-        {branches.length === 0 ? (
+        {filteredBranches.length === 0 ? (
           <div className="text-center py-16">
             <Building2 className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
             <p className="text-muted-foreground">No hay sucursales creadas.</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {branches.map((b, i) => (
+            {filteredBranches.map((b, i) => (
               <motion.div key={b.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <Card className="p-4 border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => openDetail(b)}>
                   <div className="flex items-start justify-between gap-3">

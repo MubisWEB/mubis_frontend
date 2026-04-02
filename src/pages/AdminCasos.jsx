@@ -9,7 +9,7 @@ import { MessageCircle, Send, User, Building2, Shield, AlertTriangle, CheckCircl
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate, useParams } from 'react-router-dom';
-import { casesApi } from '@/api/services';
+import { casesApi, companiesApi, branchesApi } from '@/api/services';
 import { toast } from 'sonner';
 
 const STATUS_MAP = {
@@ -33,13 +33,25 @@ export default function AdminCasos() {
   const [cases, setCases] = useState([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterCompany, setFilterCompany] = useState('');
+  const [filterBranch, setFilterBranch] = useState('');
+  const [companies, setCompanies] = useState([]);
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     casesApi.getAll().then(setCases).catch(() => {});
+    companiesApi.getAll().catch(() => []).then(list => setCompanies(list || []));
+    branchesApi.getAll().catch(() => []).then(list => setBranches(list || []));
   }, []);
+
+  const filteredBranches = filterCompany
+    ? branches.filter(b => b.companyId === filterCompany || b.company === filterCompany)
+    : branches;
 
   const filtered = cases.filter(c => {
     if (filterStatus !== 'all' && c.status !== filterStatus) return false;
+    if (filterCompany && c.companyId !== filterCompany) return false;
+    if (filterBranch && c.branchId !== filterBranch) return false;
     if (search) {
       const q = search.toLowerCase();
       return (c.vehicleLabel || '').toLowerCase().includes(q) ||
@@ -74,6 +86,34 @@ export default function AdminCasos() {
             </button>
           ))}
         </div>
+
+        {/* Filtros empresa / sucursal */}
+        {(companies.length > 0 || branches.length > 0) && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            {companies.length > 0 && (
+              <Select value={filterCompany || 'all'} onValueChange={(v) => { setFilterCompany(v === 'all' ? '' : v); setFilterBranch(''); }}>
+                <SelectTrigger className="rounded-xl h-10 flex-1">
+                  <SelectValue placeholder="Todas las empresas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las empresas</SelectItem>
+                  {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            {filteredBranches.length > 0 && (
+              <Select value={filterBranch || 'all'} onValueChange={(v) => setFilterBranch(v === 'all' ? '' : v)}>
+                <SelectTrigger className="rounded-xl h-10 flex-1">
+                  <SelectValue placeholder="Todas las sucursales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las sucursales</SelectItem>
+                  {filteredBranches.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
 
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
