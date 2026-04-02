@@ -48,6 +48,7 @@ import AdminMetas from './pages/AdminMetas';
 import AdminSucursales from './pages/AdminSucursales';
 import MiRendimiento from './pages/MiRendimiento';
 import MisMetas from './pages/MisMetas';
+import SeBusca from './pages/SeBusca';
 import B2BCatalogo from './pages/B2BCatalogo';
 import MisOfertas from './pages/MisOfertas';
 import SetPassword from './pages/SetPassword';
@@ -96,6 +97,9 @@ const App = () => (
           {/* Vender: dealer + admin_general */}
           <Route path="/MisSubastas" element={<RequireRole roles={['dealer','admin_general']}><MisSubastas /></RequireRole>} />
           <Route path="/DetalleSubastaVendedor/:auctionId" element={<RequireRole roles={['dealer','admin_general']}><DetalleSubastaVendedor /></RequireRole>} />
+          
+          {/* Se Busca: dealer + admin_general */}
+          <Route path="/SeBusca" element={<RequireRole roles={['dealer','admin_general']}><SeBusca /></RequireRole>} />
 
           {/* Movimientos: dealer + recomprador + admin_general */}
           <Route path="/Movimientos" element={<RequireRole roles={['dealer','recomprador','admin_general']}><Movimientos /></RequireRole>} />
@@ -124,7 +128,7 @@ const App = () => (
           <Route path="/AdminMetas" element={<RequireRole roles={['superadmin']}><AdminMetas /></RequireRole>} />
           <Route path="/AdminEmpresas" element={<RequireRole roles={['superadmin']}><AdminEmpresas /></RequireRole>} />
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />
-          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin']}><AdminBanners /></RequireRole>} />
+          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin', 'dealer', 'admin_general']}><AdminBanners /></RequireRole>} />
 
            {/* Branch Admin */}
            <Route path="/BranchAdminDashboard" element={<RequireRole roles={['branch_admin']}><BranchAdminDashboard /></RequireRole>} />

@@ -9,23 +9,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, X, Trophy, Bookmark, LayoutGrid, LayoutList } from 'lucide-react';
+import { Filter, X, Trophy, Bookmark, LayoutGrid, LayoutList, Zap, Leaf, Truck, Car, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const brands = ['Toyota', 'Chevrolet', 'Mazda', 'Renault', 'Kia', 'Hyundai', 'Volkswagen', 'Ford', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi'];
 
+// Categorías rápidas para filtrado
+const quickCategories = [
+  { id: 'electric', label: 'Eléctricos', icon: Zap, filter: { fuelType: 'electrico' } },
+  { id: 'hybrid', label: 'Híbridos', icon: Leaf, filter: { fuelType: 'hibrido' } },
+  { id: 'suv', label: 'SUVs', icon: Truck, filter: { bodyType: 'suv' } },
+  { id: 'sedan', label: 'Sedanes', icon: Car, filter: { bodyType: 'sedan' } },
+  { id: 'luxury', label: 'Premium', icon: Sparkles, filter: { category: 'premium' } },
+  { id: 'economic', label: 'Budget', icon: null, emoji: '💵', filter: { priceMax: '50' } },
+];
+
 export default function FilterPanel({ filters, setFilters, viewMode, setViewMode, showViewMode = false, showSavedLinks = false }) {
   const navigate = useNavigate();
   const [localFilters, setLocalFilters] = useState(filters);
+  const [activeCategory, setActiveCategory] = useState(null);
 
   const handleApply = () => {
     setFilters(localFilters);
   };
 
   const handleReset = () => {
-    const empty = { brand: '', yearFrom: '', yearTo: '', priceMin: '', priceMax: '', mileageMax: '' };
+    const empty = { brand: '', yearFrom: '', yearTo: '', priceMin: '', priceMax: '', mileageMax: '', fuelType: '', bodyType: '', category: '' };
     setLocalFilters(empty);
     setFilters(empty);
+    setActiveCategory(null);
+  };
+
+  const handleCategoryClick = (cat) => {
+    if (activeCategory === cat.id) {
+      // Deselect
+      setActiveCategory(null);
+      const resetFilters = { ...localFilters, fuelType: '', bodyType: '', category: '', priceMax: '' };
+      setLocalFilters(resetFilters);
+      setFilters(resetFilters);
+    } else {
+      // Select new category - clear all category filters first, then apply new one
+      setActiveCategory(cat.id);
+      const newFilters = { ...localFilters, fuelType: '', bodyType: '', category: '', priceMax: '', ...cat.filter };
+      setLocalFilters(newFilters);
+      setFilters(newFilters);
+    }
   };
 
   const hasFilters = Object.values(filters).some(v => v);
@@ -35,35 +63,33 @@ export default function FilterPanel({ filters, setFilters, viewMode, setViewMode
       <div className="flex items-center gap-2 mb-5">
         <Filter className="w-4 h-4 text-secondary" />
         <h3 className="text-base font-bold text-foreground">Filtros</h3>
-        {hasFilters && (
-          <span className="ml-auto w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
-            {Object.values(filters).filter(v => v).length}
-          </span>
-        )}
       </div>
 
       <div className="space-y-5">
-        {/* Layout selector - commented out for future use
-        {showViewMode && (
-          <div className="pb-4 border-b border-border">
-            <Label className="text-foreground font-semibold text-sm mb-2 block">Vista</Label>
-            <div className="flex items-center bg-muted/50 rounded-xl p-0.5 border border-border">
-              <button 
-                onClick={() => setViewMode('grid')} 
-                className={`flex-1 p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <LayoutGrid className="w-4 h-4 mx-auto" />
-              </button>
-              <button 
-                onClick={() => setViewMode('list')} 
-                className={`flex-1 p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <LayoutList className="w-4 h-4 mx-auto" />
-              </button>
-            </div>
+        {/* Quick Categories */}
+        <div className="pb-4 border-b border-border">
+          <Label className="text-foreground font-semibold text-sm mb-3 block">Mundos</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {quickCategories.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryClick(cat)}
+                  className={`flex items-center gap-1.5 p-2.5 rounded-xl text-xs font-medium transition-all min-w-0 ${
+                    isActive 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-muted/50 text-foreground hover:bg-muted border border-border'
+                  }`}
+                >
+                  {Icon ? <Icon className="w-4 h-4 flex-shrink-0" /> : <span className="flex-shrink-0">{cat.emoji}</span>}
+                  <span className="truncate">{cat.label}</span>
+                </button>
+              );
+            })}
           </div>
-        )}
-        */}
+        </div>
 
         <div>
           <Label className="text-foreground font-semibold text-sm mb-2 block">Marca</Label>

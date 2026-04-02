@@ -334,10 +334,10 @@ export const pricingApi = {
 // ── MEDIA ─────────────────────────────────────────────────────────────────────
 
 export const mediaApi = {
-  upload: async (files) => {
+  upload: async (files, folder = 'vehicles') => {
     const form = new FormData();
     files.forEach(f => form.append('files', f));
-    return (await api.post('/media/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+    return (await api.post(`/media/upload?folder=${folder}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
   },
 };
 

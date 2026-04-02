@@ -1,19 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Trash2, Upload, Info } from 'lucide-react';
+import { ImagePlus, Trash2, Upload, Info, Move, ZoomIn, ZoomOut } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
 import { bannersApi, mediaApi } from '@/api/services';
 
-const IDEAL_RATIO = 970 / 150; // ~6.47
-const TOLERANCE = 0.25; // ±25%
-
-function isValidRatio(width, height) {
-  const ratio = width / height;
-  return Math.abs(ratio - IDEAL_RATIO) / IDEAL_RATIO <= TOLERANCE;
-}
+const BANNER_ASPECT_RATIO = 970 / 150; // ~6.47
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
@@ -22,6 +16,13 @@ export default function AdminBanners() {
   const [preview, setPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const inputRef = useRef(null);
+  
+  // Image positioning state
+  const [imagePosition, setImagePosition] = useState({ x: 50, y: 50 }); // percentage
+  const [imageScale, setImageScale] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const previewContainerRef = useRef(null);
 
   const loadBanners = async () => {
     try {
@@ -38,44 +39,102 @@ export default function AdminBanners() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const objectUrl = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const { naturalWidth: w, naturalHeight: h } = img;
-      URL.revokeObjectURL(objectUrl);
-
-      if (!isValidRatio(w, h)) {
-        toast.error('Dimensiones no compatibles', {
-          description: `Tu imagen es ${w}×${h}px (relación ${(w / h).toFixed(1)}:1). Se necesita aprox. 6.5:1 (ej. 970×150px).`,
-        });
-        if (inputRef.current) inputRef.current.value = '';
-        return;
-      }
-
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      toast.error('No se pudo leer la imagen');
-    };
-    img.src = objectUrl;
+    // Accept any image
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file));
+    // Reset position and scale for new image
+    setImagePosition({ x: 50, y: 50 });
+    setImageScale(1);
   };
+
+  // Dragging handlers
+  const handleMouseDown = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    
+    setImagePosition(prev => ({
+      x: Math.max(0, Math.min(100, prev.x - dx * 0.2)),
+      y: Math.max(0, Math.min(100, prev.y - dy * 0.5))
+    }));
+    
+    setDragStart({ x: e.clientX, y: e.clientY });
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Touch handlers for mobile
+  const handleTouchStart = useCallback((e) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setDragStart({ x: touch.clientX, y: touch.clientY });
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    
+    const dx = touch.clientX - dragStart.x;
+    const dy = touch.clientY - dragStart.y;
+    
+    setImagePosition(prev => ({
+      x: Math.max(0, Math.min(100, prev.x - dx * 0.2)),
+      y: Math.max(0, Math.min(100, prev.y - dy * 0.5))
+    }));
+    
+    setDragStart({ x: touch.clientX, y: touch.clientY });
+  }, [isDragging, dragStart]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   const handleUpload = async () => {
     if (!selectedFile) return;
     setUploading(true);
     try {
-      const result = await mediaApi.upload([selectedFile]);
-      const imageUrl = Array.isArray(result) ? (result[0]?.url || result[0]) : (result?.url || result);
+      const result = await mediaApi.upload([selectedFile], 'banners');
+      const imageUrl = result.urls ? result.urls[0] : (Array.isArray(result) ? result[0] : result);
+      
+      // Only send imageUrl - positioning is handled on frontend display
       await bannersApi.create({ imageUrl });
+      
       toast.success('Banner publicado', { description: 'Ya aparece en la página principal.' });
       setSelectedFile(null);
       setPreview(null);
+      setImagePosition({ x: 50, y: 50 });
+      setImageScale(1);
       if (inputRef.current) inputRef.current.value = '';
       loadBanners();
-    } catch {
-      toast.error('Error al subir el banner');
+    } catch (err) {
+      console.error('Error al subir banner:', err);
+      toast.error('Error al subir el banner', {
+        description: err?.response?.data?.message || 'Intenta de nuevo'
+      });
     } finally {
       setUploading(false);
     }
@@ -94,7 +153,13 @@ export default function AdminBanners() {
   const cancelPreview = () => {
     setPreview(null);
     setSelectedFile(null);
+    setImagePosition({ x: 50, y: 50 });
+    setImageScale(1);
     if (inputRef.current) inputRef.current.value = '';
+  };
+
+  const adjustScale = (delta) => {
+    setImageScale(prev => Math.max(0.5, Math.min(2, prev + delta)));
   };
 
   return (
@@ -107,10 +172,11 @@ export default function AdminBanners() {
         <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
           <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-blue-800">Tamaño recomendado: 970 × 150 px</p>
-            <p className="text-xs text-blue-700 mt-0.5">
-              Relación de aspecto panorámica ~6.5:1. Se acepta ±25% de tolerancia.
-              Formatos: PNG, JPG, WEBP.
+            <p className="text-sm font-semibold text-blue-800">Recomendaciones para mejores resultados</p>
+            <p className="text-xs text-blue-700 mt-1">
+              • <strong>Tamaño ideal:</strong> 970 × 150 px (relación 6.5:1)<br />
+              • <strong>Formatos:</strong> PNG, JPG, WEBP<br />
+              • <strong>Tip:</strong> Puedes subir cualquier imagen y ajustar su posición arrastrando
             </p>
           </div>
         </div>
@@ -125,7 +191,7 @@ export default function AdminBanners() {
           >
             <Upload className="w-8 h-8 text-muted-foreground mb-2" />
             <p className="text-sm font-medium text-foreground">Clic o arrastra la imagen aquí</p>
-            <p className="text-xs text-muted-foreground mt-1">970 × 150 px aprox.</p>
+            <p className="text-xs text-muted-foreground mt-1">Cualquier tamaño - podrás ajustar después</p>
             <input
               id="banner-upload"
               ref={inputRef}
@@ -137,10 +203,68 @@ export default function AdminBanners() {
           </label>
 
           {preview && (
-            <div className="mt-3 space-y-3">
-              <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '970/150' }}>
-                <img src={preview} alt="Vista previa" className="w-full h-full object-cover" />
+            <div className="mt-4 space-y-3">
+              {/* Instructions */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                <Move className="w-4 h-4" />
+                <span>Arrastra la imagen para ajustar su posición</span>
               </div>
+
+              {/* Preview container with draggable image */}
+              <div 
+                ref={previewContainerRef}
+                className="relative w-full rounded-xl overflow-hidden border-2 border-primary/30 cursor-move select-none"
+                style={{ aspectRatio: `${BANNER_ASPECT_RATIO}` }}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+              >
+                <img 
+                  src={preview} 
+                  alt="Vista previa" 
+                  className="absolute w-full h-full pointer-events-none"
+                  style={{ 
+                    objectFit: 'cover',
+                    objectPosition: `${imagePosition.x}% ${imagePosition.y}%`,
+                    transform: `scale(${imageScale})`,
+                    transformOrigin: 'center'
+                  }} 
+                  draggable={false}
+                />
+                {/* Drag overlay indicator */}
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <div className={`bg-black/50 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-opacity ${isDragging ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}>
+                    <Move className="w-3 h-3" />
+                    {isDragging ? 'Arrastrando...' : 'Arrastra para ajustar'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Zoom controls */}
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full"
+                  onClick={() => adjustScale(-0.1)}
+                  disabled={imageScale <= 0.5}
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <span className="text-xs text-muted-foreground w-16 text-center">
+                  {Math.round(imageScale * 100)}%
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full"
+                  onClick={() => adjustScale(0.1)}
+                  disabled={imageScale >= 2}
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Action buttons */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -170,7 +294,7 @@ export default function AdminBanners() {
             <div className="space-y-3">
               {[0, 1].map(i => (
                 <Card key={i} className="p-3 border border-border rounded-2xl animate-pulse">
-                  <div style={{ aspectRatio: '970/150' }} className="bg-muted rounded-xl w-full" />
+                  <div style={{ aspectRatio: `${BANNER_ASPECT_RATIO}` }} className="bg-muted rounded-xl w-full" />
                 </Card>
               ))}
             </div>
@@ -186,8 +310,15 @@ export default function AdminBanners() {
             <div className="space-y-3">
               {banners.map(banner => (
                 <Card key={banner.id} className="p-3 border border-border rounded-2xl bg-card">
-                  <div className="relative w-full rounded-xl overflow-hidden mb-2" style={{ aspectRatio: '970/150' }}>
-                    <img src={banner.imageUrl} alt="Banner" className="w-full h-full object-cover" />
+                  <div 
+                    className="relative w-full rounded-xl overflow-hidden mb-2" 
+                    style={{ aspectRatio: `${BANNER_ASPECT_RATIO}` }}
+                  >
+                    <img 
+                      src={banner.imageUrl} 
+                      alt="Banner" 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
