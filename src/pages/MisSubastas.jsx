@@ -115,11 +115,12 @@ function SellerFilterSheet({ filters, setFilters }) {
 function VehicleProcessCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-red-500 text-black text-xs font-semibold">Rechazado</Badge>;
+    if (v.status === 'PENDING_PRICE_APPROVAL') return <Badge className="bg-amber-500/15 text-amber-700 border border-amber-400/30 text-xs font-semibold">Pendiente de aprobación</Badge>;
     // Solo mostrar "En peritaje" para vehículos en proceso (no diferenciar pendiente vs in_progress)
     if (v.status === 'IN_PROGRESS' || v.status === 'PENDING_INSPECTION' || inspection && (inspection.status === 'IN_PROGRESS' || inspection.status === 'PENDING')) return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
   };
-  
+
   // Solo mostrar docs para vehículos activos/completados
   const shouldShowDocs = v.status === 'READY_FOR_AUCTION' || (inspection && inspection.status === 'COMPLETED');
   const docs = v.documentation;
@@ -158,6 +159,7 @@ function VehicleProcessCard({ v, navigate, inspection }) {
 function VehicleProcessGridCard({ v, navigate, inspection }) {
   const getStatusBadge = () => {
     if (v.status === 'INSPECTION_REJECTED' || inspection && inspection.status === 'REJECTED') return <Badge className="bg-red-500 text-black text-xs font-semibold">Rechazado</Badge>;
+    if (v.status === 'PENDING_PRICE_APPROVAL') return <Badge className="bg-amber-500/15 text-amber-700 border border-amber-400/30 text-xs font-semibold">Pendiente de aprobación</Badge>;
     // Solo mostrar "En peritaje" para vehículos en proceso (no diferenciar pendiente vs in_progress)
     if (v.status === 'IN_PROGRESS' || v.status === 'PENDING_INSPECTION' || inspection && (inspection.status === 'IN_PROGRESS' || inspection.status === 'PENDING')) return <Badge className="bg-white text-secondary text-xs font-semibold border border-secondary/20">En peritaje</Badge>;
     return <Badge className="bg-muted text-muted-foreground text-xs">{v.status}</Badge>;
@@ -360,6 +362,7 @@ export default function MisSubastas() {
   };
 
   const enProceso = useMemo(() => applyFilters(vehicles.filter((v) => ['PENDING_INSPECTION', 'IN_PROGRESS'].includes(v.status))), [vehicles, search, filters]);
+  const pendienteAprobacion = useMemo(() => applyFilters(vehicles.filter((v) => v.status === 'PENDING_PRICE_APPROVAL')), [vehicles, search, filters]);
   const rechazados = useMemo(() => applyFilters(vehicles.filter((v) => v.status === 'INSPECTION_REJECTED')), [vehicles, search, filters]);
   const activas = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'ACTIVE')), [auctions, search, filters]);
   const pendienteDecision = useMemo(() => applyFilters(auctions.filter((a) => a.status === 'PENDING_DECISION')), [auctions, search, filters]);
@@ -390,6 +393,7 @@ export default function MisSubastas() {
                     { value: 'activas', label: 'Activas', count: activas.length },
                     { value: 'decision', label: 'Decision', count: pendienteDecision.length },
                     { value: 'proceso', label: 'En proceso', count: enProceso.length },
+                    { value: 'aprobacion', label: 'Pendiente aprobación', count: pendienteAprobacion.length },
                     { value: 'rechazados', label: 'Rechazados', count: rechazados.length },
                     { value: 'finalizadas', label: 'Finalizadas', count: finalizadas.length },
                   ].map((item) => (
@@ -424,7 +428,7 @@ export default function MisSubastas() {
 
             {/* Active tab label */}
             <span className="text-base font-semibold text-foreground">
-              {{ activas: 'Activas', decision: 'Decision', proceso: 'En proceso', rechazados: 'Rechazados', finalizadas: 'Finalizadas' }[activeTab]}
+              {{ activas: 'Activas', decision: 'Decision', proceso: 'En proceso', aprobacion: 'Pendiente aprobación', rechazados: 'Rechazados', finalizadas: 'Finalizadas' }[activeTab]}
             </span>
           </div>
 
@@ -478,10 +482,23 @@ export default function MisSubastas() {
               {enProceso.length > 0 && <span className={`text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full ${activeTab === 'proceso' ? 'bg-primary-foreground/20' : 'bg-muted-foreground/20'}`}>{enProceso.length}</span>}
             </button>
             <button
+              onClick={() => setActiveTab('aprobacion')}
+              className={`text-base font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                activeTab === 'aprobacion'
+                  ? 'text-foreground border-b-2 border-amber-500 pb-1'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Aprobación
+              {pendienteAprobacion.length > 0 && (
+                <span className="w-5 h-5 bg-amber-500 text-white rounded-full text-xs flex items-center justify-center font-bold">{pendienteAprobacion.length}</span>
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab('rechazados')}
               className={`text-base font-semibold whitespace-nowrap transition-colors ${
-                activeTab === 'rechazados' 
-                  ? 'text-foreground border-b-2 border-primary pb-1' 
+                activeTab === 'rechazados'
+                  ? 'text-foreground border-b-2 border-primary pb-1'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -536,6 +553,21 @@ export default function MisSubastas() {
             }
               </>)
 
+          }
+
+          {activeTab === 'aprobacion' && (
+          pendienteAprobacion.length === 0 ? <EmptyState icon={CheckCircle} title="Sin vehículos pendientes" subtitle="Cuando un perito complete una inspección, el admin revisará y aprobará el precio antes de publicar." /> :
+          <>
+            <div className="mb-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800">El administrador está revisando el precio sugerido por el perito. La subasta se publicará automáticamente cuando sea aprobada.</p>
+            </div>
+            <div className="space-y-2 md:hidden">{pendienteAprobacion.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
+            {viewMode === 'grid' ?
+              <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{pendienteAprobacion.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
+              <div className="hidden md:flex flex-col gap-4">{pendienteAprobacion.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
+            }
+          </>)
           }
 
           {activeTab === 'rechazados' && (

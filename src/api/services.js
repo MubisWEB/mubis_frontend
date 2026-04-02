@@ -79,6 +79,10 @@ export const usersApi = {
   update: async (id, updates) => (await api.patch(`/users/${id}`, updates)).data,
   verify: async (id, status) => (await api.patch(`/users/${id}/verify`, { status })).data,
   getStats: async () => (await api.get('/users/stats')).data,
+  // Filtrado automático por scope del admin (ADMIN_SUCURSAL / ADMIN_GENERAL / SUPERADMIN)
+  getPending: async () => (await api.get('/users/pending')).data,
+  // Crear ADMIN_SUCURSAL (roles: ADMIN_GENERAL, SUPERADMIN)
+  createAdmin: async (data) => (await api.post('/users/create-admin', data)).data,
 };
 
 // ── VEHICLES ──────────────────────────────────────────────────────────────────
@@ -116,6 +120,9 @@ export const auctionsApi = {
   accept: async (id) => (await api.patch(`/auctions/${id}/accept`)).data,
   reject: async (id) => (await api.patch(`/auctions/${id}/reject`)).data,
   acceptPrevious: async (id) => (await api.patch(`/auctions/${id}/accept-previous`)).data,
+  // Aprueba precio y publica la subasta (ADMIN_SUCURSAL / ADMIN_GENERAL / SUPERADMIN)
+  approvePrice: async (vehicleId, approvedPrice) =>
+    (await api.post('/auctions/approve-price', { vehicleId, approvedPrice })).data,
 };
 
 // ── BIDS ──────────────────────────────────────────────────────────────────────
@@ -262,6 +269,13 @@ export const analyticsApi = {
   market: async () => (await api.get('/analytics/market')).data,
   myPerformance: async () => (await api.get('/analytics/my')).data,
   inventoryPipeline: async () => (await api.get('/analytics/inventory')).data,
+  // Dashboard para ADMIN_GENERAL (ve su concesionario completo)
+  companyDashboard: async () => (await api.get('/analytics/company-dashboard')).data,
+  // Dashboard para ADMIN_SUCURSAL (ve su sucursal); branchId opcional para admin_general
+  branchDashboard: async (branchId) => {
+    const query = branchId ? `?branchId=${branchId}` : '';
+    return (await api.get(`/analytics/branch-dashboard${query}`)).data;
+  },
 };
 
 // ── BRANCHES ──────────────────────────────────────────────────────────────────
@@ -331,7 +345,7 @@ export const mediaApi = {
 
 export const bannersApi = {
   // Public endpoint
-  getActive: async (tenantSlug) => (await publicApi.get(`/banners/public/${tenantSlug}`)).data,
+  getActive: async () => (await publicApi.get('/banners/active')).data,
   
   // Admin endpoints (SUPERADMIN only)
   getAll: async () => (await api.get('/banners')).data,

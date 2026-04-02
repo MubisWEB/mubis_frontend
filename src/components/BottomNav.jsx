@@ -1,15 +1,17 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store, History, LogOut } from 'lucide-react';
+import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store, History, Building2, Gavel, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
+const DEALER_NAV = [
+  { icon: Search, label: 'Comprar', path: '/Comprar' },
+  { icon: Heart, label: 'Vender', path: '/MisSubastas' },
+  { icon: Search, label: 'Se Busca', path: '/SeBusca' },
+  { icon: User, label: 'Cuenta', path: '/Cuenta' },
+];
+
 const NAV_CONFIGS = {
-  dealer: [
-    { icon: Search, label: 'Comprar', path: '/Comprar' },
-    { icon: Heart, label: 'Vender', path: '/MisSubastas' },
-    { icon: Search, label: 'Se Busca', path: '/SeBusca' },
-    { icon: User, label: 'Cuenta', path: '/Cuenta' },
-  ],
+  dealer: DEALER_NAV,
   recomprador: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Trophy, label: 'Ganados', path: '/Ganados' },
@@ -24,6 +26,22 @@ const NAV_CONFIGS = {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/AdminDashboard' },
     { icon: Users, label: 'Usuarios', path: '/AdminDealers' },
     { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
+    { icon: User, label: 'Cuenta', path: '/Cuenta' },
+  ],
+  // admin_general / company_admin: puede comprar y vender como dealer
+  admin_general: DEALER_NAV,
+  company_admin: DEALER_NAV,
+  // admin_sucursal / branch_admin: panel de sucursal
+  admin_sucursal: [
+    { icon: Building2, label: 'Panel Sucursal', path: '/AdminSucursalDashboard' },
+    { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
+    { icon: Gavel, label: 'Subastas', path: '/AdminSubastas' },
+    { icon: User, label: 'Cuenta', path: '/Cuenta' },
+  ],
+  branch_admin: [
+    { icon: Building2, label: 'Panel Sucursal', path: '/AdminSucursalDashboard' },
+    { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
+    { icon: Gavel, label: 'Subastas', path: '/AdminSubastas' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
 };

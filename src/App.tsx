@@ -46,7 +46,6 @@ import AdminCasos, { AdminCasoDetalle } from './pages/AdminCasos';
 import AdminInventario from './pages/AdminInventario';
 import AdminMetas from './pages/AdminMetas';
 import AdminSucursales from './pages/AdminSucursales';
-import BannerManagement from './pages/BannerManagement';
 import MiRendimiento from './pages/MiRendimiento';
 import MisMetas from './pages/MisMetas';
 import B2BCatalogo from './pages/B2BCatalogo';
@@ -58,6 +57,9 @@ import BranchAdminDashboard from './pages/BranchAdminDashboard';
 import BranchAdminUsuarios from './pages/BranchAdminUsuarios';
 import CompanyAdminDashboard from './pages/CompanyAdminDashboard';
 import CompanyAdminUsuarios from './pages/CompanyAdminUsuarios';
+import AdminGeneralDashboard from './pages/AdminGeneralDashboard';
+import AdminSucursalDashboard from './pages/AdminSucursalDashboard';
+import AdminBanners from './pages/AdminBanners';
 
 const queryClient = new QueryClient();
 
@@ -85,26 +87,26 @@ const App = () => (
           <Route path="/PendienteVerificacion" element={<PendienteVerificacion />} />
           <Route path="/set-password" element={<SetPassword />} />
 
-          {/* Comprar: dealer + recomprador */}
-          <Route path="/Comprar" element={<RequireRole roles={['dealer','recomprador']}><Comprar /></RequireRole>} />
-          <Route path="/DetalleSubasta/:auctionId" element={<RequireRole roles={['dealer','recomprador']}><DetalleSubasta /></RequireRole>} />
-          <Route path="/Ganados" element={<RequireRole roles={['dealer','recomprador']}><Ganados /></RequireRole>} />
-          <Route path="/Guardadas" element={<RequireRole roles={['dealer','recomprador']}><Guardadas /></RequireRole>} />
+          {/* Comprar: dealer + recomprador + admin_general */}
+          <Route path="/Comprar" element={<RequireRole roles={['dealer','recomprador','admin_general']}><Comprar /></RequireRole>} />
+          <Route path="/DetalleSubasta/:auctionId" element={<RequireRole roles={['dealer','recomprador','admin_general']}><DetalleSubasta /></RequireRole>} />
+          <Route path="/Ganados" element={<RequireRole roles={['dealer','recomprador','admin_general']}><Ganados /></RequireRole>} />
+          <Route path="/Guardadas" element={<RequireRole roles={['dealer','recomprador','admin_general']}><Guardadas /></RequireRole>} />
 
-          {/* Vender: dealer only */}
-          <Route path="/MisSubastas" element={<RequireRole roles={['dealer']}><MisSubastas /></RequireRole>} />
-          <Route path="/DetalleSubastaVendedor/:auctionId" element={<RequireRole roles={['dealer']}><DetalleSubastaVendedor /></RequireRole>} />
+          {/* Vender: dealer + admin_general */}
+          <Route path="/MisSubastas" element={<RequireRole roles={['dealer','admin_general']}><MisSubastas /></RequireRole>} />
+          <Route path="/DetalleSubastaVendedor/:auctionId" element={<RequireRole roles={['dealer','admin_general']}><DetalleSubastaVendedor /></RequireRole>} />
 
-          {/* Movimientos: dealer + recomprador */}
-          <Route path="/Movimientos" element={<RequireRole roles={['dealer','recomprador']}><Movimientos /></RequireRole>} />
+          {/* Movimientos: dealer + recomprador + admin_general */}
+          <Route path="/Movimientos" element={<RequireRole roles={['dealer','recomprador','admin_general']}><Movimientos /></RequireRole>} />
 
           {/* Cuenta: all authenticated */}
           <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
           <Route path="/Notificaciones" element={<RequireAuth><Notificaciones /></RequireAuth>} />
           <Route path="/Configuracion" element={<RequireAuth><Configuracion /></RequireAuth>} />
           <Route path="/AyudaSoporte" element={<RequireAuth><AyudaSoporte /></RequireAuth>} />
-          <Route path="/SoporteCasos" element={<RequireRole roles={['dealer','recomprador']}><SoporteCasos /></RequireRole>} />
-          <Route path="/SoporteCasos/:caseId" element={<RequireRole roles={['dealer','recomprador']}><SoporteCasoDetalle /></RequireRole>} />
+          <Route path="/SoporteCasos" element={<RequireRole roles={['dealer','recomprador','admin_general']}><SoporteCasos /></RequireRole>} />
+          <Route path="/SoporteCasos/:caseId" element={<RequireRole roles={['dealer','recomprador','admin_general']}><SoporteCasoDetalle /></RequireRole>} />
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />
@@ -112,22 +114,17 @@ const App = () => (
           <Route path="/PeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito','dealer']}><PeritajeDetalle /></RequireRole>} />
           <Route path="/HistorialPeritajeDetalle/:vehicleId" element={<RequireRole roles={['perito']}><HistorialPeritajeDetalle /></RequireRole>} />
 
-          {/* Admin */}
+          {/* Admin — Superadmin exclusivo */}
           <Route path="/AdminDashboard" element={<RequireRole roles={['superadmin']}><AdminDashboard /></RequireRole>} />
           <Route path="/AdminDealers" element={<RequireRole roles={['superadmin']}><AdminDealers /></RequireRole>} />
           <Route path="/AdminDealerDetalle/:userId" element={<RequireRole roles={['superadmin']}><AdminDealerDetalle /></RequireRole>} />
-          <Route path="/AdminSolicitudes" element={<RequireRole roles={['superadmin']}><AdminSolicitudes /></RequireRole>} />
-          <Route path="/AdminSubastas" element={<RequireRole roles={['superadmin']}><AdminSubastas /></RequireRole>} />
-          <Route path="/AdminMovimientos" element={<RequireRole roles={['superadmin']}><AdminMovimientos /></RequireRole>} />
-          <Route path="/AdminAnaliticas" element={<RequireRole roles={['superadmin']}><AdminAnaliticas /></RequireRole>} />
           <Route path="/AdminCasos" element={<RequireRole roles={['superadmin']}><AdminCasos /></RequireRole>} />
           <Route path="/AdminCasos/:caseId" element={<RequireRole roles={['superadmin']}><AdminCasoDetalle /></RequireRole>} />
           <Route path="/AdminInventario" element={<RequireRole roles={['superadmin']}><AdminInventario /></RequireRole>} />
           <Route path="/AdminMetas" element={<RequireRole roles={['superadmin']}><AdminMetas /></RequireRole>} />
-          <Route path="/AdminSucursales" element={<RequireRole roles={['superadmin']}><AdminSucursales /></RequireRole>} />
           <Route path="/AdminEmpresas" element={<RequireRole roles={['superadmin']}><AdminEmpresas /></RequireRole>} />
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />
-          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin']}><BannerManagement /></RequireRole>} />
+          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin']}><AdminBanners /></RequireRole>} />
 
            {/* Branch Admin */}
            <Route path="/BranchAdminDashboard" element={<RequireRole roles={['branch_admin']}><BranchAdminDashboard /></RequireRole>} />
@@ -136,6 +133,17 @@ const App = () => (
            {/* Company Admin */}
            <Route path="/CompanyAdminDashboard" element={<RequireRole roles={['company_admin']}><CompanyAdminDashboard /></RequireRole>} />
            <Route path="/CompanyAdminUsuarios" element={<RequireRole roles={['company_admin']}><CompanyAdminUsuarios /></RequireRole>} />
+
+          {/* Admin — Compartido: superadmin + admin_general + admin_sucursal */}
+          <Route path="/AdminSolicitudes" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminSolicitudes /></RequireRole>} />
+          <Route path="/AdminSubastas" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminSubastas /></RequireRole>} />
+          <Route path="/AdminMovimientos" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminMovimientos /></RequireRole>} />
+          <Route path="/AdminAnaliticas" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminAnaliticas /></RequireRole>} />
+          <Route path="/AdminSucursales" element={<RequireRole roles={['superadmin','admin_general']}><AdminSucursales /></RequireRole>} />
+
+          {/* Admin — Nuevos roles */}
+          <Route path="/AdminGeneralDashboard" element={<RequireRole roles={['admin_general','superadmin']}><AdminGeneralDashboard /></RequireRole>} />
+          <Route path="/AdminSucursalDashboard" element={<RequireRole roles={['admin_sucursal','admin_general','superadmin']}><AdminSucursalDashboard /></RequireRole>} />
 
           {/* Dealer */}
           <Route path="/MiRendimiento" element={<RequireRole roles={['dealer']}><MiRendimiento /></RequireRole>} />
