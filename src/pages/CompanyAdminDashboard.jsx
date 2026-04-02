@@ -6,8 +6,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell,
 } from 'recharts';
-import AdminNavbar from '@/components/AdminNavbar';
 import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
@@ -182,11 +182,7 @@ export default function CompanyAdminDashboard() {
         </Card>
       </div>
 
-      <AdminNavbar 
-        dashboardPath="/CompanyAdminDashboard"
-        usersPath="/CompanyAdminUsuarios"
-        role="company_admin"
-      />
+      <BottomNav />
     </div>
   );
 }

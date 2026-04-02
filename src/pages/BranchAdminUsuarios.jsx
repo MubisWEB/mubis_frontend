@@ -3,8 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, UserCheck, Search } from 'lucide-react';
-import AdminNavbar from '@/components/AdminNavbar';
 import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 
 // Mock users data
 const mockUsers = [
@@ -206,11 +206,7 @@ export default function BranchAdminUsuarios() {
         </div>
       </div>
 
-      <AdminNavbar
-        dashboardPath="/BranchAdminDashboard"
-        usersPath="/BranchAdminUsuarios"
-        role="branch_admin"
-      />
+      <BottomNav />
     </div>
   );
 }

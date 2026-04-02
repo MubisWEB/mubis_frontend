@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, TrendingUp, Target, Store, History, Building2, Gavel, LogOut } from 'lucide-react';
+import { Search, User, Heart, ClipboardCheck, LayoutDashboard, Users, FileText, Trophy, History, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const DEALER_NAV = [
@@ -28,20 +28,16 @@ const NAV_CONFIGS = {
     { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
-  // admin_general / company_admin: puede comprar y vender como dealer
-  admin_general: DEALER_NAV,
-  company_admin: DEALER_NAV,
-  // admin_sucursal / branch_admin: panel de sucursal
-  admin_sucursal: [
-    { icon: Building2, label: 'Panel Sucursal', path: '/AdminSucursalDashboard' },
-    { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
-    { icon: Gavel, label: 'Subastas', path: '/AdminSubastas' },
+  // company_admin: dashboard administrativo
+  company_admin: [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/CompanyAdminDashboard' },
+    { icon: Users, label: 'Usuarios', path: '/CompanyAdminUsuarios' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
+  // branch_admin: dashboard de sucursal
   branch_admin: [
-    { icon: Building2, label: 'Panel Sucursal', path: '/AdminSucursalDashboard' },
-    { icon: FileText, label: 'Solicitudes', path: '/AdminSolicitudes' },
-    { icon: Gavel, label: 'Subastas', path: '/AdminSubastas' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/BranchAdminDashboard' },
+    { icon: Users, label: 'Usuarios', path: '/BranchAdminUsuarios' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
 };
@@ -63,7 +59,7 @@ export default function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-50">
-      <div className="flex items-center justify-around max-w-md mx-auto">
+      <div className="flex items-center justify-center gap-6 max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -71,7 +67,7 @@ export default function BottomNav() {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+              className={`flex flex-col items-center gap-1 py-2 px-2 rounded-xl transition-all ${
                 active ? 'text-secondary' : 'text-muted-foreground hover:text-secondary'
               }`}
             >
@@ -82,7 +78,7 @@ export default function BottomNav() {
         })}
         <button
           onClick={handleLogout}
-          className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all text-destructive hover:text-red-400"
+          className="flex flex-col items-center gap-1 py-2 px-2 rounded-xl transition-all text-red-600 hover:text-red-500"
         >
           <LogOut className="w-6 h-6 stroke-2" />
           <span className="text-xs font-medium">Salir</span>
