@@ -86,8 +86,9 @@ export default function PeritajeDetalle() {
       || !!tarjetaPropiedadFile
       || documentacion.soat.status !== ''
       || documentacion.tecnomecanica.status !== ''
-      || documentacion.multas.tiene !== '';
-  }, [peritaje, rejectReason, reportPdfFile, vehiclePhotos, photoFiles, documentacion]);
+      || documentacion.multas.tiene !== ''
+      || startingPrice !== '';
+  }, [documentacion, peritaje, photoFiles, rejectReason, reportPdfFile, startingPrice, tarjetaPropiedadFile, vehiclePhotos]);
 
   // Save draft to localStorage
   const saveDraft = useCallback(() => {
@@ -98,9 +99,9 @@ export default function PeritajeDetalle() {
       step, 
       documentacion,
       startingPrice,
-      // Note: we don't save photoFiles as File objects can't be serialized
+      hasPendingFiles: !!reportPdfFile || photoFiles.length > 0 || !!tarjetaPropiedadFile,
     }));
-  }, [vehicleId, peritaje, rejectReason, step, documentacion, startingPrice]);
+  }, [documentacion, peritaje, photoFiles.length, rejectReason, reportPdfFile, startingPrice, tarjetaPropiedadFile, vehicleId]);
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -114,7 +115,7 @@ export default function PeritajeDetalle() {
         if (parsed.step !== undefined) setStep(parsed.step);
         if (parsed.documentacion) setDocumentacion(parsed.documentacion);
         if (parsed.startingPrice) setStartingPrice(parsed.startingPrice);
-        toast.info('Borrador recuperado', { description: 'Se cargaron los datos guardados previamente.' });
+        toast.info('Borrador recuperado', { description: parsed.hasPendingFiles ? 'Se restauraron los campos guardados. Debes volver a adjuntar fotos y archivos.' : 'Se cargaron los datos guardados previamente.' });
       } catch { /* ignore corrupt data */ }
     }
   }, [vehicleId]);

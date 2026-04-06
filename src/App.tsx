@@ -54,10 +54,6 @@ import MisOfertas from './pages/MisOfertas';
 import SetPassword from './pages/SetPassword';
 import AdminEmpresas from './pages/AdminEmpresas';
 import AdminCargaMasiva from './pages/AdminCargaMasiva';
-import BranchAdminDashboard from './pages/BranchAdminDashboard';
-import BranchAdminUsuarios from './pages/BranchAdminUsuarios';
-import CompanyAdminDashboard from './pages/CompanyAdminDashboard';
-import CompanyAdminUsuarios from './pages/CompanyAdminUsuarios';
 import AdminGeneralDashboard from './pages/AdminGeneralDashboard';
 import AdminSucursalDashboard from './pages/AdminSucursalDashboard';
 import AdminBanners from './pages/AdminBanners';
@@ -130,15 +126,7 @@ const App = () => (
           <Route path="/AdminMetas" element={<RequireRole roles={['superadmin']}><AdminMetas /></RequireRole>} />
           <Route path="/AdminEmpresas" element={<RequireRole roles={['superadmin']}><AdminEmpresas /></RequireRole>} />
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />
-          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin', 'dealer', 'admin_general']}><AdminBanners /></RequireRole>} />
-
-           {/* Branch Admin */}
-           <Route path="/BranchAdminDashboard" element={<RequireRole roles={['branch_admin']}><BranchAdminDashboard /></RequireRole>} />
-           <Route path="/BranchAdminUsuarios" element={<RequireRole roles={['branch_admin']}><BranchAdminUsuarios /></RequireRole>} />
-
-           {/* Company Admin */}
-           <Route path="/CompanyAdminDashboard" element={<RequireRole roles={['company_admin']}><CompanyAdminDashboard /></RequireRole>} />
-           <Route path="/CompanyAdminUsuarios" element={<RequireRole roles={['company_admin']}><CompanyAdminUsuarios /></RequireRole>} />
+          <Route path="/AdminBanners" element={<RequireRole roles={['superadmin']}><AdminBanners /></RequireRole>} />
 
           {/* Admin — Compartido: superadmin + admin_general + admin_sucursal */}
           <Route path="/AdminSolicitudes" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminSolicitudes /></RequireRole>} />

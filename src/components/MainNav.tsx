@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MubisLogo from "@/components/MubisLogo";
 import { useAuth, getRedirectForRole } from "@/lib/AuthContext";
+import { getRoleNavLabel } from "@/lib/roles";
 
 const links = [
   { label: "Inicio", path: "/" },
@@ -22,17 +23,7 @@ const MainNav = () => {
     setMobileOpen(false);
   };
 
-  const roleLabel: Record<string, string> = {
-    perito: 'Peritajes',
-    dealer: 'Mis subastas',
-    recomprador: 'Comprar',
-    admin: 'Dashboard',
-    superadmin: 'Dashboard',
-    admin_general: 'Panel General',
-    admin_sucursal: 'Panel Sucursal',
-  };
-
-  const authenticatedLabel = user?.role ? (roleLabel[user.role] || 'Ingresar') : 'Ingresar';
+  const authenticatedLabel = user?.role ? getRoleNavLabel(user.role) : 'Ingresar';
   const authenticatedPath = user?.role ? getRedirectForRole(user.role) : '/login';
 
   return (
@@ -88,8 +79,8 @@ const MainNav = () => {
             <button className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground">
               <MapPin className="w-4 h-4" /> Bogotá
             </button>
-            <button onClick={() => handleNav("/login")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-              Ingresar
+            <button onClick={() => handleNav(authenticatedPath)} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+              {isAuthenticated ? authenticatedLabel : 'Ingresar'}
             </button>
           </div>
         </div>

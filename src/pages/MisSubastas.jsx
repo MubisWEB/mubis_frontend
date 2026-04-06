@@ -534,9 +534,8 @@ export default function MisSubastas() {
             <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{enProceso.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
             <div className="hidden md:flex flex-col gap-4">{enProceso.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
             }
-              </>)
-
-          }
+              </>
+          )}
 
           {activeTab === 'rechazados' && (
           rechazados.length === 0 ? <EmptyState icon={ClipboardX} title="Sin peritajes rechazados" subtitle="¡Buena señal! Ningún vehículo ha sido rechazado." /> :
@@ -549,9 +548,8 @@ export default function MisSubastas() {
             <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{rechazados.map((v) => <VehicleProcessGridCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div> :
             <div className="hidden md:flex flex-col gap-4">{rechazados.map((v) => <VehicleProcessCard key={v.id} v={v} navigate={navigate} inspection={vehicleInspections[v.id]} />)}</div>
             }
-              </>)
-
-          }
+              </>
+          )}
 
           {activeTab === 'activas' && (
           activas.length === 0 ? <EmptyState icon={Gavel} title="Sin subastas activas" subtitle="Publica un vehículo para que aparezca en subasta aquí." /> :
@@ -564,9 +562,8 @@ export default function MisSubastas() {
             <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{activas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
             <div className="hidden md:flex flex-col gap-4">{activas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             }
-              </>)
-
-          }
+              </>
+          )}
 
           {activeTab === 'decision' && (
           pendienteDecision.length === 0 ? <EmptyState icon={Trophy} title="Sin decisiones pendientes" subtitle="Cuando una subasta finalice con ofertas, la verás aquí para decidir." /> :
@@ -579,9 +576,8 @@ export default function MisSubastas() {
             <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{pendienteDecision.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
             <div className="hidden md:flex flex-col gap-4">{pendienteDecision.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             }
-              </>)
-
-          }
+              </>
+          )}
 
           {activeTab === 'finalizadas' && (
           finalizadas.length === 0 ? <EmptyState icon={CheckCheck} title="Sin subastas finalizadas" subtitle="El historial de tus subastas cerradas aparecerá aquí." /> :
@@ -594,9 +590,8 @@ export default function MisSubastas() {
             <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">{finalizadas.map((a) => <AuctionGridCard key={a.id} auction={a} navigate={navigate} />)}</div> :
             <div className="hidden md:flex flex-col gap-4">{finalizadas.map((a) => <AuctionCard key={a.id} auction={a} navigate={navigate} />)}</div>
             }
-              </>)
-
-          }
+              </>
+          )}
 
           {loading && vehicles.length === 0 && auctions.length === 0 &&
           <div className="space-y-2">
@@ -604,11 +599,6 @@ export default function MisSubastas() {
           </div>}
           {!loading && vehicles.length === 0 && auctions.length === 0 &&
           <div className="text-center py-16">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                <DollarSign className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-2 font-sans">No tienes publicaciones</h3>
-              <p className="text-muted-foreground text-sm">Usa el botón <Plus className="inline w-4 h-4" /> para publicar tu primer vehículo</p>
             </div>
           }
         </div>

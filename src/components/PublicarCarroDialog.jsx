@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
 import { vehiclesApi, publicationsApi } from '@/api/services';
 
 const BRANDS = [
@@ -51,7 +50,6 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const set = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));

@@ -6,13 +6,26 @@ import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
 import { bannersApi, mediaApi } from '@/api/services';
+import { notifyBannersUpdated } from '@/lib/bannerEvents';
 
 const BANNER_ASPECT_RATIO = 970 / 150; // ~6.47
+const getBannerId = (banner) => banner?.id || banner?._id || banner?.bannerId;
+const getBannerImageUrl = (banner) => banner?.imageUrl || banner?.image_url || banner?.url || '';
+const isBannerActive = (banner) => {
+  if (typeof banner?.isActive === 'boolean') return banner.isActive;
+  if (typeof banner?.active === 'boolean') return banner.active;
+  if (typeof banner?.enabled === 'boolean') return banner.enabled;
+  if (typeof banner?.status === 'string') {
+    return ['active', 'enabled', 'published'].includes(banner.status.toLowerCase());
+  }
+  return false;
+};
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
   const [preview, setPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const inputRef = useRef(null);
@@ -122,8 +135,9 @@ export default function AdminBanners() {
       
       // Only send imageUrl - positioning is handled on frontend display
       await bannersApi.create({ imageUrl });
+      notifyBannersUpdated();
       
-      toast.success('Banner publicado', { description: 'Ya aparece en la página principal.' });
+      toast.success('Banner publicado', { description: 'Ya puedes activarlo o desactivarlo desde la lista de banners.' });
       setSelectedFile(null);
       setPreview(null);
       setImagePosition({ x: 50, y: 50 });
@@ -143,10 +157,28 @@ export default function AdminBanners() {
   const handleDelete = async (id) => {
     try {
       await bannersApi.delete(id);
+      notifyBannersUpdated();
       toast.success('Banner eliminado');
       loadBanners();
     } catch {
       toast.error('Error al eliminar banner');
+    }
+  };
+
+  const handleToggle = async (banner) => {
+    const bannerId = getBannerId(banner);
+    if (!bannerId) return;
+
+    setTogglingId(bannerId);
+    try {
+      await bannersApi.toggle(bannerId);
+      notifyBannersUpdated();
+      toast.success(isBannerActive(banner) ? 'Banner desactivado' : 'Banner activado');
+      loadBanners();
+    } catch {
+      toast.error('Error al actualizar el estado del banner');
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -287,9 +319,9 @@ export default function AdminBanners() {
           )}
         </Card>
 
-        {/* Active banners list */}
+        {/* Banners list */}
         <div>
-          <h2 className="text-sm font-bold text-foreground mb-2">Banners activos</h2>
+          <h2 className="text-sm font-bold text-foreground mb-2">Banners</h2>
           {loading ? (
             <div className="space-y-3">
               {[0, 1].map(i => (
@@ -301,39 +333,55 @@ export default function AdminBanners() {
           ) : banners.length === 0 ? (
             <Card className="p-6 text-center border border-border rounded-2xl bg-card">
               <ImagePlus className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm font-semibold text-foreground">Sin banners personalizados</p>
+              <p className="text-sm font-semibold text-foreground">Sin banners</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Se muestran los banners predeterminados en la Landing.
+                La landing no mostrará este carrusel hasta que publiques un banner.
               </p>
             </Card>
           ) : (
             <div className="space-y-3">
               {banners.map(banner => (
-                <Card key={banner.id} className="p-3 border border-border rounded-2xl bg-card">
+                <Card key={getBannerId(banner)} className="p-3 border border-border rounded-2xl bg-card">
                   <div 
                     className="relative w-full rounded-xl overflow-hidden mb-2" 
                     style={{ aspectRatio: `${BANNER_ASPECT_RATIO}` }}
                   >
                     <img 
-                      src={banner.imageUrl} 
+                      src={getBannerImageUrl(banner)} 
                       alt="Banner" 
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      {banner.createdAt
-                        ? new Date(banner.createdAt).toLocaleDateString('es-CO')
-                        : 'Subido recientemente'}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive border-destructive/20 hover:bg-destructive/5 rounded-full h-8 px-3"
-                      onClick={() => handleDelete(banner.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5 mr-1" />Eliminar
-                    </Button>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {banner.createdAt
+                          ? new Date(banner.createdAt).toLocaleDateString('es-CO')
+                          : 'Subido recientemente'}
+                      </p>
+                      <p className={`text-xs font-semibold mt-1 ${isBannerActive(banner) ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {isBannerActive(banner) ? 'Activo en landing' : 'Inactivo'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`rounded-full h-8 px-3 ${isBannerActive(banner) ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}
+                        onClick={() => handleToggle(banner)}
+                        disabled={togglingId === getBannerId(banner)}
+                      >
+                        {togglingId === getBannerId(banner) ? '...' : isBannerActive(banner) ? 'Desactivar' : 'Activar'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive border-destructive/20 hover:bg-destructive/5 rounded-full h-8 px-3"
+                        onClick={() => handleDelete(getBannerId(banner))}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-1" />Eliminar
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}

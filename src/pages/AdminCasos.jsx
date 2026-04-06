@@ -12,6 +12,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { casesApi, companiesApi, branchesApi } from '@/api/services';
 import { toast } from 'sonner';
 
+const REFRESH_INTERVAL_MS = 15000;
+
 const STATUS_MAP = {
   OPEN: { label: 'Abierto', color: 'bg-secondary/10 text-secondary', icon: AlertTriangle },
   IN_REVIEW: { label: 'En revisión', color: 'bg-primary/10 text-primary', icon: Clock },
@@ -39,9 +41,31 @@ export default function AdminCasos() {
   const [branches, setBranches] = useState([]);
 
   useEffect(() => {
-    casesApi.getAll().then(setCases).catch(() => {});
-    companiesApi.getAll().catch(() => []).then(list => setCompanies(list || []));
-    branchesApi.getAll().catch(() => []).then(list => setBranches(list || []));
+    let cancelled = false;
+
+    const loadCases = async () => {
+      try {
+        const data = await casesApi.getAll();
+        if (!cancelled) setCases(data || []);
+      } catch {
+        // Ignore transient polling errors in the admin list.
+      }
+    };
+
+    loadCases();
+    companiesApi.getAll().catch(() => []).then(list => {
+      if (!cancelled) setCompanies(list || []);
+    });
+    branchesApi.getAll().catch(() => []).then(list => {
+      if (!cancelled) setBranches(list || []);
+    });
+
+    const intervalId = setInterval(loadCases, REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
   }, []);
 
   const filteredBranches = filterCompany
@@ -202,7 +226,14 @@ export function AdminCasoDetalle() {
     }
   };
 
-  useEffect(() => { if (caseId) loadCase(); }, [caseId]);
+  useEffect(() => {
+    if (!caseId) return;
+
+    loadCase();
+    const intervalId = setInterval(loadCase, REFRESH_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [caseId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc -p ./jsconfig.json",
+    "typecheck": "tsc -p ./tsconfig.app.json",
     "preview": "vite preview"
   },
   "dependencies": {

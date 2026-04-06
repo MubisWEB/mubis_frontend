@@ -360,7 +360,40 @@ export const mediaApi = {
 
 export const bannersApi = {
   // Public endpoint
-  getActive: async () => (await publicApi.get('/banners/active')).data,
+  getActive: async () => {
+    const normalizeBannerResponse = (payload) => {
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.items)) return payload.items;
+      if (Array.isArray(payload?.banners)) return payload.banners;
+      if (Array.isArray(payload?.data)) return payload.data;
+      return [];
+    };
+
+    try {
+      const response = await publicApi.get('/banners/active');
+      const normalized = normalizeBannerResponse(response.data);
+      if (normalized.length > 0) return normalized;
+    } catch (error) {
+      const token = localStorage.getItem('accessToken');
+      if (error?.response?.status === 401 && token) {
+        const authActive = await api.get('/banners/active');
+        const normalized = normalizeBannerResponse(authActive.data);
+        if (normalized.length > 0) return normalized;
+      } else if (!token) {
+        throw error;
+      }
+    }
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) return [];
+
+    try {
+      const allBanners = await api.get('/banners');
+      return normalizeBannerResponse(allBanners.data);
+    } catch {
+      return [];
+    }
+  },
   
   // Admin endpoints (SUPERADMIN only)
   getAll: async () => (await api.get('/banners')).data,

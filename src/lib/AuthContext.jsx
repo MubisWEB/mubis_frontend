@@ -1,48 +1,31 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '@/api/services';
 import { connectSocket, disconnectSocket, joinNotifications } from '@/api/socket';
+import { getRedirectForRole as getRoleRedirect, isAdminRole, normalizeRole } from '@/lib/roles';
 
 const AuthContext = createContext();
 
-// Backend devuelve roles en MAYÚSCULA → normalizamos a minúscula para
-// mantener compatibilidad con RequireRole existentes.
 const normalizeUser = (user) =>
-  user ? { ...user, role: user.role?.toLowerCase() } : null;
-
-// Roles administrativos que no requieren verificación
-const ADMIN_ROLES = ['superadmin', 'branch_admin', 'company_admin', 'admin_general', 'admin_sucursal'];
-
-export const isAdminRole = (role) => ADMIN_ROLES.includes(role?.toLowerCase());
+  user ? { ...user, role: normalizeRole(user.role) } : null;
 
 export const getRedirectForRole = (role, userId = null) => {
-  // Si tenemos userId, intentar leer la preferencia guardada
   if (userId) {
     try {
-      const SETTINGS_KEY = `mubis_user_settings_${userId}`;
-      const raw = localStorage.getItem(SETTINGS_KEY);
+      const settingsKey = `mubis_user_settings_${userId}`;
+      const raw = localStorage.getItem(settingsKey);
+
       if (raw) {
         const settings = JSON.parse(raw);
         if (settings.default_landing_page) {
           return settings.default_landing_page;
         }
       }
-    } catch (e) {
-      // Si hay error, continuar con el default del rol
+    } catch {
+      // Ignore invalid local preferences and fall back to role defaults.
     }
   }
 
-  // Default por rol
-  switch (role?.toLowerCase()) {
-    case 'superadmin':      return '/AdminDashboard';
-    case 'admin_general':   return '/AdminGeneralDashboard';
-    case 'admin_sucursal':  return '/AdminSucursalDashboard';
-    case 'branch_admin':    return '/BranchAdminDashboard';
-    case 'company_admin':   return '/CompanyAdminDashboard';
-    case 'perito':          return '/PeritajesPendientes';
-    case 'dealer':          return '/Comprar'; // Cambio: ahora va a Comprar por defecto
-    case 'recomprador':     return '/Comprar';
-    default:                return '/login';
-  }
+  return getRoleRedirect(role);
 };
 
 export const AuthProvider = ({ children }) => {
@@ -52,7 +35,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const restore = async () => {
       const token = localStorage.getItem('accessToken');
-      if (!token) { setIsLoadingAuth(false); return; }
+      if (!token) {
+        setIsLoadingAuth(false);
+        return;
+      }
+
       try {
         const raw = await authApi.me();
         const normalized = normalizeUser(raw);
@@ -66,6 +53,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoadingAuth(false);
       }
     };
+
     restore();
   }, []);
 
@@ -88,22 +76,28 @@ export const AuthProvider = ({ children }) => {
     try {
       const raw = await authApi.me();
       setUser(normalizeUser(raw));
-    } catch { /* ignore */ }
+    } catch {
+      // Ignore refresh errors and keep the current session state.
+    }
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoadingAuth,
-      login,
-      logout,
-      refreshUser,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoadingAuth,
+        login,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export { isAdminRole };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

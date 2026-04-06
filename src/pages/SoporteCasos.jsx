@@ -13,6 +13,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { casesApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 
+const REFRESH_INTERVAL_MS = 15000;
+
 const STATUS_MAP = {
   OPEN: { label: 'Abierto', color: 'bg-secondary/10 text-secondary' },
   IN_REVIEW: { label: 'En revisión', color: 'bg-primary/10 text-primary' },
@@ -51,17 +53,27 @@ export default function SoporteCasos() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const load = async () => {
+    let cancelled = false;
+
+    const load = async ({ silent = false } = {}) => {
+      if (!silent) setLoading(true);
       try {
         const data = await casesApi.getMine();
-        setCases(data || []);
+        if (!cancelled) setCases(data || []);
       } catch (err) {
         console.error('Error loading cases:', err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
+
     load();
+    const intervalId = setInterval(() => load({ silent: true }), REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
   }, [user?.id]);
 
   return (
@@ -158,15 +170,25 @@ export function SoporteCasoDetalle() {
 
   useEffect(() => {
     if (!caseId) return;
+    let cancelled = false;
+
     const load = async () => {
       try {
         const data = await casesApi.getById(caseId);
-        setCaseData(data);
+        if (!cancelled) setCaseData(data);
       } catch (err) {
         console.error('Error loading case:', err);
       }
     };
+
     load();
+
+    const intervalId = setInterval(load, REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
   }, [caseId]);
 
   useEffect(() => {
