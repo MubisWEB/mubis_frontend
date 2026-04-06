@@ -125,6 +125,7 @@ export default function AdminGeneralDashboard() {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
   const loadData = async (companyId) => {
+    setLoading(true);
     try {
       const [dash, users, branchList] = await Promise.all([
         analyticsApi.companyDashboard(companyId || undefined).catch(() => null),

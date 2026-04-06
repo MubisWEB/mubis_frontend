@@ -45,13 +45,18 @@ export default function AdminCasos() {
   }, []);
 
   const filteredBranches = filterCompany
-    ? branches.filter(b => b.companyId === filterCompany || b.company === filterCompany)
+    ? branches.filter(b => b.companyId === filterCompany || b.company === filterCompany || b.company?.id === filterCompany)
     : branches;
+
+  const getCaseCompanyId = (c) =>
+    c.companyId || c.company?.id || c.seller?.companyId || c.seller?.company?.id || c.buyer?.companyId || c.buyer?.company?.id;
+  const getCaseBranchId = (c) =>
+    c.branchId || c.branch?.id || c.seller?.branchId || c.seller?.branch?.id || c.buyer?.branchId || c.buyer?.branch?.id;
 
   const filtered = cases.filter(c => {
     if (filterStatus !== 'all' && c.status !== filterStatus) return false;
-    if (filterCompany && c.companyId !== filterCompany) return false;
-    if (filterBranch && c.branchId !== filterBranch) return false;
+    if (filterCompany && getCaseCompanyId(c) !== filterCompany) return false;
+    if (filterBranch && getCaseBranchId(c) !== filterBranch) return false;
     if (search) {
       const q = search.toLowerCase();
       return (c.vehicleLabel || '').toLowerCase().includes(q) ||
@@ -137,6 +142,16 @@ export default function AdminCasos() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-foreground text-sm truncate">{c.vehicleLabel}</p>
+                        {(() => {
+                          const companyName = c.company?.name || c.companyName || c.seller?.company?.name || c.buyer?.company?.name;
+                          const branchName = c.branch?.name || c.branchName || c.seller?.branch?.name || c.buyer?.branch?.name;
+                          return (companyName || branchName) ? (
+                            <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                              <Building2 className="w-2.5 h-2.5 flex-shrink-0" />
+                              {companyName}{branchName ? ` · ${branchName}` : ''}
+                            </p>
+                          ) : null;
+                        })()}
                         <p className="text-xs text-muted-foreground">{timeAgo(c.createdAt)}</p>
                       </div>
                       <Badge className={`${status.color} text-[10px] border-0 ml-2`}>{status.label}</Badge>
