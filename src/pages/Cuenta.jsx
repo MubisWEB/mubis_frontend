@@ -224,7 +224,7 @@ export default function Cuenta() {
 
   if (role === 'superadmin') {
     menuItems.splice(0, 0,
-      { icon: LayoutDashboard, label: 'Dashboard', action: () => navigate('/AdminDashboard') },
+      
       { icon: ImagePlus, label: 'Gestionar Banners', action: () => navigate('/AdminBanners') },
       { icon: Handshake, label: 'Gestión de Partners', action: () => navigate('/AdminPartners') },
     );
@@ -302,7 +302,7 @@ export default function Cuenta() {
         </motion.div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-4">
 
         {/* Recharge Publications (dealer only) */}
         {(role === 'dealer') && (

@@ -3,12 +3,38 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Mail, Phone, MapPin, Building } from 'lucide-react';
-import MubisLogo from '@/components/MubisLogo';
+import {
+  Shield, Mail, Phone, MapPin, Building,
+  CheckCircle2, XCircle, Calendar, Briefcase, UserCheck,
+} from 'lucide-react';
+import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
-import TopBar from "@/components/TopBar";
 import { usersApi } from '@/api/services';
+
+const ROLE_LABELS = {
+  dealer: 'Dealer',
+  recomprador: 'Recomprador',
+  perito: 'Perito',
+  admin_general: 'Admin General',
+  admin_sucursal: 'Admin Sucursal',
+  superadmin: 'Superadmin',
+};
+
+function InfoRow({ icon: Icon, label, value }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
+      <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+        <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-muted-foreground leading-none mb-0.5">{label}</p>
+        <p className="text-sm font-medium text-foreground break-words">{value}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDealerDetalle() {
   const navigate = useNavigate();
@@ -40,18 +66,28 @@ export default function AdminDealerDetalle() {
     if (user.role === 'dealer') return [
       { label: 'Vehículos', value: stats.vehicles ?? '—' },
       { label: 'Subastas activas', value: stats.activeAuctions ?? '—' },
-      { label: 'Subastas cerradas', value: stats.endedAuctions ?? '—' },
+      { label: 'Cerradas', value: stats.endedAuctions ?? '—' },
       { label: 'Valor total', value: stats.totalRevenue != null ? formatPrice(stats.totalRevenue) : '—' },
     ];
     if (user.role === 'recomprador') return [
-      { label: 'Pujas realizadas', value: stats.bidsCount ?? '—' },
-      { label: 'Subastas ganadas', value: stats.wonCount ?? '—' },
-      { label: 'Total invertido', value: stats.totalSpent != null ? formatPrice(stats.totalSpent) : '—' },
+      { label: 'Pujas', value: stats.bidsCount ?? '—' },
+      { label: 'Ganadas', value: stats.wonCount ?? '—' },
+      { label: 'Invertido', value: stats.totalSpent != null ? formatPrice(stats.totalSpent) : '—' },
     ];
     if (user.role === 'perito') return [
-      { label: 'Peritajes totales', value: stats.totalInspections ?? '—' },
+      { label: 'Peritajes', value: stats.totalInspections ?? '—' },
       { label: 'Completados', value: stats.completedInspections ?? '—' },
       { label: 'Pendientes', value: stats.pendingInspections ?? '—' },
+    ];
+    if (user.role === 'admin_general') return [
+      { label: 'Sucursales', value: stats.branches ?? '—' },
+      { label: 'Usuarios', value: stats.users ?? '—' },
+      { label: 'Subastas', value: stats.auctions ?? '—' },
+    ];
+    if (user.role === 'admin_sucursal') return [
+      { label: 'Dealers', value: stats.dealers ?? '—' },
+      { label: 'Subastas', value: stats.auctions ?? '—' },
+      { label: 'Activos', value: stats.activeVehicles ?? '—' },
     ];
     return [];
   };
@@ -73,58 +109,92 @@ export default function AdminDealerDetalle() {
 
   const activityStats = getActivityStats();
   const isVerified = user.verification_status === 'VERIFIED';
+  const initials = (user.nombre || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const joinDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+    : null;
 
   return (
     <div className="min-h-screen bg-muted pb-28">
-      <TopBar />
-      <div className="bg-gradient-brand px-4 pt-4 pb-6">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/AdminDealers')} className="text-white hover:bg-white/10"><ArrowLeft className="w-5 h-5" /></Button>
-          <MubisLogo size="md" />
-          <div className="w-10"></div>
-        </div>
-        <h1 className="text-2xl font-bold text-white text-center mb-2 font-sans">{user.nombre}</h1>
-        <div className="flex items-center justify-center gap-2">
-          <Badge className="bg-white/20 text-white border-white/30 text-xs">{user.role}</Badge>
-          {isVerified && <Badge className="bg-primary/20 text-white border-primary/30"><Shield className="w-3 h-3 mr-1" />Verificado</Badge>}
-        </div>
-      </div>
+      <Header backTo="/AdminDealers" />
 
-      <div className="px-4 -mt-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-3">
+
+        {/* Profile card */}
+        <Card className="p-5 border border-border shadow-sm flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-secondary/15 border-2 border-secondary/30 flex items-center justify-center text-xl font-bold text-secondary">
+            {initials}
+          </div>
+          <h1 className="text-lg font-bold text-foreground text-center">{user.nombre}</h1>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <Badge variant="outline" className="text-xs">
+              {ROLE_LABELS[user.role] || user.role}
+            </Badge>
+            <Badge className={`text-xs ${isVerified ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'}`}>
+              {isVerified ? <><Shield className="w-3 h-3 mr-1" />Verificado</> : 'Sin verificar'}
+            </Badge>
+          </div>
+        </Card>
+
+        {/* Stats mini-cards */}
         {activityStats.length > 0 && (
-          <div className={`grid grid-cols-${Math.min(activityStats.length, 3)} gap-3 mb-4`}>
+          <div className={`grid grid-cols-${Math.min(activityStats.length, 4)} gap-2`}>
             {activityStats.map((s, i) => (
               <Card key={i} className="p-3 text-center border border-border shadow-sm">
-                <p className="text-xl font-bold text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-lg font-bold text-foreground">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{s.label}</p>
               </Card>
             ))}
           </div>
         )}
 
-        <Card className="p-4 mb-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans">Información de Contacto</h2>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm"><Mail className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.email}</span></div>
-            {user.telefono && <div className="flex items-center gap-2 text-sm"><Phone className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.telefono}</span></div>}
-            {user.ciudad && <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.ciudad}</span></div>}
-            {user.company && <div className="flex items-center gap-2 text-sm"><Building className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">{user.company} · {user.branch}</span></div>}
-            {user.nit && <div className="flex items-center gap-2 text-sm"><Building className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">NIT: {user.nit}</span></div>}
+        {/* Información */}
+        <Card className="p-4 border border-border shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1 h-4 rounded-full bg-secondary" />
+            <h2 className="font-bold text-sm text-foreground">Información</h2>
           </div>
+          <InfoRow icon={Mail} label="Correo" value={user.email} />
+          <InfoRow icon={Phone} label="Teléfono" value={user.telefono} />
+          <InfoRow icon={MapPin} label="Ciudad" value={user.ciudad} />
+          <InfoRow icon={Building} label="Empresa · Sucursal" value={user.company ? `${user.company}${user.branch ? ` · ${user.branch}` : ''}` : null} />
+          <InfoRow icon={Briefcase} label="NIT" value={user.nit} />
+          <InfoRow icon={Calendar} label="Miembro desde" value={joinDate} />
         </Card>
 
+        {/* Verificación */}
         <Card className="p-4 border border-border shadow-sm">
-          <h2 className="font-bold text-foreground mb-3 font-sans">Verificación</h2>
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm text-foreground">Estado:</span>
-            <Badge className={isVerified ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}>
+            <div className="w-1 h-4 rounded-full bg-primary" />
+            <h2 className="font-bold text-sm text-foreground">Verificación</h2>
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              {isVerified
+                ? <CheckCircle2 className="w-5 h-5 text-primary" />
+                : <XCircle className="w-5 h-5 text-muted-foreground" />}
+              <span className="text-sm font-medium text-foreground">
+                {isVerified ? 'Cuenta verificada' : 'Pendiente de verificación'}
+              </span>
+            </div>
+            <Badge className={isVerified
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'bg-muted text-muted-foreground border-border'}>
               {user.verification_status}
             </Badge>
           </div>
-          <Button onClick={handleToggleVerification} className={`w-full rounded-full ${isVerified ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}>
-            {isVerified ? 'Remover Verificación' : 'Marcar como Verificado'}
+          <Button
+            onClick={handleToggleVerification}
+            className={`w-full rounded-full font-semibold ${isVerified
+              ? 'bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-white'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+            variant="outline"
+          >
+            <UserCheck className="w-4 h-4 mr-2" />
+            {isVerified ? 'Remover verificación' : 'Marcar como verificado'}
           </Button>
         </Card>
+
       </div>
       <BottomNav currentPage="AdminDashboard" />
     </div>

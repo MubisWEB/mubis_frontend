@@ -398,7 +398,7 @@ export default function PeritajeDetalle() {
     return (
       <div className="min-h-screen bg-background pb-28">
         <Header title="Peritaje" backTo={backTo} />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+        <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-5">
           <Skeleton height={96} borderRadius={16} />
           <div className="rounded-2xl border border-border bg-card p-4">
             <Skeleton width="50%" height={13} />

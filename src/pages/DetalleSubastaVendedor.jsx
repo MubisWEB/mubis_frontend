@@ -242,7 +242,7 @@ export default function DetalleSubastaVendedor() {
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-4">
         {/* Pending Decision: Accept/Reject buttons */}
         {isPendingDecision && (
           <Card className="p-4 border-2 border-accent shadow-sm rounded-xl space-y-3">

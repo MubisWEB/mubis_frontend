@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import {
-  Car, AlertCircle
+  Car, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -50,6 +50,15 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (step > 0) {
+      setStep(prev => Math.max(prev - 1, 0));
+      return;
+    }
+
+    onOpenChange(false);
+  };
 
   const set = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));
@@ -157,6 +166,16 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 gap-0 rounded-2xl">
         <DialogHeader className="px-6 pt-6 pb-4 sticky top-0 bg-background z-10 border-b border-border/40">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="mb-2 h-9 w-9 rounded-full"
+            onClick={handleBack}
+            aria-label="Volver"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
           <DialogTitle className="text-xl font-bold font-sans">Enviar vehículo a peritaje</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
             Completa los datos del vehículo. El perito completará las fotos, documentación y evaluación.

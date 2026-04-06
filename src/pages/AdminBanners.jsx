@@ -198,7 +198,7 @@ export default function AdminBanners() {
     <div className="min-h-screen bg-muted pb-28">
       <Header title="Gestión de Banners" subtitle="Banners de la página principal" backTo="/Cuenta" />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
         {/* Size recommendation */}
         <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">

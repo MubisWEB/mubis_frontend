@@ -117,7 +117,7 @@ export default function MisMetas() {
     <div className="min-h-screen bg-background pb-28">
       <Header title="Mis Metas" showBack />
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-6">
         {/* Resumen */}
         {goals.length > 0 && (
           <div className="grid grid-cols-3 gap-3">

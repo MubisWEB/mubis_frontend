@@ -214,7 +214,7 @@ export default function AdminInventario() {
     <div className="min-h-screen bg-background pb-28">
       <Header title="Inventario" subtitle={`${records.length} registros`} backTo="/AdminDashboard" />
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-4">
         {/* Filtros */}
         <div className="flex flex-wrap gap-2">
           <div className="relative flex-1 min-w-[160px]">

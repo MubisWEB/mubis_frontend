@@ -152,7 +152,7 @@ export default function Movimientos() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <div className="max-w-3xl mx-auto px-4 py-4 space-y-6">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-6">
         <div className="flex items-center gap-2 mb-6">
         <button
           onClick={() => navigate('/Cuenta')}

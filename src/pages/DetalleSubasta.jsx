@@ -411,7 +411,7 @@ export default function DetalleSubasta() {
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-4">
         <Card className="p-4 border border-border shadow-sm rounded-xl">
           <p className="font-bold text-foreground mb-3 flex items-center gap-2"><Settings2 className="w-4 h-4 text-secondary" />Especificaciones</p>
           <div className="grid grid-cols-2 gap-3">
@@ -596,8 +596,8 @@ export default function DetalleSubasta() {
       {/* Bottom action bar */}
       {!isWonByMe && (
         <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50 md:static md:bg-transparent md:pt-0 md:pb-0 md:px-0">
-          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 md:h-10 md:w-auto md:px-6 md:text-sm rounded-xl font-bold text-lg md:font-semibold shadow-lg md:shadow-none bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            {isLeading ? (<><Trophy className="w-full h-5 md:w-4 md:h-4 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
+            {isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
           </Button>
         </div>
       )}

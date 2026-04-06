@@ -116,7 +116,7 @@ export default function AdminPartners() {
     <div className="min-h-screen bg-muted pb-28">
       <Header title="Gestión de Partners" subtitle="Superadmin" backTo="/AdminDashboard" />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
         {/* Selector de empresa */}
         <Card className="p-4 border border-border rounded-2xl shadow-sm">

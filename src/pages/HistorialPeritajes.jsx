@@ -64,7 +64,7 @@ export default function HistorialPeritajes() {
     <div className="min-h-screen bg-background pb-28">
       <Header />
 
-      <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold text-foreground font-sans">Historial de peritajes</h1>

@@ -28,7 +28,7 @@ export default function Partners() {
     <div className="min-h-screen bg-muted pb-28">
       <Header title="Partners" subtitle="Tus conexiones activas" backTo="/Cuenta" />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
         {/* Info banner */}
         <div className="flex items-start gap-3 bg-secondary/8 border border-secondary/20 rounded-xl px-4 py-3">

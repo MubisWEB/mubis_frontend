@@ -110,7 +110,7 @@ export default function SeBusca() {
       <Header />
 
       {/* Title Section */}
-      <div className="px-4 md:px-8 pt-5 pb-3">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-2">
           <Heart className="w-6 h-6 text-secondary" />
           <div>
@@ -120,7 +120,7 @@ export default function SeBusca() {
         </div>
       </div>
 
-      <div className="px-4 md:px-8 space-y-6 pb-6">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 space-y-6 pb-6">
         
         {/* Banner Management Button */}
         <Card className="border border-border shadow-sm rounded-2xl p-5 bg-gradient-to-br from-secondary/10 to-secondary/5">

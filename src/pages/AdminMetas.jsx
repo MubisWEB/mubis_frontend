@@ -196,7 +196,7 @@ export default function AdminMetas() {
     <div className="min-h-screen bg-background pb-28">
       <Header title="Metas de ventas" subtitle={`${goals.length} metas`} backTo="/AdminDashboard" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-4">
         <div className="flex justify-end">
           <Button onClick={openCreate} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full">
             <Plus className="w-4 h-4 mr-2" />Nueva meta
