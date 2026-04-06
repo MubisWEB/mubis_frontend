@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DollarSign, TrendingUp, Car, Banknote,
-  Users, FileText, MessageCircle, Package2, Target, Building2, Upload, Image,
-  BarChart3, ArrowUpRight, ArrowDownRight,
+  Users, FileText, MessageCircle, Package2, Building2, Upload, Image,
+  BarChart3, ArrowUpRight, Handshake, AlertTriangle, Activity, Globe,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -16,21 +16,80 @@ import {
 } from 'recharts';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { superadminApi, companiesApi, casesApi, adminApi } from '@/api/services';
+import { superadminApi, companiesApi, casesApi, adminApi, branchesApi } from '@/api/services';
 
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
 
 const CHART_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
-const currentYear = new Date().getFullYear();
-const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i);
+// ── Datos simulados (6 meses en loop) ─────────────────────────────────────────
+const MONTHS_LABELS = (() => {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    return d.toLocaleString('es-CO', { month: 'short', year: '2-digit' });
+  });
+})();
+
+const SIM_SUPERADMIN = {
+  monthly: [
+    { publicados: 18, vendidos: 11, comprados: 9 },
+    { publicados: 24, vendidos: 15, comprados: 12 },
+    { publicados: 21, vendidos: 13, comprados: 11 },
+    { publicados: 29, vendidos: 18, comprados: 15 },
+    { publicados: 26, vendidos: 16, comprados: 13 },
+    { publicados: 34, vendidos: 21, comprados: 17 },
+  ].map((d, i) => ({ ...d, mes: MONTHS_LABELS[i] })),
+  totals: { publicados: 152, vendidos: 94, comprados: 77 },
+};
+
+const SIM_PIPELINE = [
+  { etapa: 'Solicitudes', count: 142, color: '#8b5cf6' },
+  { etapa: 'Inspeccionados', count: 98, color: '#6366f1' },
+  { etapa: 'En subasta', count: 74, color: '#3b82f6' },
+  { etapa: 'Con oferta', count: 51, color: '#06b6d4' },
+  { etapa: 'Cerrados', count: 31, color: '#10b981' },
+];
+
+const SIM_MAYORISTAS = [
+  { nombre: 'AutoMax', participacion: 23, ganadas: 14, precioPromedio: 38500000, conversion: 61 },
+  { nombre: 'CarDeals', participacion: 18, ganadas: 9, precioPromedio: 42100000, conversion: 50 },
+  { nombre: 'MegaAutos', participacion: 15, ganadas: 11, precioPromedio: 35800000, conversion: 73 },
+  { nombre: 'DriveNow', participacion: 12, ganadas: 6, precioPromedio: 41200000, conversion: 50 },
+];
+
+const SIM_API_STATS = { consumed: 12450, limit: 20000, cost: 1240000, errorRate: 1.2 };
+const SIM_ALERTAS = { sinLeer: 8, peritajesSinAsignar: 3, dealsPendientes: 5 };
+const SIM_RESUMEN = { concesionariosActivos: 4, adminsCreados: 12, partnersAsociados: 18 };
+
+// ── Componente: separador de sección ─────────────────────────────────────────
+function SectionTitle({ color = 'bg-secondary', children, sub }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <div className={`w-1 h-5 rounded-full ${color}`} />
+      <h2 className="text-base font-bold text-foreground">{children}</h2>
+      {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+    </div>
+  );
+}
+
+const YEARS = Array.from({ length: 5 }, (_, i) => 2026 + i); // 2026 en adelante
 const MONTHS = [
+  { value: 'all', label: 'Todo el año' },
   { value: '1', label: 'Enero' }, { value: '2', label: 'Febrero' }, { value: '3', label: 'Marzo' },
   { value: '4', label: 'Abril' }, { value: '5', label: 'Mayo' }, { value: '6', label: 'Junio' },
   { value: '7', label: 'Julio' }, { value: '8', label: 'Agosto' }, { value: '9', label: 'Septiembre' },
   { value: '10', label: 'Octubre' }, { value: '11', label: 'Noviembre' }, { value: '12', label: 'Diciembre' },
 ];
+
+// Simulación de KPIs cuando el back aún no devuelve datos
+const SIM_KPIS = {
+  totalSales: 1_340_000_000,
+  totalTransactions: 94,
+  activeVehicles: 152,
+  totalBrokerage: 52_800_000,
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -42,16 +101,29 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
 
   // Filters
-  const [period, setPeriod] = useState('monthly');
-  const [year, setYear] = useState(String(currentYear));
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1));
+  const [year, setYear] = useState('2026');
+  const [month, setMonth] = useState('all');
   const [companyId, setCompanyId] = useState('all');
+  const [branchId, setBranchId] = useState('all');
+  const [branches, setBranches] = useState([]);
+
+  // Load branches when company changes
+  useEffect(() => {
+    if (companyId !== 'all') {
+      branchesApi.getAll().then(all => setBranches((all || []).filter(b => b.companyId === companyId || b.company?.id === companyId))).catch(() => setBranches([]));
+    } else {
+      setBranches([]);
+      setBranchId('all');
+    }
+  }, [companyId]);
 
   const loadData = async () => {
     try {
+      const period = month === 'all' ? 'yearly' : 'monthly';
       const params = { period, year };
-      if (period === 'monthly') params.month = month;
+      if (month !== 'all') params.month = month;
       if (companyId !== 'all') params.companyId = companyId;
+      if (branchId !== 'all') params.branchId = branchId;
 
       const [dash, comps, allCases, stats] = await Promise.all([
         superadminApi.getDashboard(params),
@@ -79,15 +151,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     setLoading(true);
     loadData();
-  }, [period, year, month, companyId]);
+  }, [year, month, companyId, branchId]);
 
   // Auto-refresh every 30s
   useEffect(() => {
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
-  }, [period, year, month, companyId]);
+  }, [year, month, companyId, branchId]);
 
-  const kpis = dashboard?.kpis || {};
+  const kpis = {
+    totalSales: dashboard?.kpis?.totalSales ?? SIM_KPIS.totalSales,
+    totalTransactions: dashboard?.kpis?.totalTransactions ?? SIM_KPIS.totalTransactions,
+    activeVehicles: dashboard?.kpis?.activeVehicles ?? SIM_KPIS.activeVehicles,
+    totalBrokerage: dashboard?.kpis?.totalBrokerage ?? SIM_KPIS.totalBrokerage,
+  };
   const salesByCompany = dashboard?.salesByCompany || [];
   const salesByBranch = dashboard?.salesByBranch || [];
   const salesTrend = dashboard?.salesTrend || [];
@@ -103,8 +180,8 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-muted pb-28">
         <Header title="SuperAdmin" subtitle="Panel de control" />
-        <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[0, 1, 2, 3].map(i => (
               <div key={i} className="p-4 rounded-xl border border-border bg-card">
                 <Skeleton width="50%" height={13} />
@@ -141,21 +218,36 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-muted pb-28">
       <Header title="SuperAdmin" subtitle="Panel de control" />
 
-      <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
         {/* Filters */}
         <Card className="p-3 border border-border shadow-sm">
-          <div className="flex gap-2 flex-wrap">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-[120px] h-9 text-xs rounded-lg border-border">
-                <SelectValue />
+          <div className="flex gap-2 flex-wrap items-center">
+            {/* 1. Empresa */}
+            <Select value={companyId} onValueChange={(v) => { setCompanyId(v); setBranchId('all'); }}>
+              <SelectTrigger className="flex-1 min-w-[150px] h-9 text-xs rounded-lg border-border">
+                <SelectValue placeholder="Todas las empresas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="monthly">Mensual</SelectItem>
-                <SelectItem value="yearly">Anual</SelectItem>
+                <SelectItem value="all">Todas las empresas</SelectItem>
+                {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
 
+            {/* 2. Sucursal (solo si hay empresa seleccionada) */}
+            {companyId !== 'all' && (
+              <Select value={branchId} onValueChange={setBranchId}>
+                <SelectTrigger className="flex-1 min-w-[140px] h-9 text-xs rounded-lg border-border">
+                  <SelectValue placeholder="Todas las sucursales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las sucursales</SelectItem>
+                  {branches.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* 3. Año (2026 en adelante) */}
             <Select value={year} onValueChange={setYear}>
               <SelectTrigger className="w-[90px] h-9 text-xs rounded-lg border-border">
                 <SelectValue />
@@ -165,31 +257,20 @@ export default function AdminDashboard() {
               </SelectContent>
             </Select>
 
-            {period === 'monthly' && (
-              <Select value={month} onValueChange={setMonth}>
-                <SelectTrigger className="w-[120px] h-9 text-xs rounded-lg border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-
-            <Select value={companyId} onValueChange={setCompanyId}>
-              <SelectTrigger className="flex-1 min-w-[140px] h-9 text-xs rounded-lg border-border">
-                <SelectValue placeholder="Todas las empresas" />
+            {/* 4. Mes */}
+            <Select value={month} onValueChange={setMonth}>
+              <SelectTrigger className="w-[130px] h-9 text-xs rounded-lg border-border">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las empresas</SelectItem>
-                {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
         </Card>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="p-4 border border-border shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -368,10 +449,179 @@ export default function AdminDashboard() {
           )}
         </div>
 
+        {/* ── Vehículos por Mes + Pipeline ──────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <SectionTitle color="bg-secondary" sub="(últimos 6 meses)">Vehículos por Mes</SectionTitle>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="rounded-2xl p-3 bg-purple-50 border border-purple-100">
+                <p className="text-xl font-bold text-purple-700">{SIM_SUPERADMIN.totals.publicados}</p>
+                <p className="text-[10px] text-purple-600 font-semibold mt-0.5">Publicados</p>
+              </div>
+              <div className="rounded-2xl p-3 bg-blue-50 border border-blue-100">
+                <p className="text-xl font-bold text-blue-700">{SIM_SUPERADMIN.totals.vendidos}</p>
+                <p className="text-[10px] text-blue-600 font-semibold mt-0.5">Vendidos</p>
+              </div>
+              <div className="rounded-2xl p-3 bg-emerald-50 border border-emerald-100">
+                <p className="text-xl font-bold text-emerald-700">{SIM_SUPERADMIN.totals.comprados}</p>
+                <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Comprados</p>
+              </div>
+            </div>
+            <Card className="p-4 border border-border rounded-2xl shadow-sm h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={SIM_SUPERADMIN.monthly} barGap={2} barCategoryGap="25%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', fontSize: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }} />
+                  <Bar dataKey="publicados" fill="#8b5cf6" radius={[3, 3, 0, 0]} name="Publicados" />
+                  <Bar dataKey="vendidos" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Vendidos" />
+                  <Bar dataKey="comprados" fill="#10b981" radius={[3, 3, 0, 0]} name="Comprados" />
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+          <div>
+            <SectionTitle color="bg-indigo-500">Pipeline de Transacciones</SectionTitle>
+            <Card className="p-4 border border-border rounded-2xl shadow-sm" style={{ minHeight: 290 }}>
+              <div className="space-y-4">
+                {SIM_PIPELINE.map((item, i) => {
+                  const pct = Math.round((item.count / SIM_PIPELINE[0].count) * 100);
+                  const conv = i > 0 ? Math.round((item.count / SIM_PIPELINE[i - 1].count) * 100) : null;
+                  return (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-sm font-medium text-foreground">{item.etapa}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-foreground">{item.count}</span>
+                          {conv !== null && <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{conv}% conv.</span>}
+                        </div>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: item.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* ── Mayoristas + API ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-4 border border-border rounded-2xl shadow-sm">
+            <SectionTitle color="bg-cyan-500">Mayoristas</SectionTitle>
+            <div className="overflow-x-auto -mx-1">
+              <table className="w-full text-sm min-w-[300px]">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs text-muted-foreground font-semibold pb-2 pr-3">Nombre</th>
+                    <th className="text-right text-xs text-muted-foreground font-semibold pb-2 pr-3">Part.%</th>
+                    <th className="text-right text-xs text-muted-foreground font-semibold pb-2 pr-3">Ganadas</th>
+                    <th className="text-right text-xs text-muted-foreground font-semibold pb-2 pr-3">Precio Prom.</th>
+                    <th className="text-right text-xs text-muted-foreground font-semibold pb-2">Conv.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SIM_MAYORISTAS.map((m, i) => (
+                    <tr key={i} className={`${i % 2 === 1 ? 'bg-muted/40' : ''}`}>
+                      <td className="py-2.5 pr-3 font-semibold text-foreground text-sm">{m.nombre}</td>
+                      <td className="py-2.5 pr-3 text-right text-muted-foreground text-xs">{m.participacion}%</td>
+                      <td className="py-2.5 pr-3 text-right font-bold text-foreground">{m.ganadas}</td>
+                      <td className="py-2.5 pr-3 text-right text-muted-foreground text-[11px]">{COP(m.precioPromedio)}</td>
+                      <td className="py-2.5 text-right">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${m.conversion >= 65 ? 'bg-emerald-100 text-emerald-700' : m.conversion >= 55 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                          {m.conversion}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <div>
+            <SectionTitle color="bg-blue-500">Consultas Externas (API)</SectionTitle>
+            <div className="space-y-3">
+              <Card className="p-4 border border-border rounded-2xl shadow-sm">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-500" />
+                    <p className="text-sm font-semibold text-foreground">Consumo API</p>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{NUM(SIM_API_STATS.consumed)} / {NUM(SIM_API_STATS.limit)}</p>
+                </div>
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
+                  <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${Math.round(SIM_API_STATS.consumed / SIM_API_STATS.limit * 100)}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground text-right">{Math.round(SIM_API_STATS.consumed / SIM_API_STATS.limit * 100)}% utilizado</p>
+              </Card>
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-4 border border-emerald-200 bg-emerald-50 rounded-2xl shadow-sm">
+                  <DollarSign className="w-4 h-4 text-emerald-600 mb-2" />
+                  <p className="text-xl font-bold text-emerald-700">{COP(SIM_API_STATS.cost)}</p>
+                  <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Costo total</p>
+                </Card>
+                <Card className="p-4 border border-red-200 bg-red-50 rounded-2xl shadow-sm">
+                  <Activity className="w-4 h-4 text-red-500 mb-2" />
+                  <p className="text-xl font-bold text-red-600">{SIM_API_STATS.errorRate}%</p>
+                  <p className="text-[10px] text-red-500 font-semibold mt-0.5">Tasa de error</p>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Alertas + Resumen ────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <SectionTitle color="bg-amber-500">Alertas Operacionales</SectionTitle>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Sin leer', value: SIM_ALERTAS.sinLeer },
+                { label: 'Sin asignar', value: SIM_ALERTAS.peritajesSinAsignar },
+                { label: 'Deals pend.', value: SIM_ALERTAS.dealsPendientes },
+              ].map((a, i) => (
+                <Card key={i} className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+                  <p className="text-2xl font-bold text-amber-700">{a.value}</p>
+                  <p className="text-[10px] text-amber-600 font-semibold leading-tight mt-0.5">{a.label}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+          <div>
+            <SectionTitle color="bg-primary">Resumen General</SectionTitle>
+            <div className="grid grid-cols-3 gap-2">
+              <Card className="p-3 border border-border rounded-2xl shadow-sm text-center">
+                <Building2 className="w-4 h-4 text-secondary mx-auto mb-1" />
+                <p className="text-2xl font-bold text-secondary">{SIM_RESUMEN.concesionariosActivos}</p>
+                <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">Concesionarios</p>
+              </Card>
+              <Card className="p-3 border border-border rounded-2xl shadow-sm text-center">
+                <Users className="w-4 h-4 text-secondary mx-auto mb-1" />
+                <p className="text-2xl font-bold text-secondary">{SIM_RESUMEN.adminsCreados}</p>
+                <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">Admins</p>
+              </Card>
+              <Card className="p-3 border border-border rounded-2xl shadow-sm text-center">
+                <Handshake className="w-4 h-4 text-primary mx-auto mb-1" />
+                <p className="text-2xl font-bold text-primary">{SIM_RESUMEN.partnersAsociados}</p>
+                <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">Partners</p>
+              </Card>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <Card className="p-4 border border-border shadow-sm">
           <h2 className="font-bold text-foreground mb-3">Acciones rápidas</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             <Button onClick={() => navigate('/AdminDealers')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
               <Users className="w-5 h-5 text-secondary" />
               <span className="text-xs">Usuarios</span>
@@ -417,6 +667,10 @@ export default function AdminDashboard() {
             <Button onClick={() => navigate('/AdminBanners')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
               <Image className="w-5 h-5 text-secondary" />
               <span className="text-xs">Banners</span>
+            </Button>
+            <Button onClick={() => navigate('/AdminPartners')} variant="outline" className="h-auto py-3 rounded-xl flex flex-col items-center gap-1.5">
+              <Handshake className="w-5 h-5 text-secondary" />
+              <span className="text-xs">Partners</span>
             </Button>
           </div>
         </Card>

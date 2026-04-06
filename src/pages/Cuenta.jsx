@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText, Handshake } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -226,6 +226,7 @@ export default function Cuenta() {
     menuItems.splice(0, 0,
       { icon: LayoutDashboard, label: 'Dashboard', action: () => navigate('/AdminDashboard') },
       { icon: ImagePlus, label: 'Gestionar Banners', action: () => navigate('/AdminBanners') },
+      { icon: Handshake, label: 'Gestión de Partners', action: () => navigate('/AdminPartners') },
     );
   }
   if (role === 'admin_general') {

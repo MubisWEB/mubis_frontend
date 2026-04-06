@@ -338,6 +338,9 @@ export const partnersApi = {
   rejectInvitation: async (id) => (await api.patch(`/partners/invitations/${id}/reject`)).data,
   getMyPartners: async () => (await api.get('/partners/my-partners')).data,
   remove: async (id) => (await api.delete(`/partners/${id}`)).data,
+  getAll: async (companyId) => (await api.get(`/partners/all${companyId ? `?companyId=${companyId}` : ''}`)).data,
+  adminCreate: async (data) => (await api.post('/partners/admin-create', data)).data,
+  adminRemove: async (id) => (await api.delete(`/partners/admin/${id}`)).data,
 };
 
 // ── PRICING ───────────────────────────────────────────────────────────────────

@@ -58,6 +58,7 @@ import AdminGeneralDashboard from './pages/AdminGeneralDashboard';
 import AdminSucursalDashboard from './pages/AdminSucursalDashboard';
 import AdminBanners from './pages/AdminBanners';
 import Partners from './pages/Partners';
+import AdminPartners from './pages/AdminPartners';
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,7 @@ const App = () => (
           <Route path="/AdminEmpresas" element={<RequireRole roles={['superadmin']}><AdminEmpresas /></RequireRole>} />
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />
           <Route path="/AdminBanners" element={<RequireRole roles={['superadmin']}><AdminBanners /></RequireRole>} />
+          <Route path="/AdminPartners" element={<RequireRole roles={['superadmin']}><AdminPartners /></RequireRole>} />
 
           {/* Admin — Compartido: superadmin + admin_general + admin_sucursal */}
           <Route path="/AdminSolicitudes" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminSolicitudes /></RequireRole>} />

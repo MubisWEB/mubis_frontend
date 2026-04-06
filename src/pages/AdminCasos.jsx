@@ -165,7 +165,7 @@ export default function AdminCasos() {
                   <Card className="p-4 border border-border shadow-sm cursor-pointer hover:bg-card/80 transition-colors" onClick={() => navigate(`/AdminCasos/${c.id}`)}>
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-foreground text-sm truncate">{c.vehicleLabel}</p>
+                        <p className="font-semibold text-foreground text-sm truncate">{c.sellerName || 'Vendedor'} ↔ {c.buyerName || 'Comprador'} · {c.vehicleLabel}</p>
                         {(() => {
                           const companyName = c.company?.name || c.companyName || c.seller?.company?.name || c.buyer?.company?.name;
                           const branchName = c.branch?.name || c.branchName || c.seller?.branch?.name || c.buyer?.branch?.name;
@@ -179,11 +179,6 @@ export default function AdminCasos() {
                         <p className="text-xs text-muted-foreground">{timeAgo(c.createdAt)}</p>
                       </div>
                       <Badge className={`${status.color} text-[10px] border-0 ml-2`}>{status.label}</Badge>
-                    </div>
-                    <div className="flex items-center gap-3 mb-2 text-[10px] text-muted-foreground">
-                      <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.buyerName}</span>
-                      <span>↔</span>
-                      <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{c.sellerName}</span>
                     </div>
                     {lastMsg && (
                       <p className="text-xs text-muted-foreground truncate">

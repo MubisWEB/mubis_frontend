@@ -8,11 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Users, Car, DollarSign, TrendingUp,
-  CheckCircle, Building2, BarChart3, UserPlus, ArrowUpRight,
+  Users, Car, DollarSign, CheckCircle, Building2, BarChart3, UserPlus, ArrowUpRight,
+  AlertTriangle, Target, TrendingUp, Clock,
 } from 'lucide-react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
@@ -20,12 +20,98 @@ import { toast } from 'sonner';
 import { analyticsApi, usersApi, branchesApi, companiesApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 
+// ── Datos simulados ───────────────────────────────────────────────────────────
+const MONTHS_LABELS = (() => {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    return d.toLocaleString('es-CO', { month: 'short', year: '2-digit' });
+  });
+})();
+
+const SIM_AG = {
+  pipeline: [
+    { etapa: 'Solicitudes', count: 38, color: '#8b5cf6' },
+    { etapa: 'Inspeccionados', count: 26, color: '#6366f1' },
+    { etapa: 'En subasta', count: 19, color: '#3b82f6' },
+    { etapa: 'Con oferta', count: 13, color: '#06b6d4' },
+    { etapa: 'Cerrados', count: 8, color: '#10b981' },
+  ],
+  vendedores: [
+    { nombre: 'Ana Martinez', solicitudes: 12, cierres: 5, tasa: 42 },
+    { nombre: 'Carlos Ruiz', solicitudes: 9, cierres: 4, tasa: 44 },
+    { nombre: 'Laura Gomez', solicitudes: 8, cierres: 3, tasa: 38 },
+  ],
+  tasadores: [
+    { nombre: 'Pedro Diaz', tiempoRespuesta: '2.3h', tasaCierre: 68 },
+    { nombre: 'Maria Lopez', tiempoRespuesta: '1.8h', tasaCierre: 72 },
+  ],
+  inspectores: [
+    { nombre: 'Juan Perez', tiempoPeritaje: '45min', llenado: 94, costoReparacion: 2800000 },
+    { nombre: 'Sofia Castro', tiempoPeritaje: '52min', llenado: 88, costoReparacion: 3200000 },
+  ],
+  metas: { objetivo: 25, actual: 19 },
+  demanda: [
+    { modelo: 'Toyota Corolla', solicitudes: 8 },
+    { modelo: 'Mazda 3', solicitudes: 6 },
+    { modelo: 'Chevrolet Onix', solicitudes: 5 },
+    { modelo: 'Renault Duster', solicitudes: 4 },
+  ],
+  monthly: [
+    { publicados: 8, vendidos: 5, comprados: 4 },
+    { publicados: 11, vendidos: 7, comprados: 6 },
+    { publicados: 9, vendidos: 6, comprados: 5 },
+    { publicados: 14, vendidos: 9, comprados: 7 },
+    { publicados: 12, vendidos: 7, comprados: 6 },
+    { publicados: 16, vendidos: 10, comprados: 8 },
+  ].map((d, i) => ({ ...d, mes: MONTHS_LABELS[i] })),
+  alertas: { sinLeer: 4, peritajesSinAsignar: 2, rechazadas: 3 },
+};
+
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
+
+function SectionTitle({ color = 'bg-secondary', children, sub }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <div className={`w-1 h-5 rounded-full ${color}`} />
+      <h2 className="text-base font-bold text-foreground">{children}</h2>
+      {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+    </div>
+  );
+}
+
+function PerfTable({ headers, rows }) {
+  return (
+    <div className="overflow-x-auto -mx-1">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border">
+            {headers.map((h, i) => (
+              <th key={i} className={`text-xs text-muted-foreground font-semibold pb-2 ${i === 0 ? 'text-left pr-3' : 'text-right pr-2'}`}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} className={i % 2 === 1 ? 'bg-muted/40' : ''}>
+              {row.map((cell, j) => (
+                <td key={j} className={`py-2.5 ${j === 0 ? 'font-semibold text-foreground text-sm pr-3' : 'text-right text-muted-foreground text-xs pr-2'}`}>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
 
 // ── Modal: Crear Admin Sucursal ───────────────────────────────────────────────
 function CreateAdminModal({ branches, onCreated }) {
-  const [form, setForm] = useState({ email: '', nombre: '', branchId: '', telefono: '' });
+  const [form, setForm] = useState({ email: '', nombre: '', branchId: '', telefono: '', trialStart: '', trialEnd: '', brokerageDiscount: '' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -36,10 +122,16 @@ function CreateAdminModal({ branches, onCreated }) {
     }
     try {
       setLoading(true);
-      await usersApi.createAdmin({ ...form, telefono: form.telefono || undefined });
+      await usersApi.createAdmin({
+        ...form,
+        telefono: form.telefono || undefined,
+        trialStart: form.trialStart || undefined,
+        trialEnd: form.trialEnd || undefined,
+        brokerageDiscount: form.brokerageDiscount ? Number(form.brokerageDiscount) : undefined,
+      });
       toast.success('Admin creado', { description: `${form.nombre} fue creado como Admin de Sucursal.` });
       setOpen(false);
-      setForm({ email: '', nombre: '', branchId: '', telefono: '' });
+      setForm({ email: '', nombre: '', branchId: '', telefono: '', trialStart: '', trialEnd: '', brokerageDiscount: '' });
       onCreated();
     } catch (err) {
       const msg = err?.response?.data?.message;
@@ -85,6 +177,20 @@ function CreateAdminModal({ branches, onCreated }) {
           <div>
             <Label className="text-sm font-semibold mb-1.5 block">Teléfono (opcional)</Label>
             <Input placeholder="+57 300 000 0000" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} className="rounded-xl border-border h-11" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-sm font-semibold mb-1.5 block">Inicio periodo prueba</Label>
+              <input type="date" value={form.trialStart} onChange={(e) => setForm({ ...form, trialStart: e.target.value })} className="w-full rounded-xl border border-input h-11 px-3 text-sm bg-background" />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold mb-1.5 block">Fin periodo prueba</Label>
+              <input type="date" value={form.trialEnd} onChange={(e) => setForm({ ...form, trialEnd: e.target.value })} className="w-full rounded-xl border border-input h-11 px-3 text-sm bg-background" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-sm font-semibold mb-1.5 block">Descuento corretaje (%)</Label>
+            <Input type="number" min="0" max="100" placeholder="0-100" value={form.brokerageDiscount} onChange={(e) => setForm({ ...form, brokerageDiscount: e.target.value })} className="rounded-xl border-border h-11" />
           </div>
           <Button onClick={handleSubmit} disabled={loading} className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold h-11 rounded-full">
             {loading ? 'Creando...' : 'Crear admin de sucursal'}
@@ -168,7 +274,7 @@ export default function AdminGeneralDashboard() {
     <div className="min-h-screen bg-muted pb-28">
       <Header title="Panel General" subtitle="Vista del concesionario" />
 
-      <div className="max-w-4xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
         {/* Selector de empresa (solo superadmin) */}
         {isSuperadmin && companies.length > 0 && (
@@ -206,7 +312,7 @@ export default function AdminGeneralDashboard() {
 
         {/* KPIs */}
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[0, 1, 2, 3].map((i) => (
               <Card key={i} className="p-4 border border-border rounded-2xl animate-pulse">
                 <div className="h-4 bg-muted rounded w-1/2 mb-3" />
@@ -215,7 +321,7 @@ export default function AdminGeneralDashboard() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <KpiCard icon={Users} label="Usuarios totales" value={NUM(dashboard?.users?.total)} sub={`D: ${byRole.DEALER || 0} · P: ${byRole.PERITO || 0} · R: ${byRole.RECOMPRADOR || 0}`} />
             <KpiCard icon={Car} label="Subastas activas" value={NUM(byStatus.ACTIVE)} sub={`${NUM(byStatus.ENDED || 0)} finalizadas`} />
             <KpiCard icon={DollarSign} label="Ingresos totales" value={COP(dashboard?.revenue?.total)} color="text-primary" />
@@ -293,9 +399,154 @@ export default function AdminGeneralDashboard() {
           </Card>
         )}
 
+        {/* ── Vehículos por Mes + Pipeline ──────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <SectionTitle color="bg-secondary" sub="(últimos 6 meses)">Vehículos por Mes</SectionTitle>
+            <Card className="p-4 border border-border rounded-2xl shadow-sm h-[290px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={SIM_AG.monthly} barGap={2} barCategoryGap="25%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', fontSize: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }} />
+                  <Bar dataKey="publicados" fill="#8b5cf6" radius={[3, 3, 0, 0]} name="Publicados" />
+                  <Bar dataKey="vendidos" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Vendidos" />
+                  <Bar dataKey="comprados" fill="#10b981" radius={[3, 3, 0, 0]} name="Comprados" />
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+          <div>
+            <SectionTitle color="bg-indigo-500">Pipeline del Concesionario</SectionTitle>
+            <Card className="p-4 border border-border rounded-2xl shadow-sm h-[290px] flex flex-col justify-center">
+              <div className="space-y-4">
+                {SIM_AG.pipeline.map((item, i) => {
+                  const pct = Math.round((item.count / SIM_AG.pipeline[0].count) * 100);
+                  const conv = i > 0 ? Math.round((item.count / SIM_AG.pipeline[i - 1].count) * 100) : null;
+                  return (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-sm font-medium text-foreground">{item.etapa}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-foreground">{item.count}</span>
+                          {conv !== null && <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{conv}% conv.</span>}
+                        </div>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: item.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* ── Rendimiento Vendedores ────────────────────────────────────────── */}
+        <Card className="p-4 border border-border rounded-2xl shadow-sm">
+          <SectionTitle color="bg-blue-500">Rendimiento Vendedores</SectionTitle>
+          <PerfTable
+            headers={['Nombre', 'Solicitudes', 'Cierres', 'Tasa']}
+            rows={SIM_AG.vendedores.map(v => [
+              v.nombre,
+              v.solicitudes,
+              v.cierres,
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${v.tasa >= 43 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{v.tasa}%</span>,
+            ])}
+          />
+        </Card>
+
+        {/* ── Tasadores + Inspectores ───────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-4 border border-border rounded-2xl shadow-sm">
+            <SectionTitle color="bg-cyan-500">Rendimiento Tasadores</SectionTitle>
+            <PerfTable
+              headers={['Nombre', 'T. Respuesta', 'Tasa Cierre']}
+              rows={SIM_AG.tasadores.map(t => [
+                t.nombre,
+                <span className="flex items-center gap-1 justify-end"><Clock className="w-3 h-3" />{t.tiempoRespuesta}</span>,
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${t.tasaCierre >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{t.tasaCierre}%</span>,
+              ])}
+            />
+          </Card>
+          <Card className="p-4 border border-border rounded-2xl shadow-sm">
+            <SectionTitle color="bg-purple-500">Rendimiento Inspectores</SectionTitle>
+            <PerfTable
+              headers={['Nombre', 'T. Peritaje', 'Llenado', 'Costo Rep.']}
+              rows={SIM_AG.inspectores.map(ins => [
+                ins.nombre,
+                ins.tiempoPeritaje,
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ins.llenado >= 90 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{ins.llenado}%</span>,
+                <span className="text-xs text-muted-foreground">{COP(ins.costoReparacion)}</span>,
+              ])}
+            />
+          </Card>
+        </div>
+
+        {/* ── Metas + Demanda ───────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-4 border border-border rounded-2xl shadow-sm">
+            <SectionTitle color="bg-primary">Metas Mensuales</SectionTitle>
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Ventas del mes</span>
+              </div>
+              <span className="text-sm font-bold text-foreground">{SIM_AG.metas.actual} / {SIM_AG.metas.objetivo}</span>
+            </div>
+            <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.round(SIM_AG.metas.actual / SIM_AG.metas.objetivo * 100)}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground text-right">{Math.round(SIM_AG.metas.actual / SIM_AG.metas.objetivo * 100)}% completado</p>
+          </Card>
+          <Card className="p-4 border border-border rounded-2xl shadow-sm">
+            <SectionTitle color="bg-orange-500">Modelos más Solicitados</SectionTitle>
+            <div className="space-y-3">
+              {SIM_AG.demanda.map((d, i) => {
+                const pct = Math.round((d.solicitudes / SIM_AG.demanda[0].solicitudes) * 100);
+                return (
+                  <div key={i}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-foreground">{d.modelo}</span>
+                      <span className="text-xs font-bold text-muted-foreground">{d.solicitudes} sol.</span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-orange-400" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+
+        {/* ── Alertas ───────────────────────────────────────────────────────── */}
+        <div>
+          <SectionTitle color="bg-amber-500">Alertas</SectionTitle>
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+            {[
+              { label: 'Sin leer', value: SIM_AG.alertas.sinLeer },
+              { label: 'Sin asignar', value: SIM_AG.alertas.peritajesSinAsignar },
+              { label: 'Rechazadas', value: SIM_AG.alertas.rechazadas },
+            ].map((a, i) => (
+              <Card key={i} className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
+                <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-amber-700">{a.value}</p>
+                <p className="text-[10px] text-amber-600 font-semibold leading-tight mt-0.5">{a.label}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+
         {/* Accesos rápidos */}
         <h2 className="text-base font-bold text-foreground pt-1">Accesos rápidos</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Solicitudes', sub: `${pendingUsers.length} pendientes`, path: '/AdminSolicitudes', icon: Users, alert: pendingUsers.length > 0 },
             { label: 'Subastas', sub: `${NUM(byStatus.ACTIVE || 0)} activas`, path: '/AdminSubastas', icon: Car },
