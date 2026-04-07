@@ -25,19 +25,28 @@ export default function ParaDealers() {
       <MainNav />
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-background py-16 md:py-24">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground leading-tight">
+        <section className="relative min-h-[480px] md:min-h-[560px] flex items-center justify-center overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            src="/hero-dealer.mp4"
+          />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 md:py-24">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
               Haz crecer tu <span className="text-secondary">concesionario</span>
             </h1>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
               Mubis te conecta con el mejor inventario verificado de Colombia a través de subastas privadas entre dealers.
             </p>
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
               <a href="/registro" className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:opacity-90 transition-opacity">
                 Aplicar ahora <ArrowRight className="w-4 h-4" />
               </a>
-              <a href="/como-funciona" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
+              <a href="/como-funciona" className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
                 ¿Cómo funciona?
               </a>
             </div>
