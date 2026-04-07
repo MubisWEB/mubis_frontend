@@ -1,16 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, LayoutGrid, LayoutList, Search, Trophy } from 'lucide-react';
+import { ArrowLeft, Trophy } from 'lucide-react';
 import Skeleton from 'react-loading-skeleton';
 import { useNavigate } from 'react-router-dom';
 import { auctionsApi } from '@/api/services';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
-import { normalizeWonAuction, sortWonAuctions } from '@/lib/auctions';
+import { WonAuctionGridCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
+import { normalizeWonAuction } from '@/lib/auctions';
+
+const TABS = [
+  { key: 'in_progress', label: 'En proceso' },
+  { key: 'rejected', label: 'Rechazada' },
+  { key: 'completed', label: 'Finalizado' },
+];
 
 const WonCardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -35,13 +39,17 @@ const formatPrice = (price) => {
   }).format(n);
 };
 
+const EMPTY_MESSAGES = {
+  in_progress: { title: 'No hay subastas en proceso', subtitle: 'Cuando ganes una subasta que esté en trámite, aparecerá aquí' },
+  rejected: { title: 'No hay subastas rechazadas', subtitle: 'Las subastas canceladas aparecerán aquí' },
+  completed: { title: 'No hay subastas finalizadas', subtitle: 'Las subastas completadas aparecerán aquí' },
+};
+
 export default function Ganados() {
   const navigate = useNavigate();
   const [wonAuctions, setWonAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid');
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
+  const [activeTab, setActiveTab] = useState('in_progress');
 
   useEffect(() => {
     const load = async () => {
@@ -55,22 +63,20 @@ export default function Ganados() {
         setLoading(false);
       }
     };
-
     load();
   }, []);
 
-  const filtered = useMemo(() => {
-    let result = wonAuctions;
-
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter((auction) =>
-        `${auction.brand || ''} ${auction.model || ''}`.toLowerCase().includes(q),
-      );
+  const grouped = useMemo(() => {
+    const groups = { in_progress: [], rejected: [], completed: [] };
+    for (const a of wonAuctions) {
+      if (a.isCancelled) groups.rejected.push(a);
+      else if (a.isCompleted) groups.completed.push(a);
+      else groups.in_progress.push(a);
     }
+    return groups;
+  }, [wonAuctions]);
 
-    return sortWonAuctions(result, sortBy);
-  }, [wonAuctions, search, sortBy]);
+  const currentList = grouped[activeTab] || [];
 
   const handleExtend = (auction) => {
     navigate(`/DetalleSubasta/${auction.id}?from=ganados`);
@@ -92,11 +98,6 @@ export default function Ganados() {
     if (window.innerWidth < 768) {
       return <WonAuctionMobileCard {...cardProps} />;
     }
-
-    if (viewMode === 'list') {
-      return <WonAuctionListCard {...cardProps} />;
-    }
-
     return <WonAuctionGridCard {...cardProps} />;
   };
 
@@ -121,49 +122,42 @@ export default function Ganados() {
         </div>
         <p className="text-sm text-muted-foreground">
           {wonAuctions.length === 0
-            ? 'Aun no has ganado ninguna subasta'
+            ? 'Aún no has ganado ninguna subasta'
             : `${wonAuctions.length} ${wonAuctions.length === 1 ? 'subasta ganada' : 'subastas ganadas'}`}
         </p>
       </div>
 
-      <div className="px-4 md:px-8 pt-4 pb-2 flex items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar marca o modelo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 rounded-2xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground text-sm"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="rounded-2xl border-border bg-muted/50 text-foreground font-semibold h-10 text-sm w-auto">
-              <SelectValue placeholder="Ordenar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Mas recientes</SelectItem>
-              <SelectItem value="price_high">Precio: mayor</SelectItem>
-              <SelectItem value="price_low">Precio: menor</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="hidden md:flex items-center border border-border rounded-2xl overflow-hidden">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}
-            >
-              <LayoutList className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Tabs */}
+      <div className="px-4 md:px-8 pt-4 pb-2">
+        <div className="flex rounded-xl bg-muted p-1 gap-1">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            const count = grouped[tab.key]?.length || 0;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 text-center py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+                {count > 0 && (
+                  <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                    isActive ? 'bg-primary/10 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Content */}
       <div className="px-4 md:px-8 py-4">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -171,16 +165,16 @@ export default function Ganados() {
               <WonCardSkeleton key={i} />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : currentList.length === 0 ? (
           <div className="text-center py-16">
             <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              {search ? 'Sin resultados' : 'No hay subastas ganadas'}
+              {EMPTY_MESSAGES[activeTab].title}
             </h3>
             <p className="text-muted-foreground text-sm mb-6">
-              {search ? 'Intenta con otro termino de busqueda' : 'Cuando ganes una subasta, aparecera aqui'}
+              {EMPTY_MESSAGES[activeTab].subtitle}
             </p>
-            {!search && (
+            {activeTab === 'in_progress' && (
               <Button
                 onClick={() => navigate('/Comprar')}
                 className="rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
@@ -191,11 +185,13 @@ export default function Ganados() {
           </div>
         ) : (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-4'}
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
           >
-            {filtered.map(renderAuctionCard)}
+            {currentList.map(renderAuctionCard)}
           </motion.div>
         )}
       </div>
