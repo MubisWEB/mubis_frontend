@@ -60,6 +60,7 @@ import AdminBanners from './pages/AdminBanners';
 import Partners from './pages/Partners';
 import AdminPartners from './pages/AdminPartners';
 import AdminInventarioSucursal from './pages/AdminInventarioSucursal';
+import Preferencias from './pages/Preferencias';
 
 const queryClient = new QueryClient();
 
@@ -144,6 +145,7 @@ const App = () => (
           <Route path="/AdminInventarioSucursal" element={<RequireRole roles={['dealer','admin_sucursal','admin_general','superadmin']}><AdminInventarioSucursal /></RequireRole>} />
 
           {/* Dealer */}
+          <Route path="/Preferencias" element={<RequireRole roles={['dealer','recomprador']}><Preferencias /></RequireRole>} />
           <Route path="/MiRendimiento" element={<RequireRole roles={['dealer']}><MiRendimiento /></RequireRole>} />
           <Route path="/MisMetas" element={<RequireRole roles={['dealer']}><MisMetas /></RequireRole>} />
 

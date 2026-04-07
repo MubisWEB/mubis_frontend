@@ -164,20 +164,20 @@ export default function Comprar() {
     if (filters.yearTo) list = list.filter(v => v.year <= parseInt(filters.yearTo));
     if (filters.mileageMax) list = list.filter(v => (v.mileage || v.km || 0) <= parseInt(filters.mileageMax));
     
-    // Filtros de categorías rápidas
+    // Filtros de categorías rápidas (mundos)
     if (filters.fuelType) {
       list = list.filter(v => {
-        const fuel = (v.fuel_type || v.fuelType || '').toLowerCase();
-        if (filters.fuelType === 'electrico') return fuel.includes('elec') || fuel.includes('electric');
-        if (filters.fuelType === 'hibrido') return fuel.includes('hibr') || fuel.includes('hybrid');
+        const fuel = (v.combustible || '').toLowerCase();
+        if (filters.fuelType === 'electrico') return fuel.includes('eléc') || fuel.includes('elec') || fuel.includes('electric');
+        if (filters.fuelType === 'hibrido') return fuel.includes('híbr') || fuel.includes('hibr') || fuel.includes('hybrid');
         return true;
       });
     }
     if (filters.bodyType) {
       list = list.filter(v => {
-        const body = (v.body_type || v.bodyType || v.type || '').toLowerCase();
-        if (filters.bodyType === 'suv') return body.includes('suv') || body.includes('camioneta');
-        if (filters.bodyType === 'sedan') return body.includes('sedan') || body.includes('sedán');
+        const specsBody = (v.specs?.body_type || '').toLowerCase();
+        if (filters.bodyType === 'suv') return specsBody.includes('suv') || specsBody.includes('camioneta');
+        if (filters.bodyType === 'sedan') return specsBody.includes('sedan') || specsBody.includes('sedán');
         return true;
       });
     }
@@ -185,9 +185,13 @@ export default function Comprar() {
       const premiumBrands = ['BMW', 'Mercedes-Benz', 'Audi', 'Porsche', 'Lexus', 'Jaguar', 'Land Rover', 'Volvo'];
       list = list.filter(v => premiumBrands.includes(v.brand));
     }
+    if (filters.priceMin) {
+      const minPrice = parseInt(filters.priceMin) * 1000000;
+      list = list.filter(v => Number(v.current_bid || v.starting_price || 0) >= minPrice);
+    }
     if (filters.priceMax && filters.category !== 'premium') {
       const maxPrice = parseInt(filters.priceMax) * 1000000;
-      list = list.filter(v => (v.current_bid || v.starting_price || 0) <= maxPrice);
+      list = list.filter(v => Number(v.current_bid || v.starting_price || 0) <= maxPrice);
     }
     
     if (sortBy === 'ending_soon') list.sort((a, b) => new Date(a.auction_end || a.ends_at) - new Date(b.auction_end || b.ends_at));

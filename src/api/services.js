@@ -386,6 +386,17 @@ export const branchInventoryApi = {
   getById: async (id) => (await api.get(`/branch-inventory/${id}`)).data,
   create: async (data) => (await api.post('/branch-inventory', data)).data,
   delete: async (id) => (await api.delete(`/branch-inventory/${id}`)).data,
+  search: async (filters) => {
+    const params = new URLSearchParams();
+    if (filters.brand) params.set('brand', filters.brand);
+    if (filters.model) params.set('model', filters.model);
+    if (filters.version) params.set('version', filters.version);
+    if (filters.yearMin) params.set('yearMin', String(filters.yearMin));
+    if (filters.yearMax) params.set('yearMax', String(filters.yearMax));
+    if (filters.kmMin) params.set('kmMin', String(filters.kmMin));
+    if (filters.kmMax) params.set('kmMax', String(filters.kmMax));
+    return (await api.get(`/branch-inventory/search?${params.toString()}`)).data;
+  },
 };
 
 export const bannersApi = {

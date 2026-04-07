@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText, Handshake, Warehouse } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText, Handshake, Warehouse, SlidersHorizontal } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -213,6 +213,7 @@ export default function Cuenta() {
   if (role === 'dealer' || role === 'recomprador') {
     menuItems.splice(1, 0,
       ...(role === 'dealer' ? [{ icon: Warehouse, label: 'Inventario', action: () => navigate('/AdminInventarioSucursal') }] : []),
+      { icon: SlidersHorizontal, label: 'Preferencias', action: () => navigate('/Preferencias') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
       { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
       { icon: TrendingUp, label: 'Analítica', action: () => navigate('/MiRendimiento') },

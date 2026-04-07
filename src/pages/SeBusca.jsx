@@ -1,128 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Image as ImageIcon, Plus, X, Search, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Image as ImageIcon, Megaphone, Search, Loader2, Car, Calendar, Gauge, MapPin, Phone, Building2, ChevronRight, X } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
-import { toast } from 'sonner';
+import { branchInventoryApi } from '@/api/services';
 import { ALL_BRANDS, getModelsForBrand } from '@/constants/vehicleData';
+import { toast } from 'sonner';
 
-// Funciones para localStorage
-const PREFERENCES_KEY = (userId) => `mubis_vehicle_preferences_${userId}`;
+const CURRENT_YEAR = new Date().getFullYear();
 
-function loadPreferences(userId) {
-  try {
-    const raw = localStorage.getItem(PREFERENCES_KEY(userId));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
+const KM_RANGES = [
+  { label: 'Cualquiera', min: '', max: '' },
+  { label: '0 - 10,000 km', min: 0, max: 10000 },
+  { label: '10,000 - 30,000 km', min: 10000, max: 30000 },
+  { label: '30,000 - 60,000 km', min: 30000, max: 60000 },
+  { label: '60,000 - 100,000 km', min: 60000, max: 100000 },
+  { label: 'Más de 100,000 km', min: 100000, max: '' },
+];
 
-function savePreferences(userId, preferences) {
-  localStorage.setItem(PREFERENCES_KEY(userId), JSON.stringify(preferences));
-}
+const YEAR_RANGES = [
+  { label: 'Cualquiera', min: '', max: '' },
+  { label: `${CURRENT_YEAR} - ${CURRENT_YEAR}`, min: CURRENT_YEAR, max: CURRENT_YEAR },
+  { label: `${CURRENT_YEAR - 1} - ${CURRENT_YEAR}`, min: CURRENT_YEAR - 1, max: CURRENT_YEAR },
+  { label: `${CURRENT_YEAR - 3} - ${CURRENT_YEAR}`, min: CURRENT_YEAR - 3, max: CURRENT_YEAR },
+  { label: `${CURRENT_YEAR - 5} - ${CURRENT_YEAR}`, min: CURRENT_YEAR - 5, max: CURRENT_YEAR },
+  { label: `${CURRENT_YEAR - 10} - ${CURRENT_YEAR}`, min: CURRENT_YEAR - 10, max: CURRENT_YEAR },
+  { label: `Antes de ${CURRENT_YEAR - 10}`, min: '', max: CURRENT_YEAR - 10 },
+];
 
 export default function SeBusca() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
+
+  // Search form
+  const [brand, setBrand] = useState('');
+  const [model, setModel] = useState('');
+  const [version, setVersion] = useState('');
+  const [kmRange, setKmRange] = useState('0'); // index into KM_RANGES
+  const [yearRange, setYearRange] = useState('0');
   const [availableModels, setAvailableModels] = useState([]);
-  const [preferences, setPreferences] = useState([]);
 
-  // Cargar preferencias al montar
-  useEffect(() => {
-    if (user?.id) {
-      const loaded = loadPreferences(user.id);
-      setPreferences(loaded);
-    }
-  }, [user?.id]);
+  // Results
+  const [results, setResults] = useState(null);
+  const [searching, setSearching] = useState(false);
 
-  // Actualizar modelos disponibles cuando cambia la marca
-  useEffect(() => {
-    if (selectedBrand) {
-      const models = getModelsForBrand(selectedBrand);
-      setAvailableModels(models);
-      setSelectedModel(''); // Reset model when brand changes
+  // Detail dialog
+  const [selected, setSelected] = useState(null);
+
+  function handleBrandChange(val) {
+    setBrand(val);
+    setModel('');
+    if (val) {
+      setAvailableModels(getModelsForBrand(val));
     } else {
       setAvailableModels([]);
-      setSelectedModel('');
     }
-  }, [selectedBrand]);
+  }
 
-  // Agregar nueva preferencia
-  const handleAddPreference = () => {
-    if (!selectedBrand) {
-      toast.error('Selecciona una marca');
+  async function handleSearch() {
+    if (!brand) {
+      toast.error('Selecciona al menos una marca');
       return;
     }
 
-    // Verificar si ya existe la misma combinación
-    const exists = preferences.some(p => 
-      p.brand === selectedBrand && 
-      (p.model === selectedModel || (!p.model && !selectedModel))
-    );
-    
-    if (exists) {
-      toast.error('Esta preferencia ya está en tu lista');
-      return;
+    setSearching(true);
+    try {
+      const km = KM_RANGES[Number(kmRange)];
+      const yr = YEAR_RANGES[Number(yearRange)];
+
+      const filters = {
+        brand,
+        model: model || undefined,
+        version: version || undefined,
+        kmMin: km.min !== '' ? km.min : undefined,
+        kmMax: km.max !== '' ? km.max : undefined,
+        yearMin: yr.min !== '' ? yr.min : undefined,
+        yearMax: yr.max !== '' ? yr.max : undefined,
+      };
+
+      const data = await branchInventoryApi.search(filters);
+      setResults(data || []);
+    } catch (err) {
+      toast.error('Error al buscar en inventario');
+    } finally {
+      setSearching(false);
     }
+  }
 
-    const newPref = {
-      id: Date.now().toString(),
-      brand: selectedBrand,
-      model: selectedModel || null, // null significa "todos los modelos"
-      createdAt: new Date().toISOString(),
-    };
-
-    const updated = [...preferences, newPref];
-    setPreferences(updated);
-    savePreferences(user.id, updated);
-    
-    // Limpiar formulario
-    setSelectedBrand('');
-    setSelectedModel('');
-
-    const description = newPref.model 
-      ? `${newPref.brand} ${newPref.model}` 
-      : `${newPref.brand} - Todos los modelos`;
-
-    toast.success('Preferencia agregada', {
-      description: description,
-    });
-  };
-
-  // Eliminar preferencia
-  const handleRemovePreference = (id) => {
-    const updated = preferences.filter(p => p.id !== id);
-    setPreferences(updated);
-    savePreferences(user.id, updated);
-    toast.success('Preferencia eliminada');
-  };
+  function handleClear() {
+    setBrand('');
+    setModel('');
+    setVersion('');
+    setKmRange('0');
+    setYearRange('0');
+    setAvailableModels([]);
+    setResults(null);
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header />
 
-      {/* Title Section */}
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-2">
-          <Heart className="w-6 h-6 text-secondary" />
+          <Megaphone className="w-6 h-6 text-secondary" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Se Busca</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Marca tus preferencias de vehículos</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Busca vehículos en inventario y gestiona anuncios</p>
           </div>
         </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 space-y-6 pb-6">
-        
-        {/* Banner Management Button */}
+
+        {/* Banner Management */}
         <Card className="border border-border shadow-sm rounded-2xl p-5 bg-gradient-to-br from-secondary/10 to-secondary/5">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center flex-shrink-0">
@@ -133,7 +129,7 @@ export default function SeBusca() {
               <p className="text-sm text-muted-foreground mb-3">
                 Sube y administra tus banners publicitarios en la página principal
               </p>
-              <Button 
+              <Button
                 onClick={() => navigate('/AdminBanners')}
                 className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-full h-9"
               >
@@ -143,138 +139,230 @@ export default function SeBusca() {
           </div>
         </Card>
 
-        {/* Add Preference Form */}
+        {/* Search Form */}
         <Card className="border border-border shadow-sm rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Plus className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-bold text-foreground">Agregar Preferencia</h3>
+            <Search className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-bold text-foreground">Buscar en Inventario</h3>
           </div>
 
           <div className="space-y-4">
-            {/* Brand Selection */}
             <div>
-              <label className="text-sm font-semibold text-foreground mb-2 block">Marca *</label>
-              <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                <SelectTrigger className="rounded-xl border-border h-11">
+              <Label className="text-sm font-semibold">Marca *</Label>
+              <Select value={brand} onValueChange={handleBrandChange}>
+                <SelectTrigger className="rounded-xl border-border h-11 mt-1">
                   <SelectValue placeholder="Selecciona una marca" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ALL_BRANDS.map((brand) => (
-                    <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                  {ALL_BRANDS.map((b) => (
+                    <SelectItem key={b} value={b}>{b}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Model Selection - appears when brand is selected */}
-            {selectedBrand && (
+            {brand && availableModels.length > 0 && (
               <div>
-                <label className="text-sm font-semibold text-foreground mb-2 block">
-                  Modelo <span className="text-muted-foreground font-normal">(opcional)</span>
-                </label>
-                <Select value={selectedModel || "_all_"} onValueChange={(val) => setSelectedModel(val === "_all_" ? "" : val)}>
-                  <SelectTrigger className="rounded-xl border-border h-11">
+                <Label className="text-sm font-semibold">Modelo</Label>
+                <Select value={model || '_all_'} onValueChange={(val) => setModel(val === '_all_' ? '' : val)}>
+                  <SelectTrigger className="rounded-xl border-border h-11 mt-1">
                     <SelectValue placeholder="Todos los modelos" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="_all_">Todos los modelos</SelectItem>
-                    {availableModels.map((model) => (
-                      <SelectItem key={model} value={model}>{model}</SelectItem>
+                    {availableModels.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Deja vacío para recibir alertas de cualquier modelo de {selectedBrand}
-                </p>
               </div>
             )}
 
-            {/* Add Button */}
-            <Button 
-              onClick={handleAddPreference}
-              disabled={!selectedBrand}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-11 rounded-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Agregar a mi Lista
-            </Button>
+            <div>
+              <Label className="text-sm font-semibold">Versión / Motor</Label>
+              <Input
+                value={version}
+                onChange={(e) => setVersion(e.target.value)}
+                placeholder="Ej: 2.0 Turbo"
+                className="rounded-xl h-11 mt-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-semibold">Rango de Años</Label>
+                <Select value={yearRange} onValueChange={setYearRange}>
+                  <SelectTrigger className="rounded-xl border-border h-11 mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {YEAR_RANGES.map((r, i) => (
+                      <SelectItem key={i} value={String(i)}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Kilometraje</Label>
+                <Select value={kmRange} onValueChange={setKmRange}>
+                  <SelectTrigger className="rounded-xl border-border h-11 mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KM_RANGES.map((r, i) => (
+                      <SelectItem key={i} value={String(i)}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSearch}
+                disabled={!brand || searching}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-11 rounded-full"
+              >
+                {searching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                Buscar
+              </Button>
+              {results !== null && (
+                <Button variant="outline" onClick={handleClear} className="h-11 rounded-full px-4">
+                  <X className="w-4 h-4 mr-1" /> Limpiar
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
 
-        {/* Preferences List */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-bold text-foreground">Mis Preferencias ({preferences.length})</h3>
-            {preferences.length > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  setPreferences([]);
-                  savePreferences(user.id, []);
-                  toast.success('Todas las preferencias eliminadas');
-                }}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Limpiar todo
-              </Button>
-            )}
-          </div>
+        {/* Results */}
+        {results !== null && (
+          <div>
+            <h3 className="text-lg font-bold text-foreground mb-3">
+              {results.length === 0
+                ? 'Sin resultados'
+                : `${results.length} ${results.length === 1 ? 'vehículo encontrado' : 'vehículos encontrados'}`}
+            </h3>
 
-          {preferences.length === 0 ? (
-            <Card className="border border-dashed border-border shadow-sm rounded-2xl p-8">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                  <Search className="w-8 h-8 text-muted-foreground" />
+            {results.length === 0 ? (
+              <Card className="border border-dashed border-border shadow-sm rounded-2xl p-8">
+                <div className="text-center">
+                  <Car className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
+                  <p className="text-sm text-muted-foreground">
+                    No se encontraron vehículos con esos criterios. Intenta con filtros más amplios.
+                  </p>
                 </div>
-                <h3 className="text-base font-semibold text-foreground mb-1">Sin preferencias aún</h3>
-                <p className="text-sm text-muted-foreground">
-                  Agrega marcas que te interesan para recibir notificaciones cuando estén disponibles
-                </p>
-              </div>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {preferences.map((pref) => (
-                <Card key={pref.id} className="border border-border shadow-sm rounded-xl p-4 hover:border-primary/50 transition-colors">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Heart className="w-5 h-5 text-primary" />
-                      </div>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {results.map((v) => (
+                  <Card
+                    key={v.id}
+                    className="border border-border shadow-sm rounded-xl p-4 hover:border-primary/50 transition-colors cursor-pointer active:scale-[0.99]"
+                    onClick={() => setSelected(v)}
+                  >
+                    <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-foreground text-sm">
-                          {pref.brand}{pref.model ? ` ${pref.model}` : ''}
+                          {v.brand} {v.model}
                         </p>
-                        <Badge variant="secondary" className="mt-1 text-xs">
-                          {pref.model ? 'Modelo específico' : 'Todos los modelos'}
-                        </Badge>
+                        <p className="text-xs text-muted-foreground">{v.version}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" /> {v.year}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Gauge className="w-3 h-3" /> {v.km.toLocaleString('es-CO')} km
+                          </span>
+                          {v.branch && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" /> {v.branch.city}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Vehicle Detail Dialog */}
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalle del vehículo</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-5">
+              {/* Vehicle info */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Car className="w-5 h-5 text-primary" />
+                  <h3 className="font-bold text-lg text-foreground">{selected.brand} {selected.model}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">{selected.version}</p>
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Año</p>
+                    <p className="font-semibold text-foreground">{selected.year}</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Kilometraje</p>
+                    <p className="font-semibold text-foreground">{selected.km.toLocaleString('es-CO')} km</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3 col-span-2">
+                    <p className="text-xs text-muted-foreground">Días en inventario</p>
+                    <p className="font-semibold text-foreground">{selected.daysInInventory} días</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Branch / Contact info */}
+              {selected.branch && (
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-secondary" />
+                    <h4 className="font-bold text-foreground">Información de contacto</h4>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Building2 className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-foreground">{selected.branch.name}</p>
+                        {selected.branch.company && (
+                          <p className="text-muted-foreground text-xs">{selected.branch.company}</p>
+                        )}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemovePreference(pref.id)}
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-foreground">{selected.branch.city}</p>
+                        {selected.branch.address && (
+                          <p className="text-muted-foreground text-xs">{selected.branch.address}</p>
+                        )}
+                      </div>
+                    </div>
+                    {selected.branch.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <a href={`tel:${selected.branch.phone}`} className="text-primary font-medium hover:underline">
+                          {selected.branch.phone}
+                        </a>
+                      </div>
+                    )}
                   </div>
-                </Card>
-              ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
-
-        {/* Info */}
-        <Card className="border border-border/50 bg-muted/30 shadow-sm rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">
-            Agrega marcas y modelos de vehículos que te interesan. Recibirás notificaciones cuando haya vehículos disponibles que coincidan con tus preferencias.
-          </p>
-        </Card>
-
-      </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>
