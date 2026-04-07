@@ -1,12 +1,35 @@
 import { io } from 'socket.io-client';
 
-const socket = io(import.meta.env.VITE_WS_URL, {
+const wsUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL;
+
+const socket = io(wsUrl, {
   autoConnect: false,
+  reconnection: true,
+  reconnectionAttempts: 3,
+  reconnectionDelay: 1500,
+  reconnectionDelayMax: 8000,
+  timeout: 5000,
   auth: (cb) => cb({ token: localStorage.getItem('accessToken') }),
 });
 
-export const connectSocket = () => socket.connect();
-export const disconnectSocket = () => socket.disconnect();
+export const connectSocket = () => {
+  const token = localStorage.getItem('accessToken');
+
+  if (!token || socket.connected || socket.active) {
+    return socket;
+  }
+
+  socket.connect();
+  return socket;
+};
+
+export const disconnectSocket = () => {
+  if (socket.connected || socket.active) {
+    socket.disconnect();
+  }
+
+  return socket;
+};
 
 export const joinAuction = (auctionId) => socket.emit('join_auction', auctionId);
 export const leaveAuction = (auctionId) => socket.emit('leave_auction', auctionId);

@@ -1,88 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Users, Car, DollarSign, Clock, AlertTriangle,
-  CheckCircle, BarChart3, UserCheck,
+  Users, Car, DollarSign, CheckCircle, BarChart3, UserCheck,
+  AlertTriangle, Target, Package,
 } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from 'recharts';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { toast } from 'sonner';
-import { analyticsApi, auctionsApi, usersApi } from '@/api/services';
+import { analyticsApi, usersApi } from '@/api/services';
+
+// ── Datos simulados ───────────────────────────────────────────────────────────
+const MONTHS_LABELS = (() => {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    return d.toLocaleString('es-CO', { month: 'short', year: '2-digit' });
+  });
+})();
+
+const SIM_AS = {
+  pipeline: [
+    { etapa: 'Solicitudes', count: 14, color: '#8b5cf6' },
+    { etapa: 'Inspeccionados', count: 9, color: '#6366f1' },
+    { etapa: 'En subasta', count: 7, color: '#3b82f6' },
+    { etapa: 'Con oferta', count: 5, color: '#06b6d4' },
+    { etapa: 'Cerrados', count: 3, color: '#10b981' },
+  ],
+  vendedores: [
+    { nombre: 'Ana Martinez', solicitudes: 6, cierres: 2, funnel: { inspeccion: 5, subasta: 3, oferta: 2 } },
+    { nombre: 'Carlos Ruiz', solicitudes: 4, cierres: 1, funnel: { inspeccion: 3, subasta: 2, oferta: 1 } },
+  ],
+  inventario: { enStock: 12, reservadas: 3, vendidasMes: 5 },
+  inventarioRetail: { vestido: 8, patio: 4, metaMes: 15, gap: 3 },
+  metas: { capacidadPatio: 20, comprasActual: 14, metaCompras: 18 },
+  monthly: [
+    { publicados: 4, vendidos: 2, comprados: 2 },
+    { publicados: 5, vendidos: 3, comprados: 2 },
+    { publicados: 4, vendidos: 2, comprados: 2 },
+    { publicados: 6, vendidos: 3, comprados: 3 },
+    { publicados: 5, vendidos: 3, comprados: 2 },
+    { publicados: 7, vendidos: 4, comprados: 3 },
+  ].map((d, i) => ({ ...d, mes: MONTHS_LABELS[i] })),
+  alertas: { sinLeer: 2, peritajesSinAsignar: 1, stockBajo: true },
+};
+
+function SectionTitle({ color = 'bg-secondary', children, sub }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <div className={`w-1 h-5 rounded-full ${color}`} />
+      <h2 className="text-base font-bold text-foreground">{children}</h2>
+      {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+    </div>
+  );
+}
 
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
-
-// ── Modal: Aprobar precio ─────────────────────────────────────────────────────
-function ApprovePriceModal({ vehicle, open, onClose, onApproved }) {
-  const [price, setPrice] = useState(vehicle?.suggestedPrice ? String(vehicle.suggestedPrice) : '');
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (vehicle?.suggestedPrice) setPrice(String(vehicle.suggestedPrice));
-  }, [vehicle]);
-
-  const handleSubmit = async () => {
-    const parsed = Number(price.replace(/\D/g, ''));
-    if (!parsed || parsed < 1) { toast.error('Ingresa un precio válido'); return; }
-    try {
-      setLoading(true);
-      await auctionsApi.approvePrice(vehicle.id, parsed);
-      toast.success('Precio aprobado', { description: 'La subasta fue publicada exitosamente.' });
-      onClose();
-      onApproved();
-    } catch (err) {
-      const msg = err?.response?.data?.message;
-      toast.error('Error al aprobar precio', { description: msg || 'Intenta de nuevo.' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!vehicle) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-bold">Aprobar precio</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-2">
-          <div>
-            <p className="font-semibold text-foreground">{vehicle.brand} {vehicle.model} {vehicle.year}</p>
-            {vehicle.suggestedPrice && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Precio sugerido por el perito: <span className="font-semibold text-secondary">{COP(vehicle.suggestedPrice)}</span>
-              </p>
-            )}
-          </div>
-          <div>
-            <Label className="text-sm font-semibold mb-1.5 block">Precio aprobado (COP)</Label>
-            <Input
-              type="number"
-              placeholder="Ej. 45000000"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="rounded-xl border-border h-11"
-            />
-          </div>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-11 rounded-full"
-          >
-            {loading ? 'Publicando...' : 'Aprobar y publicar subasta'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
 function KpiCard({ icon: Icon, label, value, sub, color = 'text-secondary', alert }) {
@@ -108,9 +85,6 @@ export default function AdminSucursalDashboard() {
   const [loading, setLoading] = useState(true);
   const [dashboard, setDashboard] = useState(null);
   const [pendingUsers, setPendingUsers] = useState([]);
-  const [pendingVehicles, setPendingVehicles] = useState([]);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   const loadData = async () => {
     try {
@@ -120,8 +94,6 @@ export default function AdminSucursalDashboard() {
       ]);
       setDashboard(dash);
       setPendingUsers(users || []);
-      // pendingVehicles: si el dashboard trae lista, usarla; si no, se maneja por count
-      setPendingVehicles(dash?.pendingVehiclesList || []);
     } catch (err) {
       console.error('Error loading branch dashboard:', err);
     } finally {
@@ -138,49 +110,31 @@ export default function AdminSucursalDashboard() {
   const byStatus = dashboard?.auctions?.byStatus || {};
   const team = dashboard?.team || {};
 
-  const handleApproveClick = (vehicle) => {
-    setSelectedVehicle(vehicle);
-    setModalOpen(true);
-  };
-
   return (
     <div className="min-h-screen bg-muted pb-28">
       <Header title="Panel de Sucursal" subtitle="Vista de tu sucursal" />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
-        {/* Alertas de acciones pendientes */}
-        {(dashboard?.pendingPriceApproval > 0 || pendingUsers.length > 0) && (
-          <div className="space-y-2">
-            {dashboard?.pendingPriceApproval > 0 && (
-              <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                <p className="text-sm font-semibold text-amber-800 flex-1">
-                  {dashboard.pendingPriceApproval} vehículo{dashboard.pendingPriceApproval !== 1 ? 's' : ''} esperando aprobación de precio
-                </p>
-                <Badge className="bg-amber-500 text-white text-xs font-bold">{dashboard.pendingPriceApproval}</Badge>
-              </div>
-            )}
-            {pendingUsers.length > 0 && (
-              <div className="flex items-center gap-3 bg-secondary/10 border border-secondary/20 rounded-xl px-4 py-3">
-                <Users className="w-5 h-5 text-secondary flex-shrink-0" />
-                <p className="text-sm font-semibold text-secondary flex-1">
-                  {pendingUsers.length} usuario{pendingUsers.length !== 1 ? 's' : ''} pendiente{pendingUsers.length !== 1 ? 's' : ''} de verificación
-                </p>
-                <button
-                  onClick={() => navigate('/AdminSolicitudes')}
-                  className="text-xs font-semibold text-secondary underline underline-offset-2 flex-shrink-0"
-                >
-                  Ver
-                </button>
-              </div>
-            )}
+        {/* Alerta de usuarios pendientes */}
+        {pendingUsers.length > 0 && (
+          <div className="flex items-center gap-3 bg-secondary/10 border border-secondary/20 rounded-xl px-4 py-3">
+            <Users className="w-5 h-5 text-secondary flex-shrink-0" />
+            <p className="text-sm font-semibold text-secondary flex-1">
+              {pendingUsers.length} usuario{pendingUsers.length !== 1 ? 's' : ''} pendiente{pendingUsers.length !== 1 ? 's' : ''} de verificación
+            </p>
+            <button
+              onClick={() => navigate('/AdminSolicitudes')}
+              className="text-xs font-semibold text-secondary underline underline-offset-2 flex-shrink-0"
+            >
+              Ver
+            </button>
           </div>
         )}
 
         {/* KPIs */}
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[0, 1, 2, 3].map((i) => (
               <Card key={i} className="p-4 border border-border rounded-2xl animate-pulse">
                 <div className="h-4 bg-muted rounded w-1/2 mb-3" />
@@ -189,71 +143,198 @@ export default function AdminSucursalDashboard() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <KpiCard icon={Users} label="Equipo" value={NUM((team.dealers || 0) + (team.peritos || 0))} sub={`${team.dealers || 0} dealers · ${team.peritos || 0} peritos`} />
             <KpiCard icon={Car} label="Subastas activas" value={NUM(byStatus.ACTIVE)} sub={`${NUM(byStatus.ENDED || 0)} finalizadas`} />
             <KpiCard icon={DollarSign} label="Ingresos sucursal" value={COP(dashboard?.revenue?.total)} color="text-primary" sub={`${NUM(dashboard?.revenue?.completedTransactions || 0)} transacciones`} />
-            <KpiCard icon={Clock} label="Pendiente aprobación" value={NUM(dashboard?.pendingPriceApproval)} alert={dashboard?.pendingPriceApproval > 0} />
+            <KpiCard icon={CheckCircle} label="Verificaciones pendientes" value={NUM(pendingUsers.length)} alert={pendingUsers.length > 0} />
           </div>
         )}
 
-        {/* Cola de aprobación de precios */}
-        <div className="flex items-center justify-between pt-1">
-          <h2 className="text-base font-bold text-foreground">Aprobación de precios</h2>
-          {dashboard?.pendingPriceApproval > 0 && (
-            <Badge className="bg-amber-500 text-white text-xs font-bold">{dashboard.pendingPriceApproval} pendiente{dashboard.pendingPriceApproval !== 1 ? 's' : ''}</Badge>
-          )}
+        {/* ── Vehículos por Mes + Pipeline ──────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <SectionTitle color="bg-secondary" sub="(últimos 6 meses)">Vehículos por Mes</SectionTitle>
+            <Card className="p-4 border border-border rounded-2xl shadow-sm h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={SIM_AS.monthly} barGap={2} barCategoryGap="25%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', fontSize: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }} />
+                  <Bar dataKey="publicados" fill="#8b5cf6" radius={[3, 3, 0, 0]} name="Publicados" />
+                  <Bar dataKey="vendidos" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Vendidos" />
+                  <Bar dataKey="comprados" fill="#10b981" radius={[3, 3, 0, 0]} name="Comprados" />
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+          <div>
+            <SectionTitle color="bg-indigo-500">Pipeline de la Sucursal</SectionTitle>
+            <Card className="p-4 border border-border rounded-2xl shadow-sm h-[280px] flex flex-col justify-center">
+              <div className="space-y-4">
+                {SIM_AS.pipeline.map((item, i) => {
+                  const pct = Math.round((item.count / SIM_AS.pipeline[0].count) * 100);
+                  const conv = i > 0 ? Math.round((item.count / SIM_AS.pipeline[i - 1].count) * 100) : null;
+                  return (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-sm font-medium text-foreground">{item.etapa}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-foreground">{item.count}</span>
+                          {conv !== null && <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{conv}% conv.</span>}
+                        </div>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: item.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="space-y-2">
-            {[0, 1].map((i) => (
-              <Card key={i} className="p-4 border border-border rounded-2xl animate-pulse">
-                <div className="h-4 bg-muted rounded w-1/2 mb-2" />
-                <div className="h-3 bg-muted rounded w-1/3" />
-              </Card>
-            ))}
-          </div>
-        ) : pendingVehicles.length === 0 ? (
-          <Card className="p-6 text-center border border-border rounded-2xl bg-card">
-            <CheckCircle className="w-10 h-10 text-primary mx-auto mb-3" />
-            <p className="text-sm font-semibold text-foreground">Sin precios pendientes</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {dashboard?.pendingPriceApproval > 0
-                ? 'Los vehículos se cargarán en la próxima actualización.'
-                : 'No hay vehículos esperando aprobación de precio.'}
-            </p>
-          </Card>
-        ) : (
-          <div className="space-y-2">
-            {pendingVehicles.map((v) => (
-              <Card key={v.id} className="p-4 border border-amber-200 bg-amber-50 rounded-2xl">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-sm truncate">{v.brand} {v.model} {v.year}</p>
-                    {v.suggestedPrice && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Precio sugerido: <span className="font-semibold text-secondary">{COP(v.suggestedPrice)}</span>
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-0.5">{v.dealerName || 'Dealer'}</p>
+        {/* ── Vendedores + Inventario ───────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-4 border border-border rounded-2xl shadow-sm">
+            <SectionTitle color="bg-blue-500">Vendedores</SectionTitle>
+            <div className="space-y-3">
+              {SIM_AS.vendedores.map((v, i) => (
+                <div key={i} className={`p-3 rounded-xl ${i % 2 === 0 ? 'bg-muted/40' : ''}`}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-foreground">{v.nombre}</span>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{v.solicitudes} sol.</span>
+                      <span className="font-bold text-foreground">{v.cierres} cierres</span>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleApproveClick(v)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full text-xs h-8 px-3 flex-shrink-0"
-                  >
-                    Aprobar
-                  </Button>
+                  <div className="flex gap-1.5">
+                    {[
+                      { label: 'Insp.', value: v.funnel.inspeccion, max: v.solicitudes, color: '#6366f1' },
+                      { label: 'Sub.', value: v.funnel.subasta, max: v.solicitudes, color: '#3b82f6' },
+                      { label: 'Oferta', value: v.funnel.oferta, max: v.solicitudes, color: '#10b981' },
+                    ].map((f, j) => (
+                      <div key={j} className="flex-1">
+                        <p className="text-[9px] text-muted-foreground mb-0.5">{f.label}</p>
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${Math.round(f.value / f.max * 100)}%`, backgroundColor: f.color }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </Card>
-            ))}
+              ))}
+            </div>
+          </Card>
+
+          <div className="space-y-4">
+            <div>
+              <SectionTitle color="bg-emerald-500">Inventario</SectionTitle>
+              <div className="grid grid-cols-3 gap-2">
+                <Card className="p-3 border border-emerald-200 bg-emerald-50 rounded-2xl shadow-sm text-center">
+                  <Package className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                  <p className="text-2xl font-bold text-emerald-700">{SIM_AS.inventario.enStock}</p>
+                  <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">En stock</p>
+                </Card>
+                <Card className="p-3 border border-blue-200 bg-blue-50 rounded-2xl shadow-sm text-center">
+                  <Car className="w-4 h-4 text-blue-600 mx-auto mb-1" />
+                  <p className="text-2xl font-bold text-blue-700">{SIM_AS.inventario.reservadas}</p>
+                  <p className="text-[10px] text-blue-600 font-semibold mt-0.5">Reservadas</p>
+                </Card>
+                <Card className="p-3 border border-purple-200 bg-purple-50 rounded-2xl shadow-sm text-center">
+                  <DollarSign className="w-4 h-4 text-purple-600 mx-auto mb-1" />
+                  <p className="text-2xl font-bold text-purple-700">{SIM_AS.inventario.vendidasMes}</p>
+                  <p className="text-[10px] text-purple-600 font-semibold mt-0.5">Vend. mes</p>
+                </Card>
+              </div>
+            </div>
+
+            <Card className="p-4 border border-border rounded-2xl shadow-sm">
+              <SectionTitle color="bg-teal-500">Objetivo Retail</SectionTitle>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="p-3 bg-muted/40 rounded-xl">
+                  <p className="text-xs text-muted-foreground font-medium">Vestido</p>
+                  <p className="text-xl font-bold text-foreground">{SIM_AS.inventarioRetail.vestido}</p>
+                </div>
+                <div className="p-3 bg-muted/40 rounded-xl">
+                  <p className="text-xs text-muted-foreground font-medium">Patio</p>
+                  <p className="text-xl font-bold text-foreground">{SIM_AS.inventarioRetail.patio}</p>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-sm font-medium text-foreground">Meta del mes</span>
+                <span className="text-sm font-bold text-foreground">{SIM_AS.inventarioRetail.vestido + SIM_AS.inventarioRetail.patio} / {SIM_AS.inventarioRetail.metaMes}</span>
+              </div>
+              <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
+                <div className="h-full rounded-full bg-teal-500" style={{ width: `${Math.round((SIM_AS.inventarioRetail.vestido + SIM_AS.inventarioRetail.patio) / SIM_AS.inventarioRetail.metaMes * 100)}%` }} />
+              </div>
+              <p className="text-xs text-amber-600 font-medium">Gap: {SIM_AS.inventarioRetail.gap} vehículos para la meta</p>
+            </Card>
           </div>
-        )}
+        </div>
+
+        {/* ── Metas ─────────────────────────────────────────────────────────── */}
+        <Card className="p-4 border border-border rounded-2xl shadow-sm">
+          <SectionTitle color="bg-primary">Metas</SectionTitle>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Capacidad del patio</span>
+                </div>
+                <span className="text-sm font-bold text-foreground">{SIM_AS.inventario.enStock} / {SIM_AS.metas.capacidadPatio}</span>
+              </div>
+              <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round(SIM_AS.inventario.enStock / SIM_AS.metas.capacidadPatio * 100)}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <div className="flex items-center gap-2">
+                  <Car className="w-4 h-4 text-secondary" />
+                  <span className="text-sm font-medium text-foreground">Compras vs Meta</span>
+                </div>
+                <span className="text-sm font-bold text-foreground">{SIM_AS.metas.comprasActual} / {SIM_AS.metas.metaCompras}</span>
+              </div>
+              <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-secondary" style={{ width: `${Math.round(SIM_AS.metas.comprasActual / SIM_AS.metas.metaCompras * 100)}%` }} />
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* ── Alertas Locales ───────────────────────────────────────────────── */}
+        <div>
+          <SectionTitle color="bg-amber-500">Alertas Locales</SectionTitle>
+          <div className="grid grid-cols-3 gap-2">
+            <Card className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
+              <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-amber-700">{SIM_AS.alertas.sinLeer}</p>
+              <p className="text-[10px] text-amber-600 font-semibold leading-tight mt-0.5">Sin leer</p>
+            </Card>
+            <Card className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
+              <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-amber-700">{SIM_AS.alertas.peritajesSinAsignar}</p>
+              <p className="text-[10px] text-amber-600 font-semibold leading-tight mt-0.5">Sin asignar</p>
+            </Card>
+            <Card className={`p-3 border rounded-2xl shadow-sm text-center ${SIM_AS.alertas.stockBajo ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'}`}>
+              <Package className={`w-4 h-4 mx-auto mb-1 ${SIM_AS.alertas.stockBajo ? 'text-red-500' : 'text-emerald-500'}`} />
+              <p className={`text-sm font-bold ${SIM_AS.alertas.stockBajo ? 'text-red-600' : 'text-emerald-600'}`}>{SIM_AS.alertas.stockBajo ? 'Bajo' : 'OK'}</p>
+              <p className={`text-[10px] font-semibold leading-tight mt-0.5 ${SIM_AS.alertas.stockBajo ? 'text-red-500' : 'text-emerald-500'}`}>Stock</p>
+            </Card>
+          </div>
+        </div>
 
         {/* Accesos rápidos */}
         <h2 className="text-base font-bold text-foreground pt-1">Accesos rápidos</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Solicitudes', sub: `${pendingUsers.length} pendientes`, path: '/AdminSolicitudes', icon: UserCheck, alert: pendingUsers.length > 0 },
             { label: 'Subastas', sub: `${NUM(byStatus.ACTIVE || 0)} activas`, path: '/AdminSubastas', icon: Car },
@@ -273,14 +354,6 @@ export default function AdminSucursalDashboard() {
         </div>
 
       </div>
-
-      {/* Modal de aprobación */}
-      <ApprovePriceModal
-        vehicle={selectedVehicle}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onApproved={loadData}
-      />
 
       <BottomNav />
     </div>

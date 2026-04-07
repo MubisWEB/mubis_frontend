@@ -1,31 +1,42 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '@/api/services';
 import { connectSocket, disconnectSocket, joinNotifications } from '@/api/socket';
+import { getRedirectForRole as getRoleRedirect, isAdminRole, normalizeRole } from '@/lib/roles';
 
-const AuthContext = createContext();
+const fallbackAuthContext = {
+  user: null,
+  isAuthenticated: false,
+  isLoadingAuth: false,
+  login: async () => {
+    throw new Error('AuthProvider unavailable');
+  },
+  logout: async () => {},
+  refreshUser: async () => {},
+};
 
-// Backend devuelve roles en MAYÚSCULA → normalizamos a minúscula para
-// mantener compatibilidad con RequireRole existentes.
+const AuthContext = createContext(fallbackAuthContext);
+
 const normalizeUser = (user) =>
-  user ? { ...user, role: user.role?.toLowerCase() } : null;
+  user ? { ...user, role: normalizeRole(user.role) } : null;
 
-// Roles administrativos que no requieren verificación
-const ADMIN_ROLES = ['superadmin', 'branch_admin', 'company_admin', 'admin_general', 'admin_sucursal'];
+export const getRedirectForRole = (role, userId = null) => {
+  if (userId) {
+    try {
+      const settingsKey = `mubis_user_settings_${userId}`;
+      const raw = localStorage.getItem(settingsKey);
 
-export const isAdminRole = (role) => ADMIN_ROLES.includes(role?.toLowerCase());
-
-export const getRedirectForRole = (role) => {
-  switch (role?.toLowerCase()) {
-    case 'superadmin':      return '/AdminDashboard';
-    case 'admin_general':   return '/AdminGeneralDashboard';
-    case 'admin_sucursal':  return '/AdminSucursalDashboard';
-    case 'branch_admin':    return '/BranchAdminDashboard';
-    case 'company_admin':   return '/CompanyAdminDashboard';
-    case 'perito':          return '/PeritajesPendientes';
-    case 'dealer':          return '/MisSubastas';
-    case 'recomprador':     return '/Comprar';
-    default:                return '/login';
+      if (raw) {
+        const settings = JSON.parse(raw);
+        if (settings.default_landing_page) {
+          return settings.default_landing_page;
+        }
+      }
+    } catch {
+      // Ignore invalid local preferences and fall back to role defaults.
+    }
   }
+
+  return getRoleRedirect(role);
 };
 
 export const AuthProvider = ({ children }) => {
@@ -35,7 +46,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const restore = async () => {
       const token = localStorage.getItem('accessToken');
-      if (!token) { setIsLoadingAuth(false); return; }
+      if (!token) {
+        setIsLoadingAuth(false);
+        return;
+      }
+
       try {
         const raw = await authApi.me();
         const normalized = normalizeUser(raw);
@@ -43,12 +58,14 @@ export const AuthProvider = ({ children }) => {
         connectSocket();
         if (normalized?.id) joinNotifications(normalized.id);
       } catch {
+        disconnectSocket();
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
       } finally {
         setIsLoadingAuth(false);
       }
     };
+
     restore();
   }, []);
 
@@ -71,25 +88,27 @@ export const AuthProvider = ({ children }) => {
     try {
       const raw = await authApi.me();
       setUser(normalizeUser(raw));
-    } catch { /* ignore */ }
+    } catch {
+      // Ignore refresh errors and keep the current session state.
+    }
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoadingAuth,
-      login,
-      logout,
-      refreshUser,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoadingAuth,
+        login,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-};
+export { isAdminRole };
+
+export const useAuth = () => useContext(AuthContext);

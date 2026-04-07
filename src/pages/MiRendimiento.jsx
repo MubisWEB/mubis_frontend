@@ -72,7 +72,7 @@ export default function MiRendimiento() {
     <div className="min-h-screen bg-background pb-28">
       <Header title="Mi Rendimiento" showBack />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-6">
         {/* Stats cards */}
         <div className="grid grid-cols-2 gap-3">
           {stats.map((s, i) => (

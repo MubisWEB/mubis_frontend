@@ -1,195 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Gavel, Shield, Clock, DollarSign, Users } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { bannersApi } from '@/api/services';
+import { BANNERS_UPDATED_EVENT, BANNERS_UPDATED_STORAGE_KEY } from '@/lib/bannerEvents';
 
-// Fallback banners (hardcoded) used when no banners from API
-const Banner1 = () => (
-  <div className="w-full h-full bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 flex items-center justify-between px-6 sm:px-10 lg:px-16">
-    <div className="flex-1">
-      <p className="text-violet-200 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1">Plataforma líder en Colombia</p>
-      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight">Subastas que mueven<br />el mercado automotriz</h3>
-    </div>
-    <div className="hidden sm:flex items-center gap-3">
-      <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
-        <Gavel className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs font-bold">+500 subastas</div>
-        <div className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs font-bold">+120 Dealers</div>
-      </div>
-    </div>
-    <div className="absolute top-0 right-0 w-40 h-full opacity-10">
-      <svg viewBox="0 0 200 100" className="w-full h-full"><circle cx="180" cy="10" r="80" fill="white"/><circle cx="140" cy="90" r="50" fill="white"/></svg>
-    </div>
-  </div>
-);
+function isBannerActive(banner) {
+  if (typeof banner?.isActive === 'boolean') return banner.isActive;
+  if (typeof banner?.active === 'boolean') return banner.active;
+  if (typeof banner?.enabled === 'boolean') return banner.enabled;
+  if (typeof banner?.status === 'string') {
+    return ['active', 'enabled', 'published'].includes(banner.status.toLowerCase());
+  }
+  return true;
+}
 
-const Banner2 = () => (
-  <div className="w-full h-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 flex items-center justify-between px-6 sm:px-10 lg:px-16">
-    <div className="hidden sm:flex items-center gap-4">
-      <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
-        <Shield className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-      </div>
-      <div className="text-white">
-        <p className="text-5xl lg:text-6xl font-black leading-none">100</p>
-        <p className="text-xs font-semibold uppercase tracking-wider opacity-80">puntos</p>
-      </div>
-    </div>
-    <div className="flex-1 sm:text-right">
-      <p className="text-emerald-200 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1">Peritaje certificado</p>
-      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight">Cada vehículo, verificado<br />al máximo detalle</h3>
-    </div>
-    <div className="absolute bottom-0 left-0 w-60 h-full opacity-5">
-      <svg viewBox="0 0 240 100" className="w-full h-full"><rect x="10" y="20" width="60" height="60" rx="12" fill="white"/><rect x="80" y="40" width="40" height="40" rx="8" fill="white"/><rect x="130" y="10" width="70" height="70" rx="14" fill="white"/></svg>
-    </div>
-  </div>
-);
+function normalizeBanner(banner, index) {
+  return {
+    id: banner?.id || banner?._id || banner?.bannerId || `banner-${index}`,
+    imageUrl: banner?.imageUrl || banner?.image_url || banner?.url || banner?.src || '',
+    title: banner?.title || banner?.name || '',
+    subtitle: banner?.subtitle || banner?.description || banner?.text || '',
+    linkUrl: banner?.linkUrl || banner?.link_url || banner?.href || '',
+    active: isBannerActive(banner),
+  };
+}
 
-const Banner3 = () => (
-  <div className="w-full h-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 flex items-center justify-between px-6 sm:px-10 lg:px-16">
-    <div className="flex-1">
-      <p className="text-orange-100 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1">Rapidez garantizada</p>
-      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight">Cierre de venta<br />en solo 96 horas</h3>
-    </div>
-    <div className="hidden sm:flex items-center gap-4">
-      <div className="flex gap-2">
-        {['4', 'días'].map((text, i) => (
-          <div key={i} className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-            <span className={`text-white ${i === 0 ? 'text-3xl lg:text-4xl font-black' : 'text-xs font-bold uppercase'}`}>{text}</span>
-          </div>
-        ))}
-      </div>
-      <Clock className="w-10 h-10 lg:w-12 lg:h-12 text-white/80" />
-    </div>
-    <div className="absolute top-0 left-1/2 w-40 h-full opacity-10">
-      <svg viewBox="0 0 160 100" className="w-full h-full"><polygon points="80,5 155,95 5,95" fill="white"/></svg>
-    </div>
-  </div>
-);
+function normalizeBannerList(data) {
+  const list =
+    Array.isArray(data) ? data :
+    Array.isArray(data?.items) ? data.items :
+    Array.isArray(data?.banners) ? data.banners :
+    Array.isArray(data?.data) ? data.data :
+    [];
 
-const Banner4 = () => (
-  <div className="w-full h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-between px-6 sm:px-10 lg:px-16">
-    <div className="hidden sm:flex items-center gap-3">
-      <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
-        <DollarSign className="w-8 h-8 lg:w-10 lg:h-10 text-emerald-300" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <span className="line-through text-white/40 text-sm font-bold">Comisión 3%</span>
-        <span className="text-emerald-300 text-xl lg:text-2xl font-black">$0 comisión</span>
-      </div>
-    </div>
-    <div className="flex-1 sm:text-right">
-      <p className="text-blue-200 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1">Para compradores</p>
-      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight">Compra sin comisión,<br />solo buenos precios</h3>
-    </div>
-  </div>
-);
-
-const Banner5 = () => (
-  <div className="w-full h-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 flex items-center justify-between px-6 sm:px-10 lg:px-16">
-    <div className="flex-1">
-      <p className="text-rose-200 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1">Red exclusiva</p>
-      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight">Dealers y Recompradores<br />conectados en un solo lugar</h3>
-    </div>
-    <div className="hidden sm:flex items-center gap-3">
-      <Users className="w-10 h-10 lg:w-12 lg:h-12 text-white/80" />
-      <div className="flex flex-col gap-2">
-        <div className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs font-bold">Dealers verificados</div>
-        <div className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs font-bold">Subastas privadas</div>
-      </div>
-    </div>
-    <div className="absolute top-0 right-10 w-32 h-full opacity-10">
-      <svg viewBox="0 0 120 100" className="w-full h-full"><circle cx="30" cy="30" r="25" fill="white"/><circle cx="90" cy="30" r="25" fill="white"/><circle cx="60" cy="75" r="30" fill="white"/></svg>
-    </div>
-  </div>
-);
-
-const fallbackBanners = [Banner1, Banner2, Banner3, Banner4, Banner5];
+  return list
+    .map(normalizeBanner)
+    .filter((banner) => banner.imageUrl && banner.active);
+}
 
 export default function SponsorBanner() {
   const [index, setIndex] = useState(0);
-  const [apiBanners, setApiBanners] = useState(null); // null = loading
+  const [banners, setBanners] = useState([]);
 
-  useEffect(() => {
-    bannersApi.getActive()
-      .then(data => setApiBanners(Array.isArray(data) && data.length > 0 ? data : []))
-      .catch(() => setApiBanners([]));
+  const loadActiveBanners = useCallback(async () => {
+    try {
+      const data = await bannersApi.getActive();
+      setBanners(normalizeBannerList(data));
+    } catch {
+      setBanners([]);
+    }
   }, []);
 
-  const useApi = apiBanners && apiBanners.length > 0;
-  const count = useApi ? apiBanners.length : fallbackBanners.length;
-  const safeIndex = index % count;
+  useEffect(() => {
+    loadActiveBanners();
+  }, [loadActiveBanners]);
 
   useEffect(() => {
+    const handleBannerUpdate = () => loadActiveBanners();
+    const handleStorage = (event) => {
+      if (event.key === BANNERS_UPDATED_STORAGE_KEY) {
+        loadActiveBanners();
+      }
+    };
+
+    window.addEventListener(BANNERS_UPDATED_EVENT, handleBannerUpdate);
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener(BANNERS_UPDATED_EVENT, handleBannerUpdate);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [loadActiveBanners]);
+
+  const count = banners.length;
+
+  useEffect(() => {
+    if (count <= 1) return;
+
     const timer = setInterval(() => {
-      setIndex(p => (p + 1) % count);
+      setIndex((prev) => (prev + 1) % count);
     }, 5000);
+
     return () => clearInterval(timer);
   }, [count]);
 
-  const FallbackBanner = fallbackBanners[safeIndex];
+  useEffect(() => {
+    setIndex(0);
+  }, [count]);
+
+  const activeBanner = useMemo(() => {
+    if (!count) return null;
+    return banners[index % count];
+  }, [banners, count, index]);
+
+  if (!activeBanner) return null;
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 my-4">
       <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md" style={{ aspectRatio: '970 / 150' }}>
         <AnimatePresence mode="wait">
           <motion.div
-            key={safeIndex}
+            key={activeBanner.id}
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -60 }}
             transition={{ duration: 0.4, ease: 'easeInOut' }}
             className="absolute inset-0"
           >
-            {useApi ? (
-              <div
-                className="w-full h-full relative flex items-center justify-between px-6 sm:px-10 lg:px-16"
-                style={{
-                  background: `linear-gradient(to right, var(--tw-gradient-from, #7c3aed), var(--tw-gradient-to, #9333ea))`,
-                }}
-                onClick={() => apiBanners[safeIndex].linkUrl && window.open(apiBanners[safeIndex].linkUrl, '_blank')}
-                role={apiBanners[safeIndex].linkUrl ? 'link' : undefined}
-                style={{ cursor: apiBanners[safeIndex].linkUrl ? 'pointer' : 'default' }}
-              >
-                {apiBanners[safeIndex].imageUrl && (
-                  <img
-                    src={apiBanners[safeIndex].imageUrl}
-                    alt={apiBanners[safeIndex].title || 'Banner'}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                )}
-                {(apiBanners[safeIndex].title || apiBanners[safeIndex].subtitle) && (
-                  <div className="flex-1 z-10">
-                    {apiBanners[safeIndex].title && (
-                      <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight drop-shadow-lg">
-                        {apiBanners[safeIndex].title}
-                      </h3>
-                    )}
-                    {apiBanners[safeIndex].subtitle && (
-                      <p className="text-white/90 text-sm sm:text-base mt-2 drop-shadow-lg">
-                        {apiBanners[safeIndex].subtitle}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <FallbackBanner />
-            )}
+            <div
+              className="w-full h-full relative flex items-center justify-between px-6 sm:px-10 lg:px-16"
+              style={{
+                background: 'linear-gradient(to right, #111827, #1f2937)',
+                cursor: activeBanner.linkUrl ? 'pointer' : 'default',
+              }}
+              onClick={() => activeBanner.linkUrl && window.open(activeBanner.linkUrl, '_blank')}
+              role={activeBanner.linkUrl ? 'link' : undefined}
+            >
+              <img
+                src={activeBanner.imageUrl}
+                alt={activeBanner.title || 'Banner'}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {(activeBanner.title || activeBanner.subtitle) && (
+                <div className="relative z-10 max-w-2xl">
+                  {activeBanner.title && (
+                    <h3 className="text-white text-lg sm:text-2xl lg:text-3xl font-black leading-tight drop-shadow-lg">
+                      {activeBanner.title}
+                    </h3>
+                  )}
+                  {activeBanner.subtitle && (
+                    <p className="text-white/90 text-sm sm:text-base mt-2 drop-shadow-lg">
+                      {activeBanner.subtitle}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Dots */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-          {Array.from({ length: count }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${i === safeIndex ? 'bg-white w-4' : 'bg-white/40 hover:bg-white/60'}`}
-            />
-          ))}
-        </div>
+        {count > 1 && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {banners.map((banner, bannerIndex) => (
+              <button
+                key={banner.id}
+                onClick={() => setIndex(bannerIndex)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${bannerIndex === index % count ? 'bg-white w-4' : 'bg-white/40 hover:bg-white/60'}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

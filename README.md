@@ -194,7 +194,7 @@ Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
 VITE_API_URL=http://localhost:3000/api
 
 # URL del servidor de WebSocket
-VITE_SOCKET_URL=http://localhost:3000
+VITE_WS_URL=http://localhost:3000
 
 # Clave pública de Stripe (empieza con pk_)
 VITE_STRIPE_PUBLIC_KEY=pk_test_...

@@ -9,8 +9,10 @@ import { MessageCircle, Send, User, Building2, Shield, AlertTriangle, CheckCircl
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate, useParams } from 'react-router-dom';
-import { casesApi } from '@/api/services';
+import { casesApi, companiesApi, branchesApi } from '@/api/services';
 import { toast } from 'sonner';
+
+const REFRESH_INTERVAL_MS = 15000;
 
 const STATUS_MAP = {
   OPEN: { label: 'Abierto', color: 'bg-secondary/10 text-secondary', icon: AlertTriangle },
@@ -33,13 +35,52 @@ export default function AdminCasos() {
   const [cases, setCases] = useState([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterCompany, setFilterCompany] = useState('');
+  const [filterBranch, setFilterBranch] = useState('');
+  const [companies, setCompanies] = useState([]);
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
-    casesApi.getAll().then(setCases).catch(() => {});
+    let cancelled = false;
+
+    const loadCases = async () => {
+      try {
+        const data = await casesApi.getAll();
+        if (!cancelled) setCases(data || []);
+      } catch {
+        // Ignore transient polling errors in the admin list.
+      }
+    };
+
+    loadCases();
+    companiesApi.getAll().catch(() => []).then(list => {
+      if (!cancelled) setCompanies(list || []);
+    });
+    branchesApi.getAll().catch(() => []).then(list => {
+      if (!cancelled) setBranches(list || []);
+    });
+
+    const intervalId = setInterval(loadCases, REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
   }, []);
+
+  const filteredBranches = filterCompany
+    ? branches.filter(b => b.companyId === filterCompany || b.company === filterCompany || b.company?.id === filterCompany)
+    : branches;
+
+  const getCaseCompanyId = (c) =>
+    c.companyId || c.company?.id || c.seller?.companyId || c.seller?.company?.id || c.buyer?.companyId || c.buyer?.company?.id;
+  const getCaseBranchId = (c) =>
+    c.branchId || c.branch?.id || c.seller?.branchId || c.seller?.branch?.id || c.buyer?.branchId || c.buyer?.branch?.id;
 
   const filtered = cases.filter(c => {
     if (filterStatus !== 'all' && c.status !== filterStatus) return false;
+    if (filterCompany && getCaseCompanyId(c) !== filterCompany) return false;
+    if (filterBranch && getCaseBranchId(c) !== filterBranch) return false;
     if (search) {
       const q = search.toLowerCase();
       return (c.vehicleLabel || '').toLowerCase().includes(q) ||
@@ -75,6 +116,34 @@ export default function AdminCasos() {
           ))}
         </div>
 
+        {/* Filtros empresa / sucursal */}
+        {(companies.length > 0 || branches.length > 0) && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            {companies.length > 0 && (
+              <Select value={filterCompany || 'all'} onValueChange={(v) => { setFilterCompany(v === 'all' ? '' : v); setFilterBranch(''); }}>
+                <SelectTrigger className="rounded-xl h-10 flex-1">
+                  <SelectValue placeholder="Todas las empresas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las empresas</SelectItem>
+                  {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            {filteredBranches.length > 0 && (
+              <Select value={filterBranch || 'all'} onValueChange={(v) => setFilterBranch(v === 'all' ? '' : v)}>
+                <SelectTrigger className="rounded-xl h-10 flex-1">
+                  <SelectValue placeholder="Todas las sucursales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las sucursales</SelectItem>
+                  {filteredBranches.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
+
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar por vehículo, comprador o vendedor..." value={search} onChange={e => setSearch(e.target.value)}
@@ -96,15 +165,20 @@ export default function AdminCasos() {
                   <Card className="p-4 border border-border shadow-sm cursor-pointer hover:bg-card/80 transition-colors" onClick={() => navigate(`/AdminCasos/${c.id}`)}>
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-foreground text-sm truncate">{c.vehicleLabel}</p>
+                        <p className="font-semibold text-foreground text-sm truncate">{c.sellerName || 'Vendedor'} ↔ {c.buyerName || 'Comprador'} · {c.vehicleLabel}</p>
+                        {(() => {
+                          const companyName = c.company?.name || c.companyName || c.seller?.company?.name || c.buyer?.company?.name;
+                          const branchName = c.branch?.name || c.branchName || c.seller?.branch?.name || c.buyer?.branch?.name;
+                          return (companyName || branchName) ? (
+                            <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                              <Building2 className="w-2.5 h-2.5 flex-shrink-0" />
+                              {companyName}{branchName ? ` · ${branchName}` : ''}
+                            </p>
+                          ) : null;
+                        })()}
                         <p className="text-xs text-muted-foreground">{timeAgo(c.createdAt)}</p>
                       </div>
                       <Badge className={`${status.color} text-[10px] border-0 ml-2`}>{status.label}</Badge>
-                    </div>
-                    <div className="flex items-center gap-3 mb-2 text-[10px] text-muted-foreground">
-                      <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.buyerName}</span>
-                      <span>↔</span>
-                      <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{c.sellerName}</span>
                     </div>
                     {lastMsg && (
                       <p className="text-xs text-muted-foreground truncate">
@@ -147,7 +221,14 @@ export function AdminCasoDetalle() {
     }
   };
 
-  useEffect(() => { if (caseId) loadCase(); }, [caseId]);
+  useEffect(() => {
+    if (!caseId) return;
+
+    loadCase();
+    const intervalId = setInterval(loadCase, REFRESH_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [caseId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

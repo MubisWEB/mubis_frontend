@@ -132,7 +132,7 @@ export default function AyudaSoporte() {
     <div className="min-h-screen bg-background pb-28">
       <Header />
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-4">
         <div className="flex items-center gap-3 mb-2">
           <button onClick={() => navigate('/Cuenta')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
             <ArrowLeft className="w-4 h-4 text-foreground" />

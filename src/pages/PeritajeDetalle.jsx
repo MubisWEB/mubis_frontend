@@ -86,8 +86,9 @@ export default function PeritajeDetalle() {
       || !!tarjetaPropiedadFile
       || documentacion.soat.status !== ''
       || documentacion.tecnomecanica.status !== ''
-      || documentacion.multas.tiene !== '';
-  }, [peritaje, rejectReason, reportPdfFile, vehiclePhotos, photoFiles, documentacion]);
+      || documentacion.multas.tiene !== ''
+      || startingPrice !== '';
+  }, [documentacion, peritaje, photoFiles, rejectReason, reportPdfFile, startingPrice, tarjetaPropiedadFile, vehiclePhotos]);
 
   // Save draft to localStorage
   const saveDraft = useCallback(() => {
@@ -98,9 +99,9 @@ export default function PeritajeDetalle() {
       step, 
       documentacion,
       startingPrice,
-      // Note: we don't save photoFiles as File objects can't be serialized
+      hasPendingFiles: !!reportPdfFile || photoFiles.length > 0 || !!tarjetaPropiedadFile,
     }));
-  }, [vehicleId, peritaje, rejectReason, step, documentacion, startingPrice]);
+  }, [documentacion, peritaje, photoFiles.length, rejectReason, reportPdfFile, startingPrice, tarjetaPropiedadFile, vehicleId]);
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -114,7 +115,7 @@ export default function PeritajeDetalle() {
         if (parsed.step !== undefined) setStep(parsed.step);
         if (parsed.documentacion) setDocumentacion(parsed.documentacion);
         if (parsed.startingPrice) setStartingPrice(parsed.startingPrice);
-        toast.info('Borrador recuperado', { description: 'Se cargaron los datos guardados previamente.' });
+        toast.info('Borrador recuperado', { description: parsed.hasPendingFiles ? 'Se restauraron los campos guardados. Debes volver a adjuntar fotos y archivos.' : 'Se cargaron los datos guardados previamente.' });
       } catch { /* ignore corrupt data */ }
     }
   }, [vehicleId]);
@@ -397,7 +398,7 @@ export default function PeritajeDetalle() {
     return (
       <div className="min-h-screen bg-background pb-28">
         <Header title="Peritaje" backTo={backTo} />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+        <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-5">
           <Skeleton height={96} borderRadius={16} />
           <div className="rounded-2xl border border-border bg-card p-4">
             <Skeleton width="50%" height={13} />

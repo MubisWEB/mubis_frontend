@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import TopBar from "@/components/TopBar";
+
 import MubisLogo from "@/components/MubisLogo";
-import { useAuth, getRedirectForRole, isAdminRole } from "@/lib/AuthContext";
+import TopBar from "@/components/TopBar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { authApi } from "@/api/services";
+import { getRedirectForRole, isAdminRole, useAuth } from "@/lib/AuthContext";
+import { resolveTenantSlug } from "@/lib/tenant";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated, user, isLoadingAuth } = useAuth();
+
   const [tenants, setTenants] = useState([]);
   const [tenantSlug, setTenantSlug] = useState("");
   const [email, setEmail] = useState("");
@@ -21,35 +24,53 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Redirect already authenticated users
   useEffect(() => {
     if (!isLoadingAuth && isAuthenticated && user) {
-      navigate(getRedirectForRole(user.role), { replace: true });
+      navigate(getRedirectForRole(user.role, user.id), { replace: true });
     }
   }, [isLoadingAuth, isAuthenticated, user, navigate]);
 
   useEffect(() => {
-    authApi.getTenants().then((list) => {
-      setTenants(list);
-      if (list.length === 1) setTenantSlug(list[0].slug);
-    }).catch(() => {});
+    authApi
+      .getTenants()
+      .then((list) => {
+        setTenants(list);
+        if (list.length === 1) {
+          setTenantSlug(list[0].slug);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!tenantSlug || !email || !password) {
+
+    if (!email || !password) {
       toast.error("Por favor completa todos los campos");
       return;
     }
+
+    const resolvedTenantSlug = resolveTenantSlug({
+      selectedTenantSlug: tenantSlug,
+      tenants,
+      email,
+    });
+
+    if (!tenantSlug && resolvedTenantSlug) {
+      setTenantSlug(resolvedTenantSlug);
+    }
+
     setLoading(true);
     try {
-      const loggedUser = await login(email, password, tenantSlug);
-      toast.success("¡Bienvenido de nuevo!");
-      if (!isAdminRole(loggedUser.role) && loggedUser.verification_status !== 'VERIFIED') {
-        navigate('/PendienteVerificacion', { replace: true });
+      const loggedUser = await login(email, password, resolvedTenantSlug);
+      toast.success("Bienvenido de nuevo");
+
+      if (!isAdminRole(loggedUser.role) && loggedUser.verification_status !== "VERIFIED") {
+        navigate("/PendienteVerificacion", { replace: true });
         return;
       }
-      navigate(getRedirectForRole(loggedUser.role), { replace: true });
+
+      navigate(getRedirectForRole(loggedUser.role, loggedUser.id), { replace: true });
     } catch {
       toast.error("Credenciales incorrectas");
     } finally {
@@ -60,6 +81,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col font-sans bg-muted/30">
       <TopBar />
+
       <nav className="w-full bg-background/80 backdrop-blur border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center h-16">
           <MubisLogo size="sm" linkTo="/" />
@@ -67,64 +89,121 @@ export default function Login() {
       </nav>
 
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-7">
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="w-full max-w-md">
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="w-full max-w-md"
+        >
           <div className="relative">
             <div className="pointer-events-none absolute -inset-6 rounded-[28px] bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-emerald-500/10 blur-2xl" />
+
             <Card className="relative overflow-hidden p-8 bg-background border border-border/60 shadow-premium rounded-2xl">
               <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl" style={{ background: "var(--gradient-purple)" }} />
+
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Bienvenido de nuevo</h1>
-                <p className="text-muted-foreground text-sm">Accede a subastas exclusivas de vehículos</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
+                  Bienvenido de nuevo
+                </h1>
+                <p className="text-muted-foreground text-sm">
+                  Accede a subastas exclusivas de vehiculos
+                </p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-5">
                 {tenants.length > 1 && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Empresa</label>
-                    <select value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} disabled={loading}
-                      className="h-11 w-full rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/40">
+                    <select
+                      value={tenantSlug}
+                      onChange={(e) => setTenantSlug(e.target.value)}
+                      disabled={loading}
+                      className="h-11 w-full rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/40"
+                    >
                       <option value="">Selecciona tu empresa</option>
-                      {tenants.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
+                      {tenants.map((tenant) => (
+                        <option key={tenant.slug} value={tenant.slug}>
+                          {tenant.name}
+                        </option>
+                      ))}
                     </select>
+                    <p className="text-xs text-muted-foreground">
+                      Si la dejas vacia, intentaremos resolverla con tu correo.
+                    </p>
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Correo electrónico</label>
-                  <Input type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-xl border-border/70 bg-muted/20 px-4 text-sm focus-visible:ring-2 focus-visible:ring-violet-500/25 focus-visible:border-violet-500/40" disabled={loading} />
+                  <label className="text-sm font-medium text-foreground">Correo electronico</label>
+                  <Input
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-11 rounded-xl border-border/70 bg-muted/20 px-4 text-sm focus-visible:ring-2 focus-visible:ring-violet-500/25 focus-visible:border-violet-500/40"
+                    disabled={loading}
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Contraseña</label>
+                  <label className="text-sm font-medium text-foreground">Contrasena</label>
                   <div className="relative">
-                    <Input type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)}
-                      className="h-11 rounded-xl border-border/70 bg-muted/20 px-4 text-sm pr-12 focus-visible:ring-2 focus-visible:ring-violet-500/25 focus-visible:border-violet-500/40" disabled={loading} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors rounded-md p-1">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="********"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-11 rounded-xl border-border/70 bg-muted/20 px-4 text-sm pr-12 focus-visible:ring-2 focus-visible:ring-violet-500/25 focus-visible:border-violet-500/40"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors rounded-md p-1"
+                    >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <Link to="/recuperar-contrasena" className="text-sm text-violet-600 font-medium hover:underline underline-offset-4">
-                    ¿Olvidaste tu contraseña?
+                  <Link
+                    to="/recuperar-contrasena"
+                    className="text-sm text-violet-600 font-medium hover:underline underline-offset-4"
+                  >
+                    Olvidaste tu contrasena?
                   </Link>
                 </div>
 
-                <Button type="submit" disabled={loading}
-                  className="w-full h-11 font-semibold rounded-xl shadow-sm bg-violet-600 text-white hover:bg-violet-700 transition active:translate-y-[1px]">
-                  {loading ? (<><Loader2 className="w-5 h-5 animate-spin mr-2" />Iniciando sesión...</>) : "Iniciar sesión"}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 font-semibold rounded-xl shadow-sm bg-violet-600 text-white hover:bg-violet-700 transition active:translate-y-[1px]"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Iniciando sesion...
+                    </>
+                  ) : (
+                    "Iniciar sesion"
+                  )}
                 </Button>
               </form>
             </Card>
           </div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }} className="text-center mt-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.22 }}
+            className="text-center mt-6"
+          >
             <p className="text-muted-foreground text-sm">
-              ¿No tienes cuenta?{" "}
-              <Link to="/registro" className="font-semibold text-foreground hover:underline underline-offset-4">Solicita acceso aquí</Link>
+              No tienes cuenta?{" "}
+              <Link to="/registro" className="font-semibold text-foreground hover:underline underline-offset-4">
+                Solicita acceso aqui
+              </Link>
             </p>
           </motion.div>
         </motion.div>
@@ -132,7 +211,8 @@ export default function Login() {
 
       <footer className="bg-footer text-footer-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm">
-          <Mail className="w-4 h-4 text-secondary" /><span>info@mubis.com</span>
+          <Mail className="w-4 h-4 text-secondary" />
+          <span>info@mubis.com</span>
         </div>
       </footer>
     </div>

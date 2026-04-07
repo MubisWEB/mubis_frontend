@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, ArrowLeft, LayoutGrid, LayoutList, Search } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, LayoutList, Search, Trophy } from 'lucide-react';
+import Skeleton from 'react-loading-skeleton';
+import { useNavigate } from 'react-router-dom';
+import { auctionsApi } from '@/api/services';
+import BottomNav from '@/components/BottomNav';
+import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import BottomNav from '@/components/BottomNav';
-import Header from '@/components/Header';
-import { useNavigate } from 'react-router-dom';
-import { auctionsApi } from '@/api/services';
-import Skeleton from 'react-loading-skeleton';
 import { WonAuctionGridCard, WonAuctionListCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
+import { normalizeWonAuction, sortWonAuctions } from '@/lib/auctions';
 
 const WonCardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -26,18 +27,13 @@ const WonCardSkeleton = () => (
 const formatPrice = (price) => {
   const n = Number(price) || 0;
   if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n);
 };
-
-function getAuctionState(auction) {
-  const now = Date.now();
-  const endsAt = auction.ends_at || auction.auction_end;
-  const remaining = endsAt ? new Date(endsAt).getTime() - now : 0;
-  const isCompleted = auction.status === 'COMPLETED' || auction.status === 'ENDED';
-  const isCancelled = auction.status === 'CANCELLED';
-  const canExtend = !isCompleted && !isCancelled && remaining <= 0;
-  return { remaining, isCompleted, isCancelled, canExtend };
-}
 
 export default function Ganados() {
   const navigate = useNavigate();
@@ -52,69 +48,62 @@ export default function Ganados() {
       try {
         setLoading(true);
         const data = await auctionsApi.getWon();
-        setWonAuctions(data || []);
+        setWonAuctions((data || []).map(normalizeWonAuction));
       } catch (err) {
         console.error('Error loading won auctions:', err);
       } finally {
         setLoading(false);
       }
     };
+
     load();
   }, []);
 
-  const formatPrice = (price) => {
-    if (!price) return '$0';
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(1)}M`;
-    return new Intl.NumberFormat('es-CO', { 
-      style: 'currency', 
-      currency: 'COP', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(price);
-  };
-
   const filtered = useMemo(() => {
     let result = wonAuctions;
+
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(a => `${a.brand} ${a.model}`.toLowerCase().includes(q));
+      result = result.filter((auction) =>
+        `${auction.brand || ''} ${auction.model || ''}`.toLowerCase().includes(q),
+      );
     }
-    if (sortBy === 'price_high') result = [...result].sort((a, b) => (b.currentPrice || 0) - (a.currentPrice || 0));
-    else if (sortBy === 'price_low') result = [...result].sort((a, b) => (a.currentPrice || 0) - (b.currentPrice || 0));
-    return result;
+
+    return sortWonAuctions(result, sortBy);
   }, [wonAuctions, search, sortBy]);
 
   const handleExtend = (auction) => {
-    // Navigate to detail page to handle extension
     navigate(`/DetalleSubasta/${auction.id}?from=ganados`);
   };
 
-  const calculateTimeRemaining = (auction) => {
-    if (!auction.completionDeadline) return 0;
-    const deadline = new Date(auction.completionDeadline);
-    const now = new Date();
-    return deadline - now;
-  };
+  const renderAuctionCard = (auction) => {
+    const cardProps = {
+      key: auction.id,
+      auction,
+      formatPrice,
+      navigate,
+      isCompleted: auction.isCompleted,
+      canExtend: auction.canExtend,
+      remaining: auction.remaining,
+      onExtend: handleExtend,
+      isCancelled: auction.isCancelled,
+    };
 
-  const isAuctionCompleted = (auction) => {
-    return auction.status === 'completed' || auction.paymentStatus === 'completed';
-  };
+    if (window.innerWidth < 768) {
+      return <WonAuctionMobileCard {...cardProps} />;
+    }
 
-  const isAuctionCancelled = (auction) => {
-    return auction.status === 'cancelled';
-  };
+    if (viewMode === 'list') {
+      return <WonAuctionListCard {...cardProps} />;
+    }
 
-  const canExtendDeadline = (auction) => {
-    if (isAuctionCompleted(auction) || isAuctionCancelled(auction)) return false;
-    const remaining = calculateTimeRemaining(auction);
-    return remaining > 0 && remaining < 24 * 60 * 60 * 1000; // Less than 24 hours
+    return <WonAuctionGridCard {...cardProps} />;
   };
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header />
 
-      {/* Header section */}
       <div className="bg-card border-b border-border px-4 md:px-8 py-5">
         <div className="flex items-center gap-3 mb-3">
           <Button
@@ -132,13 +121,11 @@ export default function Ganados() {
         </div>
         <p className="text-sm text-muted-foreground">
           {wonAuctions.length === 0
-            ? 'Aún no has ganado ninguna subasta'
-            : `${wonAuctions.length} ${wonAuctions.length === 1 ? 'subasta ganada' : 'subastas ganadas'}`
-          }
+            ? 'Aun no has ganado ninguna subasta'
+            : `${wonAuctions.length} ${wonAuctions.length === 1 ? 'subasta ganada' : 'subastas ganadas'}`}
         </p>
       </div>
 
-      {/* Toolbar */}
       <div className="px-4 md:px-8 pt-4 pb-2 flex items-center justify-between gap-3">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -155,7 +142,7 @@ export default function Ganados() {
               <SelectValue placeholder="Ordenar" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="recent">Más recientes</SelectItem>
+              <SelectItem value="recent">Mas recientes</SelectItem>
               <SelectItem value="price_high">Precio: mayor</SelectItem>
               <SelectItem value="price_low">Precio: menor</SelectItem>
             </SelectContent>
@@ -177,7 +164,6 @@ export default function Ganados() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="px-4 md:px-8 py-4">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -192,7 +178,7 @@ export default function Ganados() {
               {search ? 'Sin resultados' : 'No hay subastas ganadas'}
             </h3>
             <p className="text-muted-foreground text-sm mb-6">
-              {search ? 'Intenta con otro término de búsqueda' : 'Cuando ganes una subasta, aparecerá aquí'}
+              {search ? 'Intenta con otro termino de busqueda' : 'Cuando ganes una subasta, aparecera aqui'}
             </p>
             {!search && (
               <Button
@@ -204,24 +190,12 @@ export default function Ganados() {
             )}
           </div>
         ) : (
-          <motion.div 
-            initial={{ opacity: 0 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="space-y-4"
+            className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-4'}
           >
-            {filtered.map((auction) => (
-              <WonAuctionMobileCard 
-                key={auction.id} 
-                auction={auction}
-                formatPrice={formatPrice}
-                navigate={navigate}
-                isCompleted={isAuctionCompleted(auction)}
-                canExtend={canExtendDeadline(auction)}
-                remaining={calculateTimeRemaining(auction)}
-                onExtend={handleExtend}
-                isCancelled={isAuctionCancelled(auction)}
-              />
-            ))}
+            {filtered.map(renderAuctionCard)}
           </motion.div>
         )}
       </div>

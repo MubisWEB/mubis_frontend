@@ -8,17 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText, Handshake } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { ROLE_BADGE_CLASS, ROLE_LABELS } from '@/lib/roles';
 import { notificationsApi, publicationsApi, authApi } from '@/api/services';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
-
-const ROLE_LABELS = { dealer: 'Dealer', recomprador: 'Recomprador', perito: 'Perito', admin: 'Administrador', superadmin: 'Super Admin', admin_general: 'Admin General', admin_sucursal: 'Admin Sucursal' };
-const ROLE_BADGE_CLASS = { dealer: 'bg-secondary/10 text-secondary', recomprador: 'bg-primary/10 text-primary', perito: 'bg-secondary/10 text-secondary', admin: 'bg-destructive/10 text-destructive', superadmin: 'bg-destructive/10 text-destructive', admin_general: 'bg-destructive/10 text-destructive', admin_sucursal: 'bg-destructive/10 text-destructive' };
 
 const TYPE_ICONS = {
   auction_published: Car,
@@ -220,25 +218,39 @@ export default function Cuenta() {
       { icon: Target, label: 'Mis Metas', action: () => navigate('/MisMetas') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
 
   if (role === 'superadmin') {
     menuItems.splice(0, 0,
-      { icon: LayoutDashboard, label: 'Dashboard', action: () => navigate('/AdminDashboard') },
+      
       { icon: ImagePlus, label: 'Gestionar Banners', action: () => navigate('/AdminBanners') },
+      { icon: Handshake, label: 'Gestión de Partners', action: () => navigate('/AdminPartners') },
     );
   }
   if (role === 'admin_general') {
     menuItems.splice(0, 0, { icon: LayoutDashboard, label: 'Panel General', action: () => navigate('/AdminGeneralDashboard') });
     menuItems.splice(1, 0,
+      { icon: FileText, label: 'Solicitudes', action: () => navigate('/AdminSolicitudes') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
       { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
-  if (role === 'admin_sucursal') menuItems.splice(0, 0, { icon: Building2, label: 'Panel de Sucursal', action: () => navigate('/AdminSucursalDashboard') });
+  if (role === 'admin_sucursal') {
+    menuItems.splice(0, 0, { icon: Building2, label: 'Panel de Sucursal', action: () => navigate('/AdminSucursalDashboard') });
+    menuItems.splice(1, 0,
+      { icon: FileText, label: 'Solicitudes', action: () => navigate('/AdminSolicitudes') },
+      { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
+      { icon: Trophy, label: 'Subastas Ganadas', action: () => navigate('/Ganados') },
+      { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
+      { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
+      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
+    );
+  }
 
   if (isLoadingAuth) {
     return (
@@ -290,7 +302,7 @@ export default function Cuenta() {
         </motion.div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-4">
 
         {/* Recharge Publications (dealer only) */}
         {(role === 'dealer') && (

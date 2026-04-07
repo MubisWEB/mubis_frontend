@@ -20,7 +20,9 @@ export const authApi = {
   },
 
   login: async (email, password, tenantSlug) => {
-    const { data } = await publicApi.post('/auth/login', { email, password, tenantSlug });
+    const payload = { email, password };
+    if (tenantSlug) payload.tenantSlug = tenantSlug;
+    const { data } = await publicApi.post('/auth/login', payload);
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     return data.user;
@@ -32,7 +34,9 @@ export const authApi = {
   },
 
   forgotPassword: async (email, tenantSlug) => {
-    const { data } = await publicApi.post('/auth/forgot-password', { email, tenantSlug });
+    const payload = { email };
+    if (tenantSlug) payload.tenantSlug = tenantSlug;
+    const { data } = await publicApi.post('/auth/forgot-password', payload);
     return data;
   },
 
@@ -112,14 +116,27 @@ export const inspectionsApi = {
 
 export const auctionsApi = {
   getActive: async () => (await api.get('/auctions')).data,
-  getMine: async () => (await api.get('/auctions/mine')).data,
+  getMine: async (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.status) qs.append('status', params.status);
+    if (params.branchId) qs.append('branchId', params.branchId);
+    if (params.dealerId) qs.append('dealerId', params.dealerId);
+    const q = qs.toString();
+    return (await api.get(`/auctions/mine${q ? `?${q}` : ''}`)).data;
+  },
   getWon: async () => (await api.get('/auctions/won')).data,
   getById: async (id) => (await api.get(`/auctions/${id}`)).data,
-  getAll: async () => (await api.get('/admin/auctions')).data,
+  getAll: async (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.status) qs.append('status', params.status);
+    const q = qs.toString();
+    return (await api.get(`/admin/auctions${q ? `?${q}` : ''}`)).data;
+  },
   incrementView: async (id) => api.post(`/auctions/${id}/view`),
   accept: async (id) => (await api.patch(`/auctions/${id}/accept`)).data,
   reject: async (id) => (await api.patch(`/auctions/${id}/reject`)).data,
   acceptPrevious: async (id) => (await api.patch(`/auctions/${id}/accept-previous`)).data,
+  relist: async (id) => (await api.post(`/auctions/${id}/relist`)).data,
   // Aprueba precio y publica la subasta (ADMIN_SUCURSAL / ADMIN_GENERAL / SUPERADMIN)
   approvePrice: async (vehicleId, approvedPrice) =>
     (await api.post('/auctions/approve-price', { vehicleId, approvedPrice })).data,
@@ -270,7 +287,10 @@ export const analyticsApi = {
   myPerformance: async () => (await api.get('/analytics/my')).data,
   inventoryPipeline: async () => (await api.get('/analytics/inventory')).data,
   // Dashboard para ADMIN_GENERAL (ve su concesionario completo)
-  companyDashboard: async () => (await api.get('/analytics/company-dashboard')).data,
+  companyDashboard: async (companyId) => {
+    const params = companyId ? `?companyId=${companyId}` : '';
+    return (await api.get(`/analytics/company-dashboard${params}`)).data;
+  },
   // Dashboard para ADMIN_SUCURSAL (ve su sucursal); branchId opcional para admin_general
   branchDashboard: async (branchId) => {
     const query = branchId ? `?branchId=${branchId}` : '';
@@ -325,6 +345,21 @@ export const b2bApi = {
   setCredit: async (userId, data) => (await api.patch(`/b2b/credit/${userId}`, data)).data,
 };
 
+// ── PARTNERS ──────────────────────────────────────────────────────────────────
+
+export const partnersApi = {
+  getRecompradores: async () => (await api.get('/partners/recompradores')).data,
+  invite: async (recompradorId) => (await api.post(`/partners/invite/${recompradorId}`)).data,
+  getInvitations: async () => (await api.get('/partners/invitations')).data,
+  acceptInvitation: async (id) => (await api.patch(`/partners/invitations/${id}/accept`)).data,
+  rejectInvitation: async (id) => (await api.patch(`/partners/invitations/${id}/reject`)).data,
+  getMyPartners: async () => (await api.get('/partners/my-partners')).data,
+  remove: async (id) => (await api.delete(`/partners/${id}`)).data,
+  getAll: async (companyId) => (await api.get(`/partners/all${companyId ? `?companyId=${companyId}` : ''}`)).data,
+  adminCreate: async (data) => (await api.post('/partners/admin-create', data)).data,
+  adminRemove: async (id) => (await api.delete(`/partners/admin/${id}`)).data,
+};
+
 // ── PRICING ───────────────────────────────────────────────────────────────────
 
 export const pricingApi = {
@@ -334,10 +369,10 @@ export const pricingApi = {
 // ── MEDIA ─────────────────────────────────────────────────────────────────────
 
 export const mediaApi = {
-  upload: async (files) => {
+  upload: async (files, folder = 'vehicles') => {
     const form = new FormData();
     files.forEach(f => form.append('files', f));
-    return (await api.post('/media/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+    return (await api.post(`/media/upload?folder=${folder}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
   },
 };
 
@@ -345,7 +380,40 @@ export const mediaApi = {
 
 export const bannersApi = {
   // Public endpoint
-  getActive: async () => (await publicApi.get('/banners/active')).data,
+  getActive: async () => {
+    const normalizeBannerResponse = (payload) => {
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.items)) return payload.items;
+      if (Array.isArray(payload?.banners)) return payload.banners;
+      if (Array.isArray(payload?.data)) return payload.data;
+      return [];
+    };
+
+    try {
+      const response = await publicApi.get('/banners/active');
+      const normalized = normalizeBannerResponse(response.data);
+      if (normalized.length > 0) return normalized;
+    } catch (error) {
+      const token = localStorage.getItem('accessToken');
+      if (error?.response?.status === 401 && token) {
+        const authActive = await api.get('/banners/active');
+        const normalized = normalizeBannerResponse(authActive.data);
+        if (normalized.length > 0) return normalized;
+      } else if (!token) {
+        throw error;
+      }
+    }
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) return [];
+
+    try {
+      const allBanners = await api.get('/banners');
+      return normalizeBannerResponse(allBanners.data);
+    } catch {
+      return [];
+    }
+  },
   
   // Admin endpoints (SUPERADMIN only)
   getAll: async () => (await api.get('/banners')).data,

@@ -5,7 +5,9 @@
       "Bash(grep -n \"md:pb-12\\\\|md:pb-8\\\\|md:pb-0\" c:/Users/d.hernandeza2/Documents/mubis_frontend-44fab88a-1/src/pages/*.jsx c:/Users/d.hernandeza2/Documents/mubis_frontend-44fab88a-1/src/pages/*.tsx)",
       "Bash(grep -E '\\\\.\\(json|js|ts\\)$')",
       "Bash(find /c/Users/d.hernandeza2/Documents/mubis_frontend-44fab88a-1/src -type d -name *page* -o -type d -name *view*)",
-      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
+      "Bash(xargs cat:*)",
+      "Bash(wc -l /c/Users/d.hernandeza2/Documents/mubis_frontend/src/pages/*.jsx)"
     ],
     "additionalDirectories": [
       "c:\\Users\\d.hernandeza2\\Documents\\mubis_frontend-44fab88a-1\\.claude\\skills"
