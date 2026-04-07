@@ -20,7 +20,9 @@ export const authApi = {
   },
 
   login: async (email, password, tenantSlug) => {
-    const { data } = await publicApi.post('/auth/login', { email, password, tenantSlug });
+    const payload = { email, password };
+    if (tenantSlug) payload.tenantSlug = tenantSlug;
+    const { data } = await publicApi.post('/auth/login', payload);
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     return data.user;
@@ -32,7 +34,9 @@ export const authApi = {
   },
 
   forgotPassword: async (email, tenantSlug) => {
-    const { data } = await publicApi.post('/auth/forgot-password', { email, tenantSlug });
+    const payload = { email };
+    if (tenantSlug) payload.tenantSlug = tenantSlug;
+    const { data } = await publicApi.post('/auth/forgot-password', payload);
     return data;
   },
 
@@ -112,14 +116,27 @@ export const inspectionsApi = {
 
 export const auctionsApi = {
   getActive: async () => (await api.get('/auctions')).data,
-  getMine: async () => (await api.get('/auctions/mine')).data,
+  getMine: async (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.status) qs.append('status', params.status);
+    if (params.branchId) qs.append('branchId', params.branchId);
+    if (params.dealerId) qs.append('dealerId', params.dealerId);
+    const q = qs.toString();
+    return (await api.get(`/auctions/mine${q ? `?${q}` : ''}`)).data;
+  },
   getWon: async () => (await api.get('/auctions/won')).data,
   getById: async (id) => (await api.get(`/auctions/${id}`)).data,
-  getAll: async () => (await api.get('/admin/auctions')).data,
+  getAll: async (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.status) qs.append('status', params.status);
+    const q = qs.toString();
+    return (await api.get(`/admin/auctions${q ? `?${q}` : ''}`)).data;
+  },
   incrementView: async (id) => api.post(`/auctions/${id}/view`),
   accept: async (id) => (await api.patch(`/auctions/${id}/accept`)).data,
   reject: async (id) => (await api.patch(`/auctions/${id}/reject`)).data,
   acceptPrevious: async (id) => (await api.patch(`/auctions/${id}/accept-previous`)).data,
+  relist: async (id) => (await api.post(`/auctions/${id}/relist`)).data,
   // Aprueba precio y publica la subasta (ADMIN_SUCURSAL / ADMIN_GENERAL / SUPERADMIN)
   approvePrice: async (vehicleId, approvedPrice) =>
     (await api.post('/auctions/approve-price', { vehicleId, approvedPrice })).data,

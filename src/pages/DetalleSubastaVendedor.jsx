@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { motion } from 'framer-motion';
 import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, Eye, TrendingUp, Calendar, Gauge, Settings2, Fuel, Palette, MapPin, ChevronLeft, ChevronRight, Camera, FileCheck, Shield, XCircle, FileText, CheckCircle, AlertTriangle, ChevronDown, ChevronUp, Car, Wind } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Eye, TrendingUp, Calendar, Gauge, Settings2, Fuel, Palette, MapPin, ChevronLeft, ChevronRight, Camera, FileCheck, Shield, XCircle, FileText, CheckCircle, AlertTriangle, ChevronDown, ChevronUp, Car, Wind, Trophy, Gavel } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
@@ -62,19 +62,18 @@ export default function DetalleSubastaVendedor() {
 
     const handleNewBid = ({ auctionId: id, currentBid, bidsCount, leaderId, userName }) => {
       if (id !== auctionId) return;
-      setAuction(prev => prev ? { ...prev, current_bid: currentBid, bids_count: bidsCount, leaderId } : prev);
+      setAuction(prev => prev ? { ...prev, currentBid, current_bid: currentBid, bidsCount, bids_count: bidsCount, leaderId } : prev);
       setBids(prev => [{ id: `ws-${Date.now()}`, userName: userName || 'Postor', amount: currentBid, createdAt: new Date().toISOString() }, ...prev].slice(0, 50));
     };
 
-    const handleStatusChanged = ({ auctionId: id, status }) => {
+    const handleStatusChanged = ({ auctionId: id, status, pipelineStatus }) => {
       if (id !== auctionId) return;
-      setAuction(prev => prev ? { ...prev, status } : prev);
+      setAuction(prev => prev ? { ...prev, status, ...(pipelineStatus ? { pipelineStatus } : {}) } : prev);
     };
 
-    const handleAuctionEnded = ({ auctionId: id, winnerId, finalBid }) => {
+    const handleAuctionEnded = ({ auctionId: id }) => {
       if (id !== auctionId) return;
-      setAuction(prev => prev ? { ...prev, status: 'ENDED', winnerId, current_bid: finalBid } : prev);
-      // Reload full auction so pending_decision UI appears immediately
+      // Reload full auction so decision UI appears immediately
       auctionsApi.getById(id).then(data => { if (data) setAuction(data); }).catch(() => {});
     };
 
@@ -92,8 +91,9 @@ export default function DetalleSubastaVendedor() {
 
   useEffect(() => {
     const calculateTime = () => {
-      if (!auction?.ends_at) return '';
-      const diff = new Date(auction.ends_at) - new Date();
+      const endsAt = auction?.endsAt ?? auction?.ends_at;
+      if (!endsAt) return '';
+      const diff = new Date(endsAt) - new Date();
       if (diff <= 0) return 'Finalizada';
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -104,21 +104,23 @@ export default function DetalleSubastaVendedor() {
     return () => clearInterval(interval);
   }, [auction]);
 
-  const handleCloseAuction = async () => {
-    if (!auction) return;
+  const reloadAuction = useCallback(async () => {
     try {
-      toast.success('Subasta cerrada', { description: `${auction.brand} ${auction.model}` });
-      setAuction(prev => ({ ...prev, status: 'closed' }));
-    } catch (err) {
-      toast.error('Error al cerrar la subasta');
-    }
-  };
+      const [data, bidsData] = await Promise.all([
+        auctionsApi.getById(auctionId),
+        bidsApi.getByAuction(auctionId).catch(() => []),
+      ]);
+      if (data) setAuction(data);
+      setBids(bidsData || []);
+    } catch { /* ignore */ }
+  }, [auctionId]);
 
   const handleAcceptBid = async () => {
     if (!auction) return;
     try {
-      const updated = await auctionsApi.accept(auction.id);
-      if (updated) { setAuction(updated); toast.success('Puja aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
+      await auctionsApi.accept(auction.id);
+      toast.success('Puja aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` });
+      await reloadAuction();
     } catch (err) {
       toast.error('Error al aceptar la puja');
     }
@@ -127,8 +129,9 @@ export default function DetalleSubastaVendedor() {
   const handleRejectBid = async () => {
     if (!auction) return;
     try {
-      const updated = await auctionsApi.reject(auction.id);
-      if (updated) { setAuction(updated); toast.info('Puja rechazada', { description: 'La subasta se extendió 48 horas para recibir mejores ofertas.' }); }
+      await auctionsApi.reject(auction.id);
+      toast.info('Puja rechazada', { description: 'La subasta se extendió 48 horas para recibir mejores ofertas.' });
+      await reloadAuction();
     } catch (err) {
       toast.error('Error al rechazar la puja');
     }
@@ -137,11 +140,22 @@ export default function DetalleSubastaVendedor() {
   const handleAcceptPreviousBid = async () => {
     if (!auction) return;
     try {
-      const updated = await auctionsApi.acceptPrevious(auction.id);
-      if (updated) { setAuction(updated); toast.success('Oferta anterior aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` }); }
-      else { toast.error('No hay oferta anterior disponible'); }
+      await auctionsApi.acceptPrevious(auction.id);
+      toast.success('Oferta anterior aceptada', { description: `Ganador asignado para ${auction.brand} ${auction.model}` });
+      await reloadAuction();
     } catch (err) {
       toast.error('No hay oferta anterior disponible');
+    }
+  };
+
+  const handleRelist = async () => {
+    if (!auction) return;
+    try {
+      await auctionsApi.relist(auction.id);
+      toast.success('Volviendo a subastar', { description: `${auction.brand} ${auction.model}` });
+      navigate('/MisSubastas');
+    } catch (err) {
+      toast.error('Error al volver a subastar');
     }
   };
 
@@ -178,10 +192,16 @@ export default function DetalleSubastaVendedor() {
     );
   }
 
-  const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
-  const isActive = (auction.status === 'active' && new Date(auction.ends_at) > new Date());
-  const isPendingDecision = auction.status === 'pending_decision';
-  const isExtended48h = auction.status === 'active' && auction.isExtended48h;
+  const formatPrice = (price) => `$${((price || 0) / 1000000).toFixed(1)}M`;
+  const pipelineStatus = auction.pipelineStatus;
+  const rawStatus = (auction.status || '').toUpperCase();
+  const isActive = pipelineStatus === 'active' || (!pipelineStatus && rawStatus === 'ACTIVE');
+  const isPendingDecision = pipelineStatus === 'decision' || (!pipelineStatus && rawStatus === 'PENDING_DECISION');
+  const isFinalized = pipelineStatus === 'finalized' || (!pipelineStatus && (rawStatus === 'ENDED' || rawStatus === 'CLOSED' || rawStatus === 'FINALIZED'));
+  const isExtended48h = !!auction.isExtended48h;
+  const currentBid = auction.currentBid ?? auction.current_bid ?? 0;
+  const bidsCount = auction.bidsCount ?? auction.bids_count ?? 0;
+  const startingPrice = auction.startingPrice ?? auction.starting_price ?? 0;
   const uniqueBidders = auction.uniqueBidders || bids.length || 0;
   const photos = auction.photos || [];
   const inspection = auction.inspection || null;
@@ -224,7 +244,7 @@ export default function DetalleSubastaVendedor() {
             overlay={
               <>
                 <button onClick={() => navigate('/MisSubastas')} className="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white z-10"><ArrowLeft className="w-5 h-5" /></button>
-                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : isPendingDecision ? 'bg-accent text-accent-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? (isExtended48h ? 'Extendida 48h' : 'Activa') : isPendingDecision ? 'Decidir' : 'Cerrada'}</Badge>
+                <Badge className={`absolute top-4 right-4 z-10 ${isActive ? 'bg-primary text-primary-foreground' : isPendingDecision ? 'bg-accent text-accent-foreground' : 'bg-muted-foreground text-white'}`}>{isActive ? (isExtended48h ? 'Extendida 48h' : 'Activa') : isPendingDecision ? 'Decidir' : isFinalized ? 'Finalizada' : 'Cerrada'}</Badge>
               </>
             }
           />
@@ -235,8 +255,8 @@ export default function DetalleSubastaVendedor() {
             <div className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-full bg-secondary/10 text-secondary"><Clock className="w-4 h-4" /><span className="font-semibold">{timeLeft}</span></div>
           </div>
           <div className="grid grid-cols-3 gap-3 mt-3">
-            <div className="text-center p-3 bg-primary/5 rounded-xl"><p className="text-2xl font-bold text-primary">{formatPrice(auction.current_bid)}</p><p className="text-primary text-xs">Puja actual</p></div>
-            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.bids_count || 0}</p><p className="text-secondary text-xs">Pujas</p><p className="text-[10px] text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p></div>
+            <div className="text-center p-3 bg-primary/5 rounded-xl"><p className="text-2xl font-bold text-primary">{formatPrice(currentBid)}</p><p className="text-primary text-xs">Puja actual</p></div>
+            <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{bidsCount}</p><p className="text-secondary text-xs">Pujas</p><p className="text-[10px] text-muted-foreground">{uniqueBidders} participante{uniqueBidders !== 1 ? 's' : ''}</p></div>
             <div className="text-center p-3 bg-secondary/5 rounded-xl"><p className="text-2xl font-bold text-secondary">{auction.views || 0}</p><p className="text-secondary text-xs">Vistas</p></div>
           </div>
         </div>
@@ -248,7 +268,7 @@ export default function DetalleSubastaVendedor() {
           <Card className="p-4 border-2 border-accent shadow-sm rounded-xl space-y-3">
             <div className="text-center">
               <p className="font-bold text-foreground text-lg">¡Tu subasta finalizó!</p>
-              <p className="text-sm text-muted-foreground mt-1">Puja más alta: <span className="font-bold text-foreground">{formatPrice(auction.highestBidAmount || auction.current_bid)}</span></p>
+              <p className="text-sm text-muted-foreground mt-1">Puja más alta: <span className="font-bold text-foreground">{formatPrice(auction.highestBidAmount || currentBid)}</span></p>
               {auction.decisionDeadline && (
                 <p className="text-xs text-destructive mt-2">Tienes hasta las {new Date(auction.decisionDeadline).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })} para decidir</p>
               )}
@@ -296,8 +316,8 @@ export default function DetalleSubastaVendedor() {
 
         <Card className="p-4 border border-border shadow-sm space-y-3 rounded-xl">
           <div className="flex items-center justify-between"><h2 className="font-bold text-foreground font-sans">Ganancia estimada</h2><TrendingUp className="w-5 h-5 text-primary" /></div>
-          <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(auction.current_bid - (auction.starting_price || 0))}</p>
-          <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(auction.starting_price || 0)}</p>
+          <p className="text-2xl font-bold text-primary mb-1">+{formatPrice(currentBid - startingPrice)}</p>
+          <p className="text-xs text-muted-foreground">Sobre precio inicial de {formatPrice(startingPrice)}</p>
           {auction.suggestedPrice && (
             <div className="flex items-center gap-2 pt-1 border-t border-border/50">
               <Badge className="bg-secondary/10 text-secondary border border-secondary/20 text-xs font-medium">
@@ -384,17 +404,33 @@ export default function DetalleSubastaVendedor() {
         {/* Activity Timeline */}
         <ActivityTimeline events={auditEvents} />
 
-        {isActive && !isExtended48h && (
-          <Button onClick={handleCloseAuction} variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/5 rounded-xl gap-2">
-            <XCircle className="w-4 h-4" /> Cerrar subasta
-          </Button>
+        {isFinalized && (
+          <Card className="p-4 border border-border shadow-sm bg-muted/50 rounded-xl space-y-2">
+            {auction.hasWinner ? (
+              <>
+                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  Subasta finalizada con ganador
+                </p>
+                <p className="text-xs text-muted-foreground">Ganador: <span className="font-semibold text-foreground">{auction.winnerName || auction.leaderName}</span></p>
+                <p className="text-xs text-muted-foreground">Puja final: {formatPrice(currentBid)}</p>
+                {auction.transactionStatus && (
+                  <p className="text-xs text-muted-foreground">Transacción: <span className="font-medium">{auction.transactionStatus}</span></p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-muted-foreground">Finalizada sin ganador</p>
+                <p className="text-xs text-muted-foreground">Puja final: {formatPrice(currentBid)}</p>
+              </>
+            )}
+          </Card>
         )}
 
-        {!isActive && !isPendingDecision && (
-          <Card className="p-4 border border-border shadow-sm bg-muted/50 text-center rounded-xl">
-            <p className="text-sm font-semibold text-muted-foreground">Esta subasta ha sido cerrada</p>
-            <p className="text-xs text-muted-foreground mt-1">Puja final: {formatPrice(auction.current_bid)}</p>
-          </Card>
+        {auction.canRelist && (
+          <Button onClick={handleRelist} className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-xl h-11 gap-2">
+            <Gavel className="w-4 h-4" /> Volver a subastar
+          </Button>
         )}
       </div>
       <BottomNav />

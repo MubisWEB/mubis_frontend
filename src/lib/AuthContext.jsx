@@ -3,7 +3,18 @@ import { authApi } from '@/api/services';
 import { connectSocket, disconnectSocket, joinNotifications } from '@/api/socket';
 import { getRedirectForRole as getRoleRedirect, isAdminRole, normalizeRole } from '@/lib/roles';
 
-const AuthContext = createContext();
+const fallbackAuthContext = {
+  user: null,
+  isAuthenticated: false,
+  isLoadingAuth: false,
+  login: async () => {
+    throw new Error('AuthProvider unavailable');
+  },
+  logout: async () => {},
+  refreshUser: async () => {},
+};
+
+const AuthContext = createContext(fallbackAuthContext);
 
 const normalizeUser = (user) =>
   user ? { ...user, role: normalizeRole(user.role) } : null;
@@ -47,6 +58,7 @@ export const AuthProvider = ({ children }) => {
         connectSocket();
         if (normalized?.id) joinNotifications(normalized.id);
       } catch {
+        disconnectSocket();
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
       } finally {
@@ -99,8 +111,4 @@ export const AuthProvider = ({ children }) => {
 
 export { isAdminRole };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

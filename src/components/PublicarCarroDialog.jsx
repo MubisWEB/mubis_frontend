@@ -166,17 +166,19 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 gap-0 rounded-2xl">
         <DialogHeader className="px-6 pt-6 pb-4 sticky top-0 bg-background z-10 border-b border-border/40">
+          <div className="flex items-center gap-3">
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="mb-2 h-9 w-9 rounded-full"
+            className="h-9 w-9 rounded-full"
             onClick={handleBack}
             aria-label="Volver"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <DialogTitle className="text-xl font-bold font-sans">Enviar vehículo a peritaje</DialogTitle>
+          </div>
           <DialogDescription className="text-muted-foreground text-sm">
             Completa los datos del vehículo. El perito completará las fotos, documentación y evaluación.
           </DialogDescription>

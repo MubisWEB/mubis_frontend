@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import TopBar from "@/components/TopBar";
 import MubisLogo from "@/components/MubisLogo";
 import { authApi, branchesApi } from "@/api/services";
+import { resolveTenantSlug } from "@/lib/tenant";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -49,13 +50,19 @@ export default function Registro() {
     acepta: false,
   });
 
+  const resolvedTenantSlug = resolveTenantSlug({
+    selectedTenantSlug: tenantSlug,
+    tenants,
+    email: formData.email,
+  });
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     
     // When city changes, load branches for that city
     if (field === 'ciudad' && value) {
       setLoadingBranches(true);
-      branchesApi.getBranchesByCity(value, tenantSlug)
+      branchesApi.getBranchesByCity(value, resolvedTenantSlug)
         .then((data) => {
           setBranches(data);
           // Reset branch selection when city changes
@@ -71,7 +78,9 @@ export default function Registro() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!tenantSlug) { toast.error("Selecciona una empresa"); return; }
+    if (!tenantSlug && resolvedTenantSlug) {
+      setTenantSlug(resolvedTenantSlug);
+    }
     if (!formData.role) { toast.error("Selecciona tu tipo de cuenta"); return; }
     if (!formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
       toast.error("Por favor completa todos los campos obligatorios"); return; }
@@ -104,7 +113,7 @@ export default function Registro() {
       const selectedCompany = companies.find(c => c.id === formData.companyId);
       
       await authApi.register({
-        tenantSlug,
+        tenantSlug: resolvedTenantSlug,
         email: formData.email,
         password: formData.password,
         role: formData.role,
