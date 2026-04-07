@@ -445,3 +445,18 @@ export const bannersApi = {
   reorder: async (ids) => (await api.patch('/banners/reorder', { ids })).data,
   delete: async (id) => (await api.delete(`/banners/${id}`)).data,
 };
+
+// ── ALLIES ───────────────────────────────────────────────────────────────────
+
+export const alliesApi = {
+  // Public endpoint – active allies for landing page
+  getActive: async (tenantSlug) => {
+    const params = tenantSlug ? `?tenantSlug=${tenantSlug}` : '';
+    return (await publicApi.get(`/allies/active${params}`)).data;
+  },
+  // Admin endpoints (SUPERADMIN only)
+  getAll: async () => (await api.get('/allies')).data,
+  create: async (data) => (await api.post('/allies', data)).data,
+  update: async (id, data) => (await api.patch(`/allies/${id}`, data)).data,
+  delete: async (id) => (await api.delete(`/allies/${id}`)).data,
+};
