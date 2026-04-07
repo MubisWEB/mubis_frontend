@@ -59,6 +59,7 @@ import AdminSucursalDashboard from './pages/AdminSucursalDashboard';
 import AdminBanners from './pages/AdminBanners';
 import Partners from './pages/Partners';
 import AdminPartners from './pages/AdminPartners';
+import AdminInventarioSucursal from './pages/AdminInventarioSucursal';
 
 const queryClient = new QueryClient();
 
@@ -140,6 +141,7 @@ const App = () => (
           {/* Admin — Nuevos roles */}
           <Route path="/AdminGeneralDashboard" element={<RequireRole roles={['admin_general','superadmin']}><AdminGeneralDashboard /></RequireRole>} />
           <Route path="/AdminSucursalDashboard" element={<RequireRole roles={['admin_sucursal','admin_general','superadmin']}><AdminSucursalDashboard /></RequireRole>} />
+          <Route path="/AdminInventarioSucursal" element={<RequireRole roles={['dealer','admin_sucursal','admin_general','superadmin']}><AdminInventarioSucursal /></RequireRole>} />
 
           {/* Dealer */}
           <Route path="/MiRendimiento" element={<RequireRole roles={['dealer']}><MiRendimiento /></RequireRole>} />

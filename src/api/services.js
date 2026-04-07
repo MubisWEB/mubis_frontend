@@ -378,6 +378,16 @@ export const mediaApi = {
 
 // ── BANNERS ───────────────────────────────────────────────────────────────────
 
+// ── BRANCH INVENTORY (Inventario de sucursal) ────────────────────────────────
+
+export const branchInventoryApi = {
+  getAll: async () => (await api.get('/branch-inventory')).data,
+  getByBranch: async (branchId) => (await api.get(`/branch-inventory/by-branch/${branchId}`)).data,
+  getById: async (id) => (await api.get(`/branch-inventory/${id}`)).data,
+  create: async (data) => (await api.post('/branch-inventory', data)).data,
+  delete: async (id) => (await api.delete(`/branch-inventory/${id}`)).data,
+};
+
 export const bannersApi = {
   // Public endpoint
   getActive: async () => {
