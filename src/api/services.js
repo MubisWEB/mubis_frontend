@@ -436,14 +436,18 @@ export const bannersApi = {
     }
   },
   
-  // Admin endpoints (SUPERADMIN only)
+  // Authenticated endpoints
   getAll: async () => (await api.get('/banners')).data,
   getById: async (id) => (await api.get(`/banners/${id}`)).data,
   create: async (data) => (await api.post('/banners', data)).data,
+  delete: async (id) => (await api.delete(`/banners/${id}`)).data,
+  // Superadmin only
+  getPending: async () => (await api.get('/banners/pending')).data,
+  approve: async (id) => (await api.patch(`/banners/${id}/approve`)).data,
+  reject: async (id) => (await api.patch(`/banners/${id}/reject`)).data,
   update: async (id, data) => (await api.patch(`/banners/${id}`, data)).data,
   toggle: async (id) => (await api.patch(`/banners/${id}/toggle`)).data,
   reorder: async (ids) => (await api.patch('/banners/reorder', { ids })).data,
-  delete: async (id) => (await api.delete(`/banners/${id}`)).data,
 };
 
 // ── ALLIES ───────────────────────────────────────────────────────────────────
