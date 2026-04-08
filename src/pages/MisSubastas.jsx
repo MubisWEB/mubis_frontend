@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion } from 'framer-motion';
-import { Clock, Users, Eye, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, Filter, X, ChevronRight, Gavel, Timer, ClipboardX, CheckCheck, Menu } from 'lucide-react';
+import { Clock, Users, Eye, Plus, FileCheck, CheckCircle, AlertTriangle, Trophy, XCircle, Search, Filter, X, ChevronRight, Gavel, Timer, ClipboardX, CheckCheck, Menu, Car } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import PublishFAB from '@/components/PublishFAB';
@@ -126,9 +126,11 @@ function VehicleProcessCard({ item, navigate }) {
   return (
     <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${item.inspectionId || item.vehicleId}`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
-          {item.photos?.[0] && <img src={item.photos[0]} alt="" className="w-full h-full object-cover" />}
-        </div>
+        {item.photos?.[0] && (
+          <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+            <img src={item.photos[0]} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
             <p className="font-bold text-foreground text-base leading-tight">{item.brand} {item.model}</p>
@@ -163,20 +165,30 @@ function VehicleProcessGridCard({ item, navigate }) {
 
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${item.inspectionId || item.vehicleId}`)}>
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={item.photos?.[0] || ''} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
-        <div className="absolute top-2 left-2">{getStatusBadge()}</div>
-        {shouldShowDocs && docs &&
-          <div className="absolute top-2 right-2">
-            <Badge className={`text-[10px] backdrop-blur-sm ${docsOk ? 'bg-primary/80 text-primary-foreground' : 'bg-background/80 text-foreground'}`}>
-              {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
-            </Badge>
-          </div>
-        }
-      </div>
+      {item.photos?.[0] && (
+        <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+          <img src={item.photos[0]} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
+          <div className="absolute top-2 left-2">{getStatusBadge()}</div>
+          {shouldShowDocs && docs &&
+            <div className="absolute top-2 right-2">
+              <Badge className={`text-[10px] backdrop-blur-sm ${docsOk ? 'bg-primary/80 text-primary-foreground' : 'bg-background/80 text-foreground'}`}>
+                {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
+              </Badge>
+            </div>
+          }
+        </div>
+      )}
       <div className="p-3.5">
-        <h3 className="font-bold text-foreground text-sm leading-tight truncate">{item.brand} {item.model}</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-foreground text-sm leading-tight truncate">{item.brand} {item.model}</h3>
+          {!item.photos?.[0] && getStatusBadge()}
+        </div>
         <p className="text-muted-foreground text-xs mt-0.5">{item.year} · {item.placa}</p>
+        {!item.photos?.[0] && shouldShowDocs && docs && (
+          <Badge className={`text-[10px] mt-2 ${docsOk ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
+            {docsOk ? <><CheckCircle className="w-3 h-3 mr-0.5" />Docs OK</> : <><AlertTriangle className="w-3 h-3 mr-0.5" />Docs</>}
+          </Badge>
+        )}
       </div>
     </Card>
   );
@@ -211,8 +223,8 @@ function AuctionCard({ item, navigate }) {
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${destId}`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
-          {item.photos?.[0] && <img src={item.photos[0]} alt="" className="w-full h-full object-cover" />}
+        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative flex items-center justify-center">
+          {item.photos?.[0] ? <img src={item.photos[0]} alt="" className="w-full h-full object-cover" /> : <Car className="w-8 h-8 text-muted-foreground/40" />}
           {isFinalized ? (
             item.hasWinner ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary z-10"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0 hover:bg-muted z-10"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
           ) : isPending ? (
@@ -269,7 +281,11 @@ function AuctionGridCard({ item, navigate }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${destId}`)}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={item.photos?.[0] || ''} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
+        {item.photos?.[0] ? (
+          <img src={item.photos[0]} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center"><Car className="w-12 h-12 text-muted-foreground/30" /></div>
+        )}
         {isFinalized ? (
           item.hasWinner ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary shadow-md z-10"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5 hover:bg-muted shadow-md z-10"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge>
         ) : isPending ? (
