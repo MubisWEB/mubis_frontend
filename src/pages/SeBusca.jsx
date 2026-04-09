@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Image as ImageIcon, Megaphone, Search, Loader2, Car, Calendar, Gauge, MapPin, Phone, Building2, ChevronRight, X } from 'lucide-react';
+import { Image as ImageIcon, Megaphone, Search, Loader2, Car, Calendar, Gauge, MapPin, Phone, Building2, ChevronRight, X, Heart, Send } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
-import { branchInventoryApi } from '@/api/services';
+import { branchInventoryApi, interestRequestsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
+import { normalizeRole } from '@/lib/roles';
 import { ALL_BRANDS, getModelsForBrand } from '@/constants/vehicleData';
 import { toast } from 'sonner';
 
@@ -36,6 +38,9 @@ const YEAR_RANGES = [
 
 export default function SeBusca() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const role = normalizeRole(user?.role);
+  const isRecomprador = role === 'recomprador';
 
   // Search form
   const [brand, setBrand] = useState('');
@@ -51,6 +56,21 @@ export default function SeBusca() {
 
   // Detail dialog
   const [selected, setSelected] = useState(null);
+  const [contacting, setContacting] = useState(false);
+
+  async function handleContactar(vehicleId) {
+    setContacting(true);
+    try {
+      await interestRequestsApi.create(vehicleId);
+      toast.success('Solicitud de interés enviada');
+      setSelected(null);
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Error al enviar solicitud';
+      toast.error(msg);
+    } finally {
+      setContacting(false);
+    }
+  }
 
   function handleBrandChange(val) {
     setBrand(val);
@@ -109,10 +129,18 @@ export default function SeBusca() {
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-2">
           <Megaphone className="w-6 h-6 text-secondary" />
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-foreground">Se Busca</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Busca vehículos en inventario y gestiona anuncios</p>
           </div>
+          <Button
+            onClick={() => navigate('/Deseados')}
+            variant="outline"
+            className="rounded-full font-semibold h-9 px-4 border-secondary/30 text-secondary hover:bg-secondary/10"
+          >
+            <Heart className="w-4 h-4 mr-1" />
+            Deseados
+          </Button>
         </div>
       </div>
 
@@ -357,6 +385,23 @@ export default function SeBusca() {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Botón Contactar — solo recompradores */}
+              {isRecomprador && (
+                <div className="border-t border-border pt-4">
+                  <Button
+                    onClick={() => handleContactar(selected.id)}
+                    disabled={contacting}
+                    className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold h-11 rounded-full"
+                  >
+                    {contacting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                    Contactar
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Enviarás una solicitud de interés al dealer
+                  </p>
                 </div>
               )}
             </div>

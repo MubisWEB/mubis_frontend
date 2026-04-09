@@ -399,6 +399,17 @@ export const branchInventoryApi = {
   },
 };
 
+// ── INTEREST REQUESTS (Deseados) ─────────────────────────────────────────────
+
+export const interestRequestsApi = {
+  create: async (branchVehicleId) => (await api.post('/interest-requests', { branchVehicleId })).data,
+  getMine: async () => (await api.get('/interest-requests/mine')).data,
+  getIncoming: async () => (await api.get('/interest-requests/incoming')).data,
+  getExpired: async () => (await api.get('/interest-requests/expired')).data,
+  accept: async (id) => (await api.patch(`/interest-requests/${id}/accept`)).data,
+  reject: async (id) => (await api.patch(`/interest-requests/${id}/reject`)).data,
+};
+
 export const bannersApi = {
   // Public endpoint
   getActive: async () => {

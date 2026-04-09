@@ -27,7 +27,8 @@ const NAV_CONFIGS = {
   dealer: DEALER_NAV,
   recomprador: [
     { icon: Search, label: 'Comprar', path: '/Comprar' },
-    { icon: Trophy, label: 'Ganados', path: '/Ganados' },
+    { icon: Search, label: 'Se Busca', path: '/SeBusca' },
+    { icon: Heart, label: 'Deseados', path: '/Deseados' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   perito: [
