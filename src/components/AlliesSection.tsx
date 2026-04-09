@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { alliesApi } from "@/api/services";
-import { Plus, Trash2, X, Pencil } from "lucide-react";
+import { Plus, Trash2, X, Pencil, ChevronDown } from "lucide-react";
 
 interface Ally {
   id: string;
@@ -22,6 +22,11 @@ const AlliesSection = () => {
   const [editingAlly, setEditingAlly] = useState<Ally | null>(null);
   const [form, setForm] = useState({ name: "", description: "", logoUrl: "" });
   const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const MAX_VISIBLE = 8;
+  const hasMore = allies.length > MAX_VISIBLE;
+  const visibleAllies = expanded ? allies : allies.slice(0, MAX_VISIBLE);
 
   const fetchAllies = async () => {
     try {
@@ -115,7 +120,7 @@ const AlliesSection = () => {
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-          {allies.map((ally) => (
+          {visibleAllies.map((ally) => (
             <div
               key={ally.id}
               className={`relative rounded-2xl border border-border bg-card p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow ${
@@ -188,6 +193,18 @@ const AlliesSection = () => {
             </button>
           )}
         </div>
+
+        {hasMore && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="mx-auto mt-6 flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {expanded ? "Ver menos" : `Ver más (${allies.length - MAX_VISIBLE})`}
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            />
+          </button>
+        )}
       </div>
 
       {/* Add / Edit dialog */}
