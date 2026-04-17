@@ -96,6 +96,10 @@ export const vehiclesApi = {
   getMine: async () => (await api.get('/vehicles')).data,
   getById: async (id) => (await api.get(`/vehicles/${id}`)).data,
   update: async (id, updates) => (await api.patch(`/vehicles/${id}`, updates)).data,
+  lookupPlate: async (placa, documentType, documentNumber) =>
+    (await api.get(`/vehicles/lookup-plate/${placa}`, { params: { documentType, documentNumber } })).data,
+  getMarketEstimate: async (brand, model, year, km) =>
+    (await api.get('/vehicles/market-estimate', { params: { brand, model, year, ...(km ? { km } : {}) } })).data,
 };
 
 // ── INSPECTIONS ───────────────────────────────────────────────────────────────
@@ -234,6 +238,7 @@ export const superadminApi = {
     if (params.year) qs.append('year', params.year);
     if (params.month) qs.append('month', params.month);
     if (params.companyId) qs.append('companyId', params.companyId);
+    if (params.branchId) qs.append('branchId', params.branchId);
     const query = qs.toString();
     return (await api.get(`/superadmin/dashboard${query ? `?${query}` : ''}`)).data;
   },

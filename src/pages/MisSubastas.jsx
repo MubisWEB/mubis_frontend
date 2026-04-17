@@ -205,11 +205,7 @@ function AuctionCard({ item, navigate }) {
     return `${hours}h ${minutes}m`;
   };
   const getDecisionTimeLeft = () => {
-    if (!item.decisionDeadline) return '30min';
-    const diff = new Date(item.decisionDeadline) - new Date();
-    if (diff <= 0) return 'Expiró';
-    const minutes = Math.floor(diff / (1000 * 60));
-    return `${minutes}min`;
+    return 'Pendiente';
   };
 
   const isFinalized = item.pipelineStatus === 'finalized';
@@ -263,11 +259,7 @@ function AuctionGridCard({ item, navigate }) {
     return `${hours}h ${minutes}m`;
   };
   const getDecisionTimeLeft = () => {
-    if (!item.decisionDeadline) return '30min';
-    const diff = new Date(item.decisionDeadline) - new Date();
-    if (diff <= 0) return 'Expiró';
-    const minutes = Math.floor(diff / (1000 * 60));
-    return `${minutes}min`;
+    return 'Pendiente';
   };
 
   const isFinalized = item.pipelineStatus === 'finalized';

@@ -48,6 +48,19 @@ const SIM_AS = {
   alertas: { sinLeer: 2, peritajesSinAsignar: 1, stockBajo: true },
 };
 
+const EMPTY_MONTHLY = MONTHS_LABELS.map((mes) => ({ mes, publicados: 0, vendidos: 0, comprados: 0 }));
+const EMPTY_PIPELINE = [
+  { etapa: 'En peritaje', count: 0, color: '#6366f1' },
+  { etapa: 'Rechazadas', count: 0, color: '#ef4444' },
+  { etapa: 'Activas', count: 0, color: '#3b82f6' },
+  { etapa: 'En decision', count: 0, color: '#f59e0b' },
+  { etapa: 'Postventa', count: 0, color: '#06b6d4' },
+  { etapa: 'Sin ganador', count: 0, color: '#10b981' },
+];
+const EMPTY_INVENTORY = { enStock: 0, reservadas: 0, vendidasMes: 0, vestido: 0, patio: 0, metaMes: 0, gap: 0 };
+const EMPTY_GOALS = { capacidadPatio: 0, comprasActual: 0, metaCompras: 0, objetivo: 0, actual: 0 };
+const EMPTY_ALERTS = { sinLeer: 0, peritajesSinAsignar: 0, stockBajo: false };
+
 function SectionTitle({ color = 'bg-secondary', children, sub }) {
   return (
     <div className="flex items-center gap-2 mb-3">
@@ -60,6 +73,20 @@ function SectionTitle({ color = 'bg-secondary', children, sub }) {
 
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
+const PIPELINE_COLORS = ['#6366f1', '#ef4444', '#3b82f6', '#f59e0b', '#06b6d4', '#10b981'];
+
+function buildPipelineData(pipeline) {
+  if (!pipeline) return EMPTY_PIPELINE;
+
+  return [
+    { etapa: 'En peritaje', count: pipeline.inProcess || 0, color: PIPELINE_COLORS[0] },
+    { etapa: 'Rechazadas', count: pipeline.inspectionRejected || 0, color: PIPELINE_COLORS[1] },
+    { etapa: 'Activas', count: pipeline.active || 0, color: PIPELINE_COLORS[2] },
+    { etapa: 'En decision', count: pipeline.pendingDecision || 0, color: PIPELINE_COLORS[3] },
+    { etapa: 'Postventa', count: pipeline.transactionsPending || 0, color: PIPELINE_COLORS[4] },
+    { etapa: 'Sin ganador', count: pipeline.finalizedWithoutWinner || 0, color: PIPELINE_COLORS[5] },
+  ];
+}
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
 function KpiCard({ icon: Icon, label, value, sub, color = 'text-secondary', alert }) {
@@ -109,6 +136,19 @@ export default function AdminSucursalDashboard() {
 
   const byStatus = dashboard?.auctions?.byStatus || {};
   const team = dashboard?.team || {};
+  const monthlyData = dashboard?.monthlyVehicleStats?.length ? dashboard.monthlyVehicleStats : EMPTY_MONTHLY;
+  const pipelineData = buildPipelineData(dashboard?.auctions?.pipeline);
+  const pipelineMax = Math.max(...pipelineData.map((item) => item.count), 1);
+  const widgets = dashboard?.widgets || {};
+  const sellerPerformance = widgets.sellerPerformance || [];
+  const inventory = widgets.inventory || EMPTY_INVENTORY;
+  const goalsSummary = widgets.goalsSummary || EMPTY_GOALS;
+  const alerts = widgets.alerts || EMPTY_ALERTS;
+  const inventoryRetail = widgets.inventory || EMPTY_INVENTORY;
+  const goalActual = goalsSummary.actual ?? EMPTY_GOALS.actual;
+  const goalTarget = goalsSummary.objetivo || EMPTY_GOALS.objetivo;
+  const goalPct = Math.min(100, Math.round((goalActual / Math.max(goalTarget, 1)) * 100));
+  const capacityTarget = Math.max(inventory.enStock || 0, goalsSummary.capacidadPatio || 0, 1);
 
   return (
     <div className="min-h-screen bg-muted pb-28">
@@ -157,7 +197,7 @@ export default function AdminSucursalDashboard() {
             <SectionTitle color="bg-secondary" sub="(últimos 6 meses)">Vehículos por Mes</SectionTitle>
             <Card className="p-4 border border-border rounded-2xl shadow-sm h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={SIM_AS.monthly} barGap={2} barCategoryGap="25%">
+                <BarChart data={monthlyData} barGap={2} barCategoryGap="25%">
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
@@ -174,9 +214,10 @@ export default function AdminSucursalDashboard() {
             <SectionTitle color="bg-indigo-500">Pipeline de la Sucursal</SectionTitle>
             <Card className="p-4 border border-border rounded-2xl shadow-sm h-[280px] flex flex-col justify-center">
               <div className="space-y-4">
-                {SIM_AS.pipeline.map((item, i) => {
-                  const pct = Math.round((item.count / SIM_AS.pipeline[0].count) * 100);
-                  const conv = i > 0 ? Math.round((item.count / SIM_AS.pipeline[i - 1].count) * 100) : null;
+                {pipelineData.map((item, i) => {
+                  const pct = Math.round((item.count / pipelineMax) * 100);
+                  const previous = pipelineData[i - 1]?.count || 0;
+                  const conv = i > 0 && previous > 0 ? Math.round((item.count / previous) * 100) : null;
                   return (
                     <div key={i}>
                       <div className="flex justify-between items-center mb-1.5">
@@ -205,7 +246,7 @@ export default function AdminSucursalDashboard() {
           <Card className="p-4 border border-border rounded-2xl shadow-sm">
             <SectionTitle color="bg-blue-500">Vendedores</SectionTitle>
             <div className="space-y-3">
-              {SIM_AS.vendedores.map((v, i) => (
+              {sellerPerformance.map((v, i) => (
                 <div key={i} className={`p-3 rounded-xl ${i % 2 === 0 ? 'bg-muted/40' : ''}`}>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-semibold text-foreground">{v.nombre}</span>
@@ -216,9 +257,9 @@ export default function AdminSucursalDashboard() {
                   </div>
                   <div className="flex gap-1.5">
                     {[
-                      { label: 'Insp.', value: v.funnel.inspeccion, max: v.solicitudes, color: '#6366f1' },
-                      { label: 'Sub.', value: v.funnel.subasta, max: v.solicitudes, color: '#3b82f6' },
-                      { label: 'Oferta', value: v.funnel.oferta, max: v.solicitudes, color: '#10b981' },
+                      { label: 'Sol.', value: v.solicitudes, max: Math.max(v.solicitudes, 1), color: '#6366f1' },
+                      { label: 'Cierre', value: v.cierres, max: Math.max(v.solicitudes, 1), color: '#3b82f6' },
+                      { label: 'Tasa', value: v.tasa, max: 100, color: '#10b981' },
                     ].map((f, j) => (
                       <div key={j} className="flex-1">
                         <p className="text-[9px] text-muted-foreground mb-0.5">{f.label}</p>
@@ -239,17 +280,17 @@ export default function AdminSucursalDashboard() {
               <div className="grid grid-cols-3 gap-2">
                 <Card className="p-3 border border-emerald-200 bg-emerald-50 rounded-2xl shadow-sm text-center">
                   <Package className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-                  <p className="text-2xl font-bold text-emerald-700">{SIM_AS.inventario.enStock}</p>
+                  <p className="text-2xl font-bold text-emerald-700">{inventory.enStock}</p>
                   <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">En stock</p>
                 </Card>
                 <Card className="p-3 border border-blue-200 bg-blue-50 rounded-2xl shadow-sm text-center">
                   <Car className="w-4 h-4 text-blue-600 mx-auto mb-1" />
-                  <p className="text-2xl font-bold text-blue-700">{SIM_AS.inventario.reservadas}</p>
+                  <p className="text-2xl font-bold text-blue-700">{inventory.reservadas}</p>
                   <p className="text-[10px] text-blue-600 font-semibold mt-0.5">Reservadas</p>
                 </Card>
                 <Card className="p-3 border border-purple-200 bg-purple-50 rounded-2xl shadow-sm text-center">
                   <DollarSign className="w-4 h-4 text-purple-600 mx-auto mb-1" />
-                  <p className="text-2xl font-bold text-purple-700">{SIM_AS.inventario.vendidasMes}</p>
+                  <p className="text-2xl font-bold text-purple-700">{inventory.vendidasMes}</p>
                   <p className="text-[10px] text-purple-600 font-semibold mt-0.5">Vend. mes</p>
                 </Card>
               </div>
@@ -260,21 +301,21 @@ export default function AdminSucursalDashboard() {
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div className="p-3 bg-muted/40 rounded-xl">
                   <p className="text-xs text-muted-foreground font-medium">Vestido</p>
-                  <p className="text-xl font-bold text-foreground">{SIM_AS.inventarioRetail.vestido}</p>
+                  <p className="text-xl font-bold text-foreground">{inventoryRetail.vestido}</p>
                 </div>
                 <div className="p-3 bg-muted/40 rounded-xl">
                   <p className="text-xs text-muted-foreground font-medium">Patio</p>
-                  <p className="text-xl font-bold text-foreground">{SIM_AS.inventarioRetail.patio}</p>
+                  <p className="text-xl font-bold text-foreground">{inventoryRetail.patio}</p>
                 </div>
               </div>
               <div className="flex justify-between items-center mb-1.5">
                 <span className="text-sm font-medium text-foreground">Meta del mes</span>
-                <span className="text-sm font-bold text-foreground">{SIM_AS.inventarioRetail.vestido + SIM_AS.inventarioRetail.patio} / {SIM_AS.inventarioRetail.metaMes}</span>
+                <span className="text-sm font-bold text-foreground">{(inventoryRetail.vestido || 0) + (inventoryRetail.patio || 0)} / {inventoryRetail.metaMes}</span>
               </div>
               <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
-                <div className="h-full rounded-full bg-teal-500" style={{ width: `${Math.round((SIM_AS.inventarioRetail.vestido + SIM_AS.inventarioRetail.patio) / SIM_AS.inventarioRetail.metaMes * 100)}%` }} />
+                <div className="h-full rounded-full bg-teal-500" style={{ width: `${Math.round(((inventoryRetail.vestido || 0) + (inventoryRetail.patio || 0)) / Math.max(inventoryRetail.metaMes || 1, 1) * 100)}%` }} />
               </div>
-              <p className="text-xs text-amber-600 font-medium">Gap: {SIM_AS.inventarioRetail.gap} vehículos para la meta</p>
+              <p className="text-xs text-amber-600 font-medium">Gap: {inventoryRetail.gap} vehículos para la meta</p>
             </Card>
           </div>
         </div>
@@ -289,10 +330,10 @@ export default function AdminSucursalDashboard() {
                   <Target className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">Capacidad del patio</span>
                 </div>
-                <span className="text-sm font-bold text-foreground">{SIM_AS.inventario.enStock} / {SIM_AS.metas.capacidadPatio}</span>
+                <span className="text-sm font-bold text-foreground">{inventory.enStock} / {capacityTarget}</span>
               </div>
               <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round(SIM_AS.inventario.enStock / SIM_AS.metas.capacidadPatio * 100)}%` }} />
+                <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round((inventory.enStock || 0) / Math.max(capacityTarget, 1) * 100)}%` }} />
               </div>
             </div>
             <div>
@@ -301,10 +342,10 @@ export default function AdminSucursalDashboard() {
                   <Car className="w-4 h-4 text-secondary" />
                   <span className="text-sm font-medium text-foreground">Compras vs Meta</span>
                 </div>
-                <span className="text-sm font-bold text-foreground">{SIM_AS.metas.comprasActual} / {SIM_AS.metas.metaCompras}</span>
+                <span className="text-sm font-bold text-foreground">{goalActual} / {goalTarget}</span>
               </div>
               <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-secondary" style={{ width: `${Math.round(SIM_AS.metas.comprasActual / SIM_AS.metas.metaCompras * 100)}%` }} />
+                <div className="h-full rounded-full bg-secondary" style={{ width: `${goalPct}%` }} />
               </div>
             </div>
           </div>
@@ -316,18 +357,18 @@ export default function AdminSucursalDashboard() {
           <div className="grid grid-cols-3 gap-2">
             <Card className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
               <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
-              <p className="text-2xl font-bold text-amber-700">{SIM_AS.alertas.sinLeer}</p>
+              <p className="text-2xl font-bold text-amber-700">{alerts.sinLeer}</p>
               <p className="text-[10px] text-amber-600 font-semibold leading-tight mt-0.5">Sin leer</p>
             </Card>
             <Card className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
               <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
-              <p className="text-2xl font-bold text-amber-700">{SIM_AS.alertas.peritajesSinAsignar}</p>
+              <p className="text-2xl font-bold text-amber-700">{alerts.peritajesSinAsignar}</p>
               <p className="text-[10px] text-amber-600 font-semibold leading-tight mt-0.5">Sin asignar</p>
             </Card>
-            <Card className={`p-3 border rounded-2xl shadow-sm text-center ${SIM_AS.alertas.stockBajo ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'}`}>
-              <Package className={`w-4 h-4 mx-auto mb-1 ${SIM_AS.alertas.stockBajo ? 'text-red-500' : 'text-emerald-500'}`} />
-              <p className={`text-sm font-bold ${SIM_AS.alertas.stockBajo ? 'text-red-600' : 'text-emerald-600'}`}>{SIM_AS.alertas.stockBajo ? 'Bajo' : 'OK'}</p>
-              <p className={`text-[10px] font-semibold leading-tight mt-0.5 ${SIM_AS.alertas.stockBajo ? 'text-red-500' : 'text-emerald-500'}`}>Stock</p>
+            <Card className={`p-3 border rounded-2xl shadow-sm text-center ${alerts.stockBajo ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'}`}>
+              <Package className={`w-4 h-4 mx-auto mb-1 ${alerts.stockBajo ? 'text-red-500' : 'text-emerald-500'}`} />
+              <p className={`text-sm font-bold ${alerts.stockBajo ? 'text-red-600' : 'text-emerald-600'}`}>{alerts.stockBajo ? 'Bajo' : 'OK'}</p>
+              <p className={`text-[10px] font-semibold leading-tight mt-0.5 ${alerts.stockBajo ? 'text-red-500' : 'text-emerald-500'}`}>Stock</p>
             </Card>
           </div>
         </div>
@@ -339,6 +380,7 @@ export default function AdminSucursalDashboard() {
             { label: 'Solicitudes', sub: `${pendingUsers.length} pendientes`, path: '/AdminSolicitudes', icon: UserCheck, alert: pendingUsers.length > 0 },
             { label: 'Subastas', sub: `${NUM(byStatus.ACTIVE || 0)} activas`, path: '/AdminSubastas', icon: Car },
             { label: 'Movimientos', sub: `${NUM(dashboard?.revenue?.completedTransactions || 0)} transacciones`, path: '/AdminMovimientos', icon: DollarSign },
+            { label: 'Postventa', sub: `${NUM(dashboard?.auctions?.pipeline?.transactionsPending || 0)} pendientes`, path: '/AdminInventario', icon: Package },
             { label: 'Analíticas', sub: 'Ver métricas', path: '/AdminAnaliticas', icon: BarChart3 },
           ].map((item) => (
             <button

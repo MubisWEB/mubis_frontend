@@ -55,6 +55,7 @@ export default function Cuenta() {
   const [pubBalance, setPubBalance] = useState(0);
   const [rechargeQty, setRechargeQty] = useState(10);
   const [rechargeOpen, setRechargeOpen] = useState(false);
+  const canManagePublications = ['dealer', 'admin_general', 'admin_sucursal'].includes(role);
 
   useEffect(() => {
     if (user) {
@@ -311,8 +312,8 @@ export default function Cuenta() {
 
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-4 space-y-4">
 
-        {/* Recharge Publications (dealer only) */}
-        {(role === 'dealer') && (
+        {/* Recharge Publications */}
+        {canManagePublications && (
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}>
             <div className="flex items-center gap-2 mb-2 px-1">
               <Package className="w-4 h-4 text-muted-foreground" />

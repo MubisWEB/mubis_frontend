@@ -12,6 +12,44 @@ export default defineConfig(() => ({
     },
   },
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replace(/\\/g, '/');
+
+          if (!normalizedId.includes('node_modules')) {
+            if (normalizedId.includes('/src/pages/Admin')) return 'pages-admin';
+            if (
+              normalizedId.includes('/src/pages/Comprar') ||
+              normalizedId.includes('/src/pages/DetalleSubasta') ||
+              normalizedId.includes('/src/pages/MisSubastas') ||
+              normalizedId.includes('/src/pages/Ganados') ||
+              normalizedId.includes('/src/pages/Guardadas')
+            ) return 'pages-auctions';
+            if (
+              normalizedId.includes('/src/pages/Peritaje') ||
+              normalizedId.includes('/src/pages/HistorialPeritaje')
+            ) return 'pages-inspections';
+            if (
+              normalizedId.includes('/src/pages/Soporte') ||
+              normalizedId.includes('/src/pages/Ayuda') ||
+              normalizedId.includes('/src/pages/Partners')
+            ) return 'pages-support';
+            if (normalizedId.includes('/src/pages/')) return 'pages-core';
+            if (normalizedId.includes('/src/components/')) return 'app-components';
+            return undefined;
+          }
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor-react';
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+          if (id.includes('@radix-ui') || id.includes('lucide-react')) return 'vendor-ui';
+          if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-maps';
+          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('react-quill')) return 'vendor-docs';
+          return 'vendor';
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

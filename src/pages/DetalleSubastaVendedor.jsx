@@ -269,9 +269,7 @@ export default function DetalleSubastaVendedor() {
             <div className="text-center">
               <p className="font-bold text-foreground text-lg">¡Tu subasta finalizó!</p>
               <p className="text-sm text-muted-foreground mt-1">Puja más alta: <span className="font-bold text-foreground">{formatPrice(auction.highestBidAmount || currentBid)}</span></p>
-              {auction.decisionDeadline && (
-                <p className="text-xs text-destructive mt-2">Tienes hasta las {new Date(auction.decisionDeadline).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })} para decidir</p>
-              )}
+              <p className="text-xs text-muted-foreground mt-2">Esta oferta espera tu decision manual.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Button onClick={handleAcceptBid} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">

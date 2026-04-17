@@ -13,7 +13,7 @@ import ProntoPagoModal from '@/components/ProntoPagoModal';
 import TopBar from "@/components/TopBar";
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ExtensionModal from '@/components/ExtensionModal';
-import { auctionsApi, bidsApi, watchlistApi, casesApi, auditApi } from '@/api/services';
+import { auctionsApi, bidsApi, watchlistApi, casesApi, auditApi, prontoPagoApi } from '@/api/services';
 import socket, { joinAuction, leaveAuction } from '@/api/socket';
 import { useAuth } from '@/lib/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -26,6 +26,7 @@ export default function DetalleSubasta() {
   const fromGanados = searchParams.get('from') === 'ganados';
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const isRecomprador = ['recomprador', 'RECOMPRADOR'].includes(currentUser?.role);
   const [loading, setLoading] = useState(true);
   const [vehicle, setVehicle] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -103,6 +104,10 @@ export default function DetalleSubasta() {
 
   useEffect(() => {
     if (!auctionId) return;
+    if (isRecomprador) {
+      setBids([]);
+      return;
+    }
     const loadBids = async () => {
       try {
         const data = await bidsApi.getByAuction(auctionId);
@@ -110,13 +115,13 @@ export default function DetalleSubasta() {
       } catch { /* ignore */ }
     };
     loadBids();
-  }, [auctionId]);
+  }, [auctionId, isRecomprador]);
 
   useEffect(() => {
     if (!auctionId || !currentUser) return;
     const loadPP = async () => {
       try {
-        const data = await (await import('@/api/services')).prontoPagoApi.getByAuction(auctionId);
+        const data = await prontoPagoApi.getByAuction(auctionId);
         setExistingPP(data || null);
       } catch { setExistingPP(null); }
     };
@@ -492,7 +497,7 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {!isWonByMe && bids.length > 0 && (
+        {!isRecomprador && !isWonByMe && bids.length > 0 && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <p className="font-bold text-foreground mb-3">Últimas pujas</p>
             <div className="space-y-2">

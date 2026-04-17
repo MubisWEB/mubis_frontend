@@ -32,37 +32,6 @@ const MONTHS_LABELS = (() => {
   });
 })();
 
-const SIM_SUPERADMIN = {
-  monthly: [
-    { publicados: 18, vendidos: 11, comprados: 9 },
-    { publicados: 24, vendidos: 15, comprados: 12 },
-    { publicados: 21, vendidos: 13, comprados: 11 },
-    { publicados: 29, vendidos: 18, comprados: 15 },
-    { publicados: 26, vendidos: 16, comprados: 13 },
-    { publicados: 34, vendidos: 21, comprados: 17 },
-  ].map((d, i) => ({ ...d, mes: MONTHS_LABELS[i] })),
-  totals: { publicados: 152, vendidos: 94, comprados: 77 },
-};
-
-const SIM_PIPELINE = [
-  { etapa: 'Solicitudes', count: 142, color: '#8b5cf6' },
-  { etapa: 'Inspeccionados', count: 98, color: '#6366f1' },
-  { etapa: 'En subasta', count: 74, color: '#3b82f6' },
-  { etapa: 'Con oferta', count: 51, color: '#06b6d4' },
-  { etapa: 'Cerrados', count: 31, color: '#10b981' },
-];
-
-const SIM_MAYORISTAS = [
-  { nombre: 'AutoMax', participacion: 23, ganadas: 14, precioPromedio: 38500000, conversion: 61 },
-  { nombre: 'CarDeals', participacion: 18, ganadas: 9, precioPromedio: 42100000, conversion: 50 },
-  { nombre: 'MegaAutos', participacion: 15, ganadas: 11, precioPromedio: 35800000, conversion: 73 },
-  { nombre: 'DriveNow', participacion: 12, ganadas: 6, precioPromedio: 41200000, conversion: 50 },
-];
-
-const SIM_API_STATS = { consumed: 12450, limit: 20000, cost: 1240000, errorRate: 1.2 };
-const SIM_ALERTAS = { sinLeer: 8, peritajesSinAsignar: 3, dealsPendientes: 5 };
-const SIM_RESUMEN = { concesionariosActivos: 4, adminsCreados: 12, partnersAsociados: 18 };
-
 // ── Componente: separador de sección ─────────────────────────────────────────
 function SectionTitle({ color = 'bg-secondary', children, sub }) {
   return (
@@ -84,12 +53,34 @@ const MONTHS = [
 ];
 
 // Simulación de KPIs cuando el back aún no devuelve datos
-const SIM_KPIS = {
-  totalSales: 1_340_000_000,
-  totalTransactions: 94,
-  activeVehicles: 152,
-  totalBrokerage: 52_800_000,
-};
+const EMPTY_KPIS = { totalSales: 0, totalTransactions: 0, activeVehicles: 0, totalBrokerage: 0 };
+const EMPTY_MONTHLY = MONTHS_LABELS.map((mes) => ({ mes, publicados: 0, vendidos: 0, comprados: 0 }));
+const EMPTY_PIPELINE = [
+  { etapa: 'En peritaje', count: 0, color: '#6366f1' },
+  { etapa: 'Rechazadas', count: 0, color: '#ef4444' },
+  { etapa: 'Activas', count: 0, color: '#3b82f6' },
+  { etapa: 'En decision', count: 0, color: '#f59e0b' },
+  { etapa: 'Postventa', count: 0, color: '#06b6d4' },
+  { etapa: 'Sin ganador', count: 0, color: '#10b981' },
+];
+const EMPTY_API_STATS = { consumed: 0, limit: 0, cost: 0, errorRate: 0 };
+const EMPTY_ALERTS = { sinLeer: 0, peritajesSinAsignar: 0, dealsPendientes: 0 };
+const EMPTY_SUMMARY = { concesionariosActivos: 0, adminsCreados: 0, partnersAsociados: 0 };
+
+const PIPELINE_COLORS = ['#6366f1', '#ef4444', '#3b82f6', '#f59e0b', '#06b6d4', '#10b981'];
+
+function buildPipelineData(pipeline) {
+  if (!pipeline) return EMPTY_PIPELINE;
+
+  return [
+    { etapa: 'En peritaje', count: pipeline.inProcess || 0, color: PIPELINE_COLORS[0] },
+    { etapa: 'Rechazadas', count: pipeline.inspectionRejected || 0, color: PIPELINE_COLORS[1] },
+    { etapa: 'Activas', count: pipeline.active || 0, color: PIPELINE_COLORS[2] },
+    { etapa: 'En decision', count: pipeline.pendingDecision || 0, color: PIPELINE_COLORS[3] },
+    { etapa: 'Postventa', count: pipeline.transactionsPending || 0, color: PIPELINE_COLORS[4] },
+    { etapa: 'Sin ganador', count: pipeline.finalizedWithoutWinner || 0, color: PIPELINE_COLORS[5] },
+  ];
+}
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -160,15 +151,30 @@ export default function AdminDashboard() {
   }, [year, month, companyId, branchId]);
 
   const kpis = {
-    totalSales: dashboard?.kpis?.totalSales ?? SIM_KPIS.totalSales,
-    totalTransactions: dashboard?.kpis?.totalTransactions ?? SIM_KPIS.totalTransactions,
-    activeVehicles: dashboard?.kpis?.activeVehicles ?? SIM_KPIS.activeVehicles,
-    totalBrokerage: dashboard?.kpis?.totalBrokerage ?? SIM_KPIS.totalBrokerage,
+    totalSales: dashboard?.kpis?.totalSales ?? EMPTY_KPIS.totalSales,
+    totalTransactions: dashboard?.kpis?.totalTransactions ?? EMPTY_KPIS.totalTransactions,
+    activeVehicles: dashboard?.kpis?.activeVehicles ?? EMPTY_KPIS.activeVehicles,
+    totalBrokerage: dashboard?.kpis?.totalBrokerage ?? EMPTY_KPIS.totalBrokerage,
   };
   const salesByCompany = dashboard?.salesByCompany || [];
   const salesByBranch = dashboard?.salesByBranch || [];
   const salesTrend = dashboard?.salesTrend || [];
   const topDealers = dashboard?.topDealers || [];
+  const monthlyVehicleStats = dashboard?.monthlyVehicleStats?.length ? dashboard.monthlyVehicleStats : EMPTY_MONTHLY;
+  const monthlyTotals = monthlyVehicleStats.reduce(
+    (acc, item) => ({
+      publicados: acc.publicados + (item.publicados || 0),
+      vendidos: acc.vendidos + (item.vendidos || 0),
+      comprados: acc.comprados + (item.comprados || 0),
+    }),
+    { publicados: 0, vendidos: 0, comprados: 0 },
+  );
+  const pipelineData = buildPipelineData(dashboard?.pipeline);
+  const pipelineMax = Math.max(...pipelineData.map((item) => item.count), 1);
+  const summary = dashboard?.summary || EMPTY_SUMMARY;
+  const wholesaleStats = dashboard?.wholesaleStats || [];
+  const apiStats = dashboard?.apiStats || EMPTY_API_STATS;
+  const operationalAlerts = dashboard?.operationalAlerts || EMPTY_ALERTS;
 
   // Pie chart data for company distribution
   const companyPieData = useMemo(() =>
@@ -455,21 +461,21 @@ export default function AdminDashboard() {
             <SectionTitle color="bg-secondary" sub="(últimos 6 meses)">Vehículos por Mes</SectionTitle>
             <div className="grid grid-cols-3 gap-2 mb-3">
               <div className="rounded-2xl p-3 bg-purple-50 border border-purple-100">
-                <p className="text-xl font-bold text-purple-700">{SIM_SUPERADMIN.totals.publicados}</p>
+                <p className="text-xl font-bold text-purple-700">{monthlyTotals.publicados}</p>
                 <p className="text-[10px] text-purple-600 font-semibold mt-0.5">Publicados</p>
               </div>
               <div className="rounded-2xl p-3 bg-blue-50 border border-blue-100">
-                <p className="text-xl font-bold text-blue-700">{SIM_SUPERADMIN.totals.vendidos}</p>
+                <p className="text-xl font-bold text-blue-700">{monthlyTotals.vendidos}</p>
                 <p className="text-[10px] text-blue-600 font-semibold mt-0.5">Vendidos</p>
               </div>
               <div className="rounded-2xl p-3 bg-emerald-50 border border-emerald-100">
-                <p className="text-xl font-bold text-emerald-700">{SIM_SUPERADMIN.totals.comprados}</p>
+                <p className="text-xl font-bold text-emerald-700">{monthlyTotals.comprados}</p>
                 <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Comprados</p>
               </div>
             </div>
             <Card className="p-4 border border-border rounded-2xl shadow-sm h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={SIM_SUPERADMIN.monthly} barGap={2} barCategoryGap="25%">
+                <BarChart data={monthlyVehicleStats} barGap={2} barCategoryGap="25%">
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
@@ -486,9 +492,10 @@ export default function AdminDashboard() {
             <SectionTitle color="bg-indigo-500">Pipeline de Transacciones</SectionTitle>
             <Card className="p-4 border border-border rounded-2xl shadow-sm" style={{ minHeight: 290 }}>
               <div className="space-y-4">
-                {SIM_PIPELINE.map((item, i) => {
-                  const pct = Math.round((item.count / SIM_PIPELINE[0].count) * 100);
-                  const conv = i > 0 ? Math.round((item.count / SIM_PIPELINE[i - 1].count) * 100) : null;
+                {pipelineData.map((item, i) => {
+                  const pct = Math.round((item.count / pipelineMax) * 100);
+                  const previous = pipelineData[i - 1]?.count || 0;
+                  const conv = i > 0 && previous > 0 ? Math.round((item.count / previous) * 100) : null;
                   return (
                     <div key={i}>
                       <div className="flex justify-between items-center mb-1.5">
@@ -528,7 +535,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {SIM_MAYORISTAS.map((m, i) => (
+                  {wholesaleStats.map((m, i) => (
                     <tr key={i} className={`${i % 2 === 1 ? 'bg-muted/40' : ''}`}>
                       <td className="py-2.5 pr-3 font-semibold text-foreground text-sm">{m.nombre}</td>
                       <td className="py-2.5 pr-3 text-right text-muted-foreground text-xs">{m.participacion}%</td>
@@ -555,22 +562,22 @@ export default function AdminDashboard() {
                     <Globe className="w-4 h-4 text-blue-500" />
                     <p className="text-sm font-semibold text-foreground">Consumo API</p>
                   </div>
-                  <p className="text-sm font-bold text-foreground">{NUM(SIM_API_STATS.consumed)} / {NUM(SIM_API_STATS.limit)}</p>
+                  <p className="text-sm font-bold text-foreground">{NUM(apiStats.consumed)} / {NUM(apiStats.limit)}</p>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
-                  <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${Math.round(SIM_API_STATS.consumed / SIM_API_STATS.limit * 100)}%` }} />
+                  <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${apiStats.limit ? Math.round(apiStats.consumed / apiStats.limit * 100) : 0}%` }} />
                 </div>
-                <p className="text-xs text-muted-foreground text-right">{Math.round(SIM_API_STATS.consumed / SIM_API_STATS.limit * 100)}% utilizado</p>
+                <p className="text-xs text-muted-foreground text-right">{apiStats.limit ? Math.round(apiStats.consumed / apiStats.limit * 100) : 0}% utilizado</p>
               </Card>
               <div className="grid grid-cols-2 gap-3">
                 <Card className="p-4 border border-emerald-200 bg-emerald-50 rounded-2xl shadow-sm">
                   <DollarSign className="w-4 h-4 text-emerald-600 mb-2" />
-                  <p className="text-xl font-bold text-emerald-700">{COP(SIM_API_STATS.cost)}</p>
+                  <p className="text-xl font-bold text-emerald-700">{COP(apiStats.cost)}</p>
                   <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Costo total</p>
                 </Card>
                 <Card className="p-4 border border-red-200 bg-red-50 rounded-2xl shadow-sm">
                   <Activity className="w-4 h-4 text-red-500 mb-2" />
-                  <p className="text-xl font-bold text-red-600">{SIM_API_STATS.errorRate}%</p>
+                  <p className="text-xl font-bold text-red-600">{apiStats.errorRate}%</p>
                   <p className="text-[10px] text-red-500 font-semibold mt-0.5">Tasa de error</p>
                 </Card>
               </div>
@@ -584,9 +591,9 @@ export default function AdminDashboard() {
             <SectionTitle color="bg-amber-500">Alertas Operacionales</SectionTitle>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: 'Sin leer', value: SIM_ALERTAS.sinLeer },
-                { label: 'Sin asignar', value: SIM_ALERTAS.peritajesSinAsignar },
-                { label: 'Deals pend.', value: SIM_ALERTAS.dealsPendientes },
+                { label: 'Sin leer', value: operationalAlerts.sinLeer },
+                { label: 'Sin asignar', value: operationalAlerts.peritajesSinAsignar },
+                { label: 'Deals pend.', value: operationalAlerts.dealsPendientes },
               ].map((a, i) => (
                 <Card key={i} className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
                   <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
@@ -601,17 +608,17 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-3 gap-2">
               <Card className="p-3 border border-border rounded-2xl shadow-sm text-center">
                 <Building2 className="w-4 h-4 text-secondary mx-auto mb-1" />
-                <p className="text-2xl font-bold text-secondary">{SIM_RESUMEN.concesionariosActivos}</p>
+                <p className="text-2xl font-bold text-secondary">{summary.concesionariosActivos}</p>
                 <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">Concesionarios</p>
               </Card>
               <Card className="p-3 border border-border rounded-2xl shadow-sm text-center">
                 <Users className="w-4 h-4 text-secondary mx-auto mb-1" />
-                <p className="text-2xl font-bold text-secondary">{SIM_RESUMEN.adminsCreados}</p>
+                <p className="text-2xl font-bold text-secondary">{summary.adminsCreados}</p>
                 <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">Admins</p>
               </Card>
               <Card className="p-3 border border-border rounded-2xl shadow-sm text-center">
                 <Handshake className="w-4 h-4 text-primary mx-auto mb-1" />
-                <p className="text-2xl font-bold text-primary">{SIM_RESUMEN.partnersAsociados}</p>
+                <p className="text-2xl font-bold text-primary">{summary.partnersAsociados}</p>
                 <p className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">Partners</p>
               </Card>
             </div>

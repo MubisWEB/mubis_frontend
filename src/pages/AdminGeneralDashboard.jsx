@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Users, Car, DollarSign, CheckCircle, Building2, BarChart3, UserPlus, ArrowUpRight,
-  AlertTriangle, Target, TrendingUp, Clock,
+  AlertTriangle, Target, TrendingUp, Clock, Package,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -68,6 +68,18 @@ const SIM_AG = {
   alertas: { sinLeer: 4, peritajesSinAsignar: 2, rechazadas: 3 },
 };
 
+const EMPTY_MONTHLY = MONTHS_LABELS.map((mes) => ({ mes, publicados: 0, vendidos: 0, comprados: 0 }));
+const EMPTY_PIPELINE = [
+  { etapa: 'En peritaje', count: 0, color: '#6366f1' },
+  { etapa: 'Rechazadas', count: 0, color: '#ef4444' },
+  { etapa: 'Activas', count: 0, color: '#3b82f6' },
+  { etapa: 'En decision', count: 0, color: '#f59e0b' },
+  { etapa: 'Postventa', count: 0, color: '#06b6d4' },
+  { etapa: 'Sin ganador', count: 0, color: '#10b981' },
+];
+const EMPTY_GOALS = { objetivo: 0, actual: 0 };
+const EMPTY_ALERTS = { sinLeer: 0, peritajesSinAsignar: 0, rechazadas: 0 };
+
 const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 
 function SectionTitle({ color = 'bg-secondary', children, sub }) {
@@ -108,6 +120,20 @@ function PerfTable({ headers, rows }) {
 }
 
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
+const PIPELINE_COLORS = ['#6366f1', '#ef4444', '#3b82f6', '#f59e0b', '#06b6d4', '#10b981'];
+
+function buildPipelineData(pipeline) {
+  if (!pipeline) return EMPTY_PIPELINE;
+
+  return [
+    { etapa: 'En peritaje', count: pipeline.inProcess || 0, color: PIPELINE_COLORS[0] },
+    { etapa: 'Rechazadas', count: pipeline.inspectionRejected || 0, color: PIPELINE_COLORS[1] },
+    { etapa: 'Activas', count: pipeline.active || 0, color: PIPELINE_COLORS[2] },
+    { etapa: 'En decision', count: pipeline.pendingDecision || 0, color: PIPELINE_COLORS[3] },
+    { etapa: 'Postventa', count: pipeline.transactionsPending || 0, color: PIPELINE_COLORS[4] },
+    { etapa: 'Sin ganador', count: pipeline.finalizedWithoutWinner || 0, color: PIPELINE_COLORS[5] },
+  ];
+}
 
 // ── Modal: Crear Admin Sucursal ───────────────────────────────────────────────
 function CreateAdminModal({ branches, onCreated }) {
@@ -266,6 +292,18 @@ export default function AdminGeneralDashboard() {
     Subastas: b.auctions,
     Dealers: b.dealers,
   }));
+  const monthlyData = dashboard?.monthlyVehicleStats?.length ? dashboard.monthlyVehicleStats : EMPTY_MONTHLY;
+  const pipelineData = buildPipelineData(dashboard?.auctions?.pipeline);
+  const pipelineMax = Math.max(...pipelineData.map((item) => item.count), 1);
+  const widgets = dashboard?.widgets || {};
+  const sellerPerformance = widgets.sellerPerformance || [];
+  const inspectorPerformance = widgets.inspectorPerformance || [];
+  const goalsSummary = widgets.goalsSummary || EMPTY_GOALS;
+  const demandModels = widgets.demandModels || [];
+  const alerts = widgets.alerts || EMPTY_ALERTS;
+  const goalActual = goalsSummary.actual ?? EMPTY_GOALS.actual;
+  const goalTarget = goalsSummary.objetivo || EMPTY_GOALS.objetivo;
+  const goalPct = Math.min(100, Math.round((goalActual / Math.max(goalTarget, 1)) * 100));
 
   const byRole = dashboard?.users?.byRole || {};
   const byStatus = dashboard?.auctions?.byStatus || {};
@@ -405,7 +443,7 @@ export default function AdminGeneralDashboard() {
             <SectionTitle color="bg-secondary" sub="(últimos 6 meses)">Vehículos por Mes</SectionTitle>
             <Card className="p-4 border border-border rounded-2xl shadow-sm h-[290px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={SIM_AG.monthly} barGap={2} barCategoryGap="25%">
+                <BarChart data={monthlyData} barGap={2} barCategoryGap="25%">
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
@@ -422,9 +460,10 @@ export default function AdminGeneralDashboard() {
             <SectionTitle color="bg-indigo-500">Pipeline del Concesionario</SectionTitle>
             <Card className="p-4 border border-border rounded-2xl shadow-sm h-[290px] flex flex-col justify-center">
               <div className="space-y-4">
-                {SIM_AG.pipeline.map((item, i) => {
-                  const pct = Math.round((item.count / SIM_AG.pipeline[0].count) * 100);
-                  const conv = i > 0 ? Math.round((item.count / SIM_AG.pipeline[i - 1].count) * 100) : null;
+                {pipelineData.map((item, i) => {
+                  const pct = Math.round((item.count / pipelineMax) * 100);
+                  const previous = pipelineData[i - 1]?.count || 0;
+                  const conv = i > 0 && previous > 0 ? Math.round((item.count / previous) * 100) : null;
                   return (
                     <div key={i}>
                       <div className="flex justify-between items-center mb-1.5">
@@ -453,7 +492,7 @@ export default function AdminGeneralDashboard() {
           <SectionTitle color="bg-blue-500">Rendimiento Vendedores</SectionTitle>
           <PerfTable
             headers={['Nombre', 'Solicitudes', 'Cierres', 'Tasa']}
-            rows={SIM_AG.vendedores.map(v => [
+            rows={sellerPerformance.map(v => [
               v.nombre,
               v.solicitudes,
               v.cierres,
@@ -468,10 +507,10 @@ export default function AdminGeneralDashboard() {
             <SectionTitle color="bg-cyan-500">Rendimiento Tasadores</SectionTitle>
             <PerfTable
               headers={['Nombre', 'T. Respuesta', 'Tasa Cierre']}
-              rows={SIM_AG.tasadores.map(t => [
+              rows={inspectorPerformance.map(t => [
                 t.nombre,
-                <span className="flex items-center gap-1 justify-end"><Clock className="w-3 h-3" />{t.tiempoRespuesta}</span>,
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${t.tasaCierre >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{t.tasaCierre}%</span>,
+                <span className="flex items-center gap-1 justify-end"><Clock className="w-3 h-3" />{t.tiempoPeritaje || '-'}</span>,
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${(t.llenado || 0) >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{t.llenado || 0}%</span>,
               ])}
             />
           </Card>
@@ -479,11 +518,11 @@ export default function AdminGeneralDashboard() {
             <SectionTitle color="bg-purple-500">Rendimiento Inspectores</SectionTitle>
             <PerfTable
               headers={['Nombre', 'T. Peritaje', 'Llenado', 'Costo Rep.']}
-              rows={SIM_AG.inspectores.map(ins => [
+              rows={inspectorPerformance.map(ins => [
                 ins.nombre,
                 ins.tiempoPeritaje,
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ins.llenado >= 90 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{ins.llenado}%</span>,
-                <span className="text-xs text-muted-foreground">{COP(ins.costoReparacion)}</span>,
+                <span className="text-xs text-muted-foreground">{NUM(ins.peritajes || 0)} peritajes</span>,
               ])}
             />
           </Card>
@@ -498,18 +537,18 @@ export default function AdminGeneralDashboard() {
                 <Target className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-foreground">Ventas del mes</span>
               </div>
-              <span className="text-sm font-bold text-foreground">{SIM_AG.metas.actual} / {SIM_AG.metas.objetivo}</span>
+              <span className="text-sm font-bold text-foreground">{goalActual} / {goalTarget}</span>
             </div>
             <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.round(SIM_AG.metas.actual / SIM_AG.metas.objetivo * 100)}%` }} />
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${goalPct}%` }} />
             </div>
-            <p className="text-xs text-muted-foreground text-right">{Math.round(SIM_AG.metas.actual / SIM_AG.metas.objetivo * 100)}% completado</p>
+            <p className="text-xs text-muted-foreground text-right">{goalPct}% completado</p>
           </Card>
           <Card className="p-4 border border-border rounded-2xl shadow-sm">
             <SectionTitle color="bg-orange-500">Modelos más Solicitados</SectionTitle>
             <div className="space-y-3">
-              {SIM_AG.demanda.map((d, i) => {
-                const pct = Math.round((d.solicitudes / SIM_AG.demanda[0].solicitudes) * 100);
+              {demandModels.map((d, i) => {
+                const pct = Math.round((d.solicitudes / Math.max(demandModels[0]?.solicitudes || 1, 1)) * 100);
                 return (
                   <div key={i}>
                     <div className="flex justify-between items-center mb-1">
@@ -531,9 +570,9 @@ export default function AdminGeneralDashboard() {
           <SectionTitle color="bg-amber-500">Alertas</SectionTitle>
           <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
             {[
-              { label: 'Sin leer', value: SIM_AG.alertas.sinLeer },
-              { label: 'Sin asignar', value: SIM_AG.alertas.peritajesSinAsignar },
-              { label: 'Rechazadas', value: SIM_AG.alertas.rechazadas },
+              { label: 'Sin leer', value: alerts.sinLeer },
+              { label: 'Sin asignar', value: alerts.peritajesSinAsignar },
+              { label: 'Rechazadas', value: alerts.rechazadas },
             ].map((a, i) => (
               <Card key={i} className="p-3 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm text-center">
                 <AlertTriangle className="w-4 h-4 text-amber-500 mx-auto mb-1" />
@@ -551,6 +590,7 @@ export default function AdminGeneralDashboard() {
             { label: 'Solicitudes', sub: `${pendingUsers.length} pendientes`, path: '/AdminSolicitudes', icon: Users, alert: pendingUsers.length > 0 },
             { label: 'Subastas', sub: `${NUM(byStatus.ACTIVE || 0)} activas`, path: '/AdminSubastas', icon: Car },
             { label: 'Movimientos', sub: `${NUM(dashboard?.revenue?.completedTransactions || 0)} transacciones`, path: '/AdminMovimientos', icon: DollarSign },
+            { label: 'Postventa', sub: `${NUM(dashboard?.auctions?.pipeline?.transactionsPending || 0)} pendientes`, path: '/AdminInventario', icon: Package },
             { label: 'Analíticas', sub: 'Ver métricas', path: '/AdminAnaliticas', icon: BarChart3 },
           ].map((item) => (
             <button

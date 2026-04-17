@@ -16,6 +16,7 @@ export function RequireRole({ roles, children }) {
   const { isAuthenticated, user, isLoadingAuth } = useAuth();
   if (isLoadingAuth) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role === 'superadmin') return children;
   if (!roles.includes(user?.role)) return <Navigate to={getRedirectForRole(user?.role)} replace />;
   if (!isAdminRole(user?.role) && user?.verification_status !== 'VERIFIED') {
     return <Navigate to="/PendienteVerificacion" replace />;

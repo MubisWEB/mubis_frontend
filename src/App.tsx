@@ -128,7 +128,7 @@ const App = () => (
           <Route path="/AdminDealerDetalle/:userId" element={<RequireRole roles={['superadmin']}><AdminDealerDetalle /></RequireRole>} />
           <Route path="/AdminCasos" element={<RequireRole roles={['superadmin']}><AdminCasos /></RequireRole>} />
           <Route path="/AdminCasos/:caseId" element={<RequireRole roles={['superadmin']}><AdminCasoDetalle /></RequireRole>} />
-          <Route path="/AdminInventario" element={<RequireRole roles={['superadmin']}><AdminInventario /></RequireRole>} />
+          <Route path="/AdminInventario" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal']}><AdminInventario /></RequireRole>} />
           <Route path="/AdminMetas" element={<RequireRole roles={['superadmin']}><AdminMetas /></RequireRole>} />
           <Route path="/AdminEmpresas" element={<RequireRole roles={['superadmin']}><AdminEmpresas /></RequireRole>} />
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />

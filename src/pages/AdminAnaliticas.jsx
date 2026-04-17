@@ -14,6 +14,7 @@ import Header from '@/components/Header';
 import { analyticsApi } from '@/api/services';
 import { toast } from 'sonner';
 import Skeleton from 'react-loading-skeleton';
+import { useAuth } from '@/lib/AuthContext';
 
 const PRIMARY = '#1a9d3d';
 const SECONDARY = '#9d4edd';
@@ -37,6 +38,7 @@ function StatCard({ icon: Icon, label, value, color = 'text-primary', delay = 0 
 }
 
 export default function AdminAnaliticas() {
+  const { user } = useAuth();
   const [overview, setOverview] = useState(null);
   const [market, setMarket] = useState(null);
   const [pipeline, setPipeline] = useState(null);
@@ -58,7 +60,7 @@ export default function AdminAnaliticas() {
       ]);
       setOverview(ov);
       setMarket(mk);
-      setPipeline(pp);
+      setPipeline(pp?.pipeline || pp);
       setDealersData(Array.isArray(dl) ? dl : []);
     } catch (err) {
       toast.error('Error al cargar analíticas');
@@ -67,10 +69,16 @@ export default function AdminAnaliticas() {
     }
   }
 
+  const backTo = user?.role === 'admin_general'
+    ? '/AdminGeneralDashboard'
+    : user?.role === 'admin_sucursal'
+      ? '/AdminSucursalDashboard'
+      : '/AdminDashboard';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-muted pb-28">
-        <Header title="Analíticas" subtitle="Métricas en tiempo real" backTo="/AdminDashboard" />
+        <Header title="Analíticas" subtitle="Métricas en tiempo real" backTo={backTo} />
         <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[0,1,2,3,4,5].map(i => (
@@ -143,7 +151,7 @@ export default function AdminAnaliticas() {
 
   return (
     <div className="min-h-screen bg-muted pb-28">
-      <Header title="Analíticas" subtitle="Métricas en tiempo real" backTo="/AdminDashboard" />
+      <Header title="Analíticas" subtitle="Métricas en tiempo real" backTo={backTo} />
 
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-6">
 

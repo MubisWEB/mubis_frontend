@@ -17,6 +17,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { inventoryApi } from '@/api/services';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/AuthContext';
 
 const formatPrice = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
@@ -173,6 +174,7 @@ const FILTER_OPTIONS = [
 ];
 
 export default function AdminInventario() {
+  const { user } = useAuth();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -210,9 +212,16 @@ export default function AdminInventario() {
     );
   }
 
+  const role = user?.role;
+  const backTo = role === 'admin_general'
+    ? '/AdminGeneralDashboard'
+    : role === 'admin_sucursal'
+      ? '/AdminSucursalDashboard'
+      : '/AdminDashboard';
+
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Inventario" subtitle={`${records.length} registros`} backTo="/AdminDashboard" />
+      <Header title="Inventario" subtitle={`${records.length} registros`} backTo={backTo} />
 
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-4">
         {/* Filtros */}
