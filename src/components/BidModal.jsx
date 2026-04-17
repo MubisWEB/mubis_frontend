@@ -222,12 +222,14 @@ export default function BidModal({ vehicle, open, onClose, onSubmit }) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               className={`p-3 rounded-xl text-sm font-medium ${
-                result.outbid
+                result.success === false || result.outbid
                   ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'
                   : 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
               }`}
             >
-              {result.outbid ? (
+              {result.success === false ? (
+                <>{result.error || result.message || 'No se pudo registrar la puja'}</>
+              ) : result.outbid ? (
                 <>Ya existe una puja máxima superior. Puja visible: {formatShortPrice(result.visibleBid)}</>
               ) : (
                 <>Lideras la puja con: {formatShortPrice(result.visibleBid)}</>

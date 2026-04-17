@@ -169,7 +169,9 @@ export default function DetalleSubasta() {
       }
       return result;
     } catch (err) {
-      return { success: false, error: err.message };
+      const message = err?.response?.data?.message || err?.message || 'Error al pujar';
+      toast.error(message);
+      return { success: false, error: message };
     }
   };
 

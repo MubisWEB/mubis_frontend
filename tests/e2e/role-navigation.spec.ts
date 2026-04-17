@@ -66,7 +66,22 @@ async function loginAs(page, request, role: Role) {
   expect(response.ok(), `login ${role} (${user.email})`).toBeTruthy();
 
   const payload = await response.json();
+  await page.route('**/api/auth/me', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(payload.user),
+    });
+  });
   await page.addInitScript(({ accessToken, refreshToken }) => {
+    window.localStorage.setItem('accessToken', accessToken);
+    window.localStorage.setItem('refreshToken', refreshToken);
+  }, {
+    accessToken: payload.accessToken,
+    refreshToken: payload.refreshToken,
+  });
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(({ accessToken, refreshToken }) => {
     window.localStorage.setItem('accessToken', accessToken);
     window.localStorage.setItem('refreshToken', refreshToken);
   }, {
