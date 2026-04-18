@@ -167,6 +167,22 @@ No debe:
 - Saltarse permisos de rol.
 - Mostrar datos sensibles a roles no autorizados.
 
+UI de Verifik en `PublicarCarroDialog`:
+- Fila `[Placa] [Cedula] [🔍 Buscar]` en una sola linea (flex row).
+- Si backend devuelve 503 con `code: 'VERIFIK_NO_CREDITS'`, mostrar "Servicio de consulta de placa no disponible" (no error generico).
+- Si Verifik retorna datos, se autocompletan campos. Cambiar la placa resetea los datos autocompletados.
+
+### Estimacion de precio de mercado
+
+En `PublicarCarroDialog` existe logica de estimacion de precio real via TuCarro:
+
+- Boton "Buscar precio de mercado" llama a `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible)`.
+- Muestra card con `marketPrice`, rango `minPrice-maxPrice` y nivel de confianza.
+- `PRICE_RELEVANT_FIELDS = ['brand','model','year','km','transmision','combustible','city']`: cualquier cambio en estos campos resetea el precio estimado (obliga a re-buscar).
+- Cambiar placa tambien resetea el precio.
+- Icono RefreshCw permite volver a buscar precio manualmente despues de modificaciones.
+- Wrapper en `services.js`: `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible)`.
+
 ### Peritaje
 
 Pantallas clave:
@@ -302,7 +318,8 @@ Areas clave:
 - Inventory/postventa.
 - Analytics/dashboards.
 - Publications/saldo de publicaciones.
-- Verifik/autollenado.
+- Verifik/autollenado: `vehiclesService.lookupPlate(placa, documentType, documentNumber)`.
+- Market estimate/precio de mercado: `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible)`.
 
 Cuando una accion cambia estado, refrescar datos relevantes:
 

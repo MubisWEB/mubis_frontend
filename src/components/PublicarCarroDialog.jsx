@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import {
-  Car, AlertCircle, ArrowLeft, Search, CheckCircle2, Sparkles, TrendingUp
+  Car, AlertCircle, ArrowLeft, Search, CheckCircle2, Sparkles, TrendingUp, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -59,10 +59,28 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
 
   const handleBack = () => onOpenChange(false);
 
+  const fetchMarketPrice = (brand, model, year, km, transmision, combustible) => {
+    if (!brand || !model || !year) return;
+    setLoadingMarketPrice(true);
+    setMarketPrice(null);
+    vehiclesApi.getMarketEstimate(brand, model, parseInt(year, 10), km || undefined, transmision || undefined, combustible || undefined)
+      .then(res => {
+        setMarketPrice(res?.marketPrice ?? null);
+        setMarketPriceMin(res?.minPrice ?? null);
+        setMarketPriceMax(res?.maxPrice ?? null);
+        setMarketPriceComparables(res?.comparablesCount ?? 0);
+      })
+      .catch(() => setMarketPrice(null))
+      .finally(() => setLoadingMarketPrice(false));
+  };
+
+  const PRICE_RELEVANT_FIELDS = ['brand', 'model', 'year', 'km', 'transmision', 'combustible', 'city'];
+
   const set = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));
     setErrors(prev => ({ ...prev, [key]: undefined }));
     if (key === 'placa') { setPlateFound(false); setMarketPrice(null); }
+    else if (PRICE_RELEVANT_FIELDS.includes(key)) setMarketPrice(null);
   };
 
   const handleLookupPlate = async () => {
@@ -110,27 +128,21 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
         description: `${data.brand ?? ''} ${data.model ?? ''} ${data.year ?? ''}`.trim(),
       });
 
-      // Disparar búsqueda de precio de mercado en MercadoLibre
       const brand = updates.brand ?? data.brand;
       const model = updates.model ?? data.model;
       const year = updates.year ?? (data.year ? String(data.year) : null);
-      if (brand && model && year) {
-        setLoadingMarketPrice(true);
-        setMarketPrice(null);
-        vehiclesApi.getMarketEstimate(brand, model, parseInt(year, 10), form.km || undefined)
-          .then(res => {
-            setMarketPrice(res?.marketPrice ?? null);
-            setMarketPriceMin(res?.minPrice ?? null);
-            setMarketPriceMax(res?.maxPrice ?? null);
-            setMarketPriceComparables(res?.comparablesCount ?? 0);
-          })
-          .catch(() => { setMarketPrice(null); })
-          .finally(() => setLoadingMarketPrice(false));
+      fetchMarketPrice(brand, model, year, form.km, form.transmision, form.combustible);
+    } catch (err) {
+      const code = err?.response?.data?.code;
+      if (code === 'VERIFIK_NO_CREDITS') {
+        toast.warning('Servicio de consulta de placa no disponible', {
+          description: 'Completa los datos del vehículo manualmente.',
+        });
+      } else {
+        toast.error('Error al consultar la placa', {
+          description: 'Completa los datos manualmente.',
+        });
       }
-    } catch {
-      toast.error('Error al consultar la placa', {
-        description: 'Completa los datos manualmente.',
-      });
     } finally {
       setLookingUpPlate(false);
     }
@@ -261,37 +273,19 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
             <p className="text-xs text-muted-foreground">
               Ingresa la placa y tu cédula para cargar automáticamente marca, modelo, año y más datos desde el RUNT.
             </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
                 <Label className="text-xs font-medium">Placa *</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    className="rounded-xl flex-1"
-                    placeholder="ABC123"
-                    maxLength={6}
-                    value={form.placa}
-                    onChange={e => set('placa', e.target.value.toUpperCase())}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="rounded-xl shrink-0"
-                    onClick={handleLookupPlate}
-                    disabled={lookingUpPlate}
-                    title="Buscar datos del vehículo"
-                  >
-                    {lookingUpPlate
-                      ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      : plateFound
-                        ? <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        : <Search className="w-4 h-4" />
-                    }
-                  </Button>
-                </div>
+                <Input
+                  className="mt-1 rounded-xl"
+                  placeholder="ABC123"
+                  maxLength={6}
+                  value={form.placa}
+                  onChange={e => set('placa', e.target.value.toUpperCase())}
+                />
                 {fieldError('placa')}
               </div>
-              <div>
+              <div className="flex-1">
                 <Label className="text-xs font-medium">Cédula del vendedor (CC) *</Label>
                 <Input
                   className="mt-1 rounded-xl"
@@ -301,6 +295,22 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                 />
                 {fieldError('cedula')}
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="rounded-xl shrink-0 h-10 w-10"
+                onClick={handleLookupPlate}
+                disabled={lookingUpPlate}
+                title="Buscar datos del vehículo"
+              >
+                {lookingUpPlate
+                  ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  : plateFound
+                    ? <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    : <Search className="w-4 h-4" />
+                }
+              </Button>
             </div>
             {plateFound && (
               <p className="text-xs text-green-600 flex items-center gap-1">
@@ -318,42 +328,39 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
                 Consultando precios en MercadoLibre...
               </div>
             ) : marketPrice ? (
-              <div className="rounded-xl border border-border/60 bg-muted/30 p-4 flex items-start gap-3">
-                <TrendingUp className="w-5 h-5 text-secondary mt-0.5 shrink-0" />
-                <div className="w-full">
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-4 flex items-center gap-3">
+                <TrendingUp className="w-5 h-5 text-secondary shrink-0" />
+                <div className="flex-1">
                   <p className="text-2xl font-bold tracking-tight">{formatCOP(marketPrice)}</p>
                   {marketPriceMin && marketPriceMax && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Rango: {formatCOP(marketPriceMin)} – {formatCOP(marketPriceMax)}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {marketPriceComparables > 0
-                      ? `Basado en ${marketPriceComparables} subastas similares en Mubis`
-                      : 'Estimado por marca, modelo y año · sin comparables internos aún'}
-                  </p>
                 </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-8 w-8 shrink-0"
+                  onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible)}
+                  title="Recalcular precio"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3">
                 <p className="text-xs text-muted-foreground">
-                  {plateFound ? 'No se encontraron comparables.' : 'Se calcula automáticamente al autocompletar con la placa.'}
+                  {plateFound ? 'No se encontró precio.' : 'Se calcula automáticamente al autocompletar con la placa.'}
                 </p>
-                {/* TEMPORAL - solo para pruebas */}
                 {form.brand && form.model && form.year && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     className="rounded-xl text-xs shrink-0"
-                    onClick={() => {
-                      setLoadingMarketPrice(true);
-                      setMarketPrice(null);
-                      vehiclesApi.getMarketEstimate(form.brand, form.model, parseInt(form.year, 10))
-                        .then(res => { setMarketPrice(res?.marketPrice ?? null); setMarketPriceMin(res?.minPrice ?? null); setMarketPriceMax(res?.maxPrice ?? null); setMarketPriceComparables(res?.comparablesCount ?? 0); })
-                        .catch(() => setMarketPrice(null))
-                        .finally(() => setLoadingMarketPrice(false));
-                    }}
+                    onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible)}
                   >
                     Buscar precio
                   </Button>

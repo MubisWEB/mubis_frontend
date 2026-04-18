@@ -40,7 +40,6 @@ export default defineConfig(() => ({
             if (normalizedId.includes('/src/components/')) return 'app-components';
             return undefined;
           }
-          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor-react';
           if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
           if (id.includes('@radix-ui') || id.includes('lucide-react')) return 'vendor-ui';
           if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-maps';
