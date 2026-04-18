@@ -9,7 +9,9 @@ import {
   Loader2,
   ReceiptText,
   ArrowLeft,
+  Download,
 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import BottomNav from '@/components/BottomNav';
 import { transactionsApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
@@ -109,10 +111,10 @@ export default function Movimientos() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const role = (user?.role || '').toLowerCase();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [exporting, setExporting] = useState(false);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
@@ -131,10 +133,29 @@ export default function Movimientos() {
     }
   }
 
-  const filtered =
-    statusFilter === 'all'
-      ? transactions
-      : transactions.filter((t) => t.status === statusFilter);
+  const filtered = transactions.filter((t) => {
+    if (roleFilter === 'sold') return t.sellerId === user?.id;
+    if (roleFilter === 'bought') return t.buyerId === user?.id;
+    return true;
+  });
+
+  async function handleExport(format = 'xlsx') {
+    setExporting(true);
+    try {
+      const params = roleFilter !== 'all' ? `?filter=${roleFilter}&format=${format}` : `?format=${format}`;
+      const res = await transactionsApi.export(params);
+      const url = URL.createObjectURL(new Blob([res]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `movimientos-${new Date().toISOString().split('T')[0]}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Error al exportar movimientos');
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const totalRevenue = transactions
     .filter((t) => t.status === 'COMPLETED')
@@ -186,24 +207,31 @@ export default function Movimientos() {
           </Card>
         </div>
 
-        {/* Filtro */}
-        <div className="flex items-center gap-3">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+        {/* Filtro + Export */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
             <SelectTrigger className="w-44 h-9 text-sm rounded-xl">
-              <SelectValue placeholder="Filtrar por estado" />
+              <SelectValue placeholder="Filtrar" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="PENDING">Pendiente</SelectItem>
-              <SelectItem value="IN_REVIEW">En revisión</SelectItem>
-              <SelectItem value="COMPLETED">Completado</SelectItem>
-              <SelectItem value="CANCELLED">Cancelado</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="bought">Comprados</SelectItem>
+              <SelectItem value="sold">Vendidos</SelectItem>
             </SelectContent>
           </Select>
 
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground flex-1">
             {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
           </span>
+
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="h-9 rounded-xl gap-1.5 text-xs" onClick={() => handleExport('xlsx')} disabled={exporting}>
+              <Download className="w-3.5 h-3.5" />Excel
+            </Button>
+            <Button variant="outline" size="sm" className="h-9 rounded-xl gap-1.5 text-xs" onClick={() => handleExport('csv')} disabled={exporting}>
+              <Download className="w-3.5 h-3.5" />CSV
+            </Button>
+          </div>
         </div>
 
         {/* Lista */}
@@ -224,7 +252,7 @@ export default function Movimientos() {
         ) : (
           <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
             {filtered.map((tx, i) => {
-              const isSale = role === 'dealer' && tx.sellerId === user?.id;
+              const isSale = tx.sellerId === user?.id;
 
               return (
                 <motion.div

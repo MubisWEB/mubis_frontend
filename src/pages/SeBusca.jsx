@@ -83,18 +83,13 @@ export default function SeBusca() {
   }
 
   async function handleSearch() {
-    if (!brand) {
-      toast.error('Selecciona al menos una marca');
-      return;
-    }
-
     setSearching(true);
     try {
       const km = KM_RANGES[Number(kmRange)];
       const yr = YEAR_RANGES[Number(yearRange)];
 
       const filters = {
-        brand,
+        brand: brand || undefined,
         model: model || undefined,
         version: version || undefined,
         kmMin: km.min !== '' ? km.min : undefined,
@@ -106,7 +101,7 @@ export default function SeBusca() {
       const data = await branchInventoryApi.search(filters);
       setResults(data || []);
     } catch (err) {
-      toast.error('Error al buscar en inventario');
+      toast.error(err?.response?.data?.message || 'Error al buscar en inventario');
     } finally {
       setSearching(false);
     }
@@ -177,11 +172,12 @@ export default function SeBusca() {
           <div className="space-y-4">
             <div>
               <Label className="text-sm font-semibold">Marca *</Label>
-              <Select value={brand} onValueChange={handleBrandChange}>
+              <Select value={brand || '_all_'} onValueChange={(val) => handleBrandChange(val === '_all_' ? '' : val)}>
                 <SelectTrigger className="rounded-xl border-border h-11 mt-1">
-                  <SelectValue placeholder="Selecciona una marca" />
+                  <SelectValue placeholder="Todas las marcas" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="_all_">Todas las marcas</SelectItem>
                   {ALL_BRANDS.map((b) => (
                     <SelectItem key={b} value={b}>{b}</SelectItem>
                   ))}
@@ -248,7 +244,7 @@ export default function SeBusca() {
             <div className="flex gap-2">
               <Button
                 onClick={handleSearch}
-                disabled={!brand || searching}
+                disabled={searching}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-11 rounded-full"
               >
                 {searching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}

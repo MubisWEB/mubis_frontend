@@ -17,6 +17,7 @@ import { auctionsApi, publicationsApi, usersApi, branchesApi } from '@/api/servi
 import { useAuth } from '@/lib/AuthContext';
 import { normalizeRole } from '@/lib/roles';
 import Skeleton from 'react-loading-skeleton';
+import VehicleThumbnail from '@/components/VehicleThumbnail';
 
 const AuctionRowSkeleton = () => (
   <div className="flex gap-3 p-3 border border-border/60 rounded-xl bg-card">
@@ -127,9 +128,7 @@ function VehicleProcessCard({ item, navigate }) {
     <Card className="overflow-hidden border border-border/60 rounded-xl cursor-pointer active:scale-[0.98]" onClick={() => navigate(`/PeritajeDetalle/${item.inspectionId || item.vehicleId}`)}>
       <div className="flex p-3 gap-3">
         {item.photos?.[0] && (
-          <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
-            <img src={item.photos[0]} alt="" className="w-full h-full object-cover" />
-          </div>
+          <VehicleThumbnail src={item.photos[0]} alt="" className="w-28 h-20 rounded-xl flex-shrink-0" />
         )}
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
@@ -166,8 +165,7 @@ function VehicleProcessGridCard({ item, navigate }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/PeritajeDetalle/${item.inspectionId || item.vehicleId}`)}>
       {item.photos?.[0] && (
-        <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-          <img src={item.photos[0]} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
+        <VehicleThumbnail src={item.photos[0]} alt={`${item.brand} ${item.model}`} ratio="4/3">
           <div className="absolute top-2 left-2">{getStatusBadge()}</div>
           {shouldShowDocs && docs &&
             <div className="absolute top-2 right-2">
@@ -176,7 +174,7 @@ function VehicleProcessGridCard({ item, navigate }) {
               </Badge>
             </div>
           }
-        </div>
+        </VehicleThumbnail>
       )}
       <div className="p-3.5">
         <div className="flex items-center justify-between">
@@ -219,8 +217,8 @@ function AuctionCard({ item, navigate }) {
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm cursor-pointer rounded-2xl" onClick={() => navigate(`/DetalleSubastaVendedor/${destId}`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-28 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted relative flex items-center justify-center">
-          {item.photos?.[0] ? <img src={item.photos[0]} alt="" className="w-full h-full object-cover" /> : <Car className="w-8 h-8 text-muted-foreground/40" />}
+        <VehicleThumbnail src={item.photos?.[0]} alt="" className="w-28 h-20 rounded-xl flex-shrink-0">
+          {!item.photos?.[0] && <Car className="absolute inset-0 m-auto w-8 h-8 text-muted-foreground/40" />}
           {isFinalized ? (
             item.hasWinner ? <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary z-10"><Trophy className="w-2.5 h-2.5 mr-0.5" />Ganador</Badge> : <Badge className="absolute top-1 left-1 bg-muted text-muted-foreground text-[10px] px-1.5 py-0 hover:bg-muted z-10"><XCircle className="w-2.5 h-2.5 mr-0.5" />Sin ganador</Badge>
           ) : isPending ? (
@@ -228,7 +226,7 @@ function AuctionCard({ item, navigate }) {
           ) : isActive ? (
             <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0 hover:bg-primary z-10">{item.isExtended48h ? 'Ext. 48h' : 'Activa'}</Badge>
           ) : null}
-        </div>
+        </VehicleThumbnail>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-foreground text-base leading-tight">{item.brand} {item.model}</h3>
@@ -272,12 +270,8 @@ function AuctionGridCard({ item, navigate }) {
 
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm cursor-pointer" onClick={() => navigate(`/DetalleSubastaVendedor/${destId}`)}>
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        {item.photos?.[0] ? (
-          <img src={item.photos[0]} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center"><Car className="w-12 h-12 text-muted-foreground/30" /></div>
-        )}
+      <VehicleThumbnail src={item.photos?.[0]} alt={`${item.brand} ${item.model}`} ratio="4/3">
+        {!item.photos?.[0] && <Car className="absolute inset-0 m-auto w-12 h-12 text-muted-foreground/30" />}
         {isFinalized ? (
           item.hasWinner ? <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 hover:bg-primary shadow-md z-10"><Trophy className="w-3 h-3 mr-1" />Con ganador</Badge> : <Badge className="absolute top-2 left-2 bg-muted text-muted-foreground text-xs px-2 py-0.5 hover:bg-muted shadow-md z-10"><XCircle className="w-3 h-3 mr-1" />Sin ganador</Badge>
         ) : isPending ? (
@@ -294,7 +288,7 @@ function AuctionGridCard({ item, navigate }) {
             <Clock className="w-3 h-3" /><span className="font-semibold">{getTimeLeft(endsAt)}</span>
           </div>
         }
-      </div>
+      </VehicleThumbnail>
       <div className="p-3.5">
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{item.brand} {item.model}</h3>
         <p className="text-muted-foreground text-xs mt-0.5">{item.year}</p>

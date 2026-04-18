@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
-import { Bell, Gavel, Car, ClipboardCheck, UserCheck, UserX, Users, CheckCheck, ArrowLeft } from 'lucide-react';
+import { Bell, Gavel, Car, ClipboardCheck, UserCheck, UserX, Users, CheckCheck, ArrowLeft, Settings } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -121,7 +121,14 @@ export default function Notificaciones() {
           <button onClick={() => navigate('/Cuenta')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
             <ArrowLeft className="w-4 h-4 text-foreground" />
           </button>
-          <h1 className="text-xl font-bold text-foreground font-sans">Notificaciones</h1>
+          <h1 className="text-xl font-bold text-foreground font-sans flex-1">Notificaciones</h1>
+          <button
+            onClick={() => navigate('/ConfiguracionNotificaciones')}
+            className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
+            title="Configurar notificaciones"
+          >
+            <Settings className="w-4 h-4 text-foreground" />
+          </button>
         </div>
         {unreadCount > 0 && (
           <div className="flex justify-end mb-3">

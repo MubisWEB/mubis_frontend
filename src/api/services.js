@@ -161,6 +161,8 @@ export const notificationsApi = {
   getAll: async () => (await api.get('/notifications')).data,
   markRead: async (id) => api.patch(`/notifications/${id}/read`),
   markAllRead: async () => api.patch('/notifications/read-all'),
+  getPreferences: async () => (await api.get('/notifications/preferences')).data,
+  updatePreference: async (type, enabled) => (await api.patch('/notifications/preferences', { type, enabled })).data,
 };
 
 // ── WATCHLIST ─────────────────────────────────────────────────────────────────
@@ -267,6 +269,7 @@ export const transactionsApi = {
   getById: async (id) => (await api.get(`/transactions/${id}`)).data,
   complete: async (id) => (await api.patch(`/transactions/${id}/complete`)).data,
   cancel: async (id) => (await api.patch(`/transactions/${id}/cancel`)).data,
+  export: async (queryString) => (await api.get(`/transactions/export${queryString}`, { responseType: 'arraybuffer' })).data,
 };
 
 // ── INVENTORY ─────────────────────────────────────────────────────────────────
@@ -396,12 +399,21 @@ export const branchInventoryApi = {
     if (filters.brand) params.set('brand', filters.brand);
     if (filters.model) params.set('model', filters.model);
     if (filters.version) params.set('version', filters.version);
-    if (filters.yearMin) params.set('yearMin', String(filters.yearMin));
-    if (filters.yearMax) params.set('yearMax', String(filters.yearMax));
-    if (filters.kmMin) params.set('kmMin', String(filters.kmMin));
-    if (filters.kmMax) params.set('kmMax', String(filters.kmMax));
+    if (filters.yearMin != null && filters.yearMin !== '') params.set('yearMin', String(filters.yearMin));
+    if (filters.yearMax != null && filters.yearMax !== '') params.set('yearMax', String(filters.yearMax));
+    if (filters.kmMin != null && filters.kmMin !== '') params.set('kmMin', String(filters.kmMin));
+    if (filters.kmMax != null && filters.kmMax !== '') params.set('kmMax', String(filters.kmMax));
     return (await api.get(`/branch-inventory/search?${params.toString()}`)).data;
   },
+};
+
+// ── VEHICLE PREFERENCES (SeBusca/Preferencias) ───────────────────────────────
+
+export const preferencesApi = {
+  getAll: async () => (await api.get('/preferences')).data,
+  create: async (data) => (await api.post('/preferences', data)).data,
+  bulkCreate: async (preferences) => (await api.post('/preferences/bulk', { preferences })).data,
+  remove: async (id) => (await api.delete(`/preferences/${id}`)).data,
 };
 
 // ── INTEREST REQUESTS (Deseados) ─────────────────────────────────────────────

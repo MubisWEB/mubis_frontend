@@ -1,4 +1,5 @@
 import React from 'react';
+import VehicleThumbnail from '@/components/VehicleThumbnail';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,15 +43,14 @@ function StatusBadge({ isCompleted, canExtend, remaining, isCancelled }) {
 export function WonAuctionGridCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        <img src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      <VehicleThumbnail src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} ratio="4/3">
         <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5">
           <CheckCircle className="w-3 h-3 mr-1" />Ganado
         </Badge>
         <div className="absolute top-2 right-2">
           <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} isCancelled={isCancelled} />
         </div>
-      </div>
+      </VehicleThumbnail>
       <div className="p-3.5">
         <h3 className="font-bold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
@@ -75,9 +75,7 @@ export function WonAuctionListCard({ auction, formatPrice = defaultFormatPrice, 
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.99] transition-all" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex items-center p-2.5 gap-3">
-        <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted relative">
-          <img src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
-        </div>
+        <VehicleThumbnail src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} className="w-16 h-12 rounded-lg flex-shrink-0" />
         <div className="flex-1 min-w-0 flex items-center gap-4">
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-foreground text-sm leading-tight truncate">{auction.brand} {auction.model}</h3>
@@ -106,12 +104,11 @@ export function WonAuctionMobileCard({ auction, formatPrice = defaultFormatPrice
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex p-3 gap-3">
-        <div className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
-          <img src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
+        <VehicleThumbnail src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} className="w-24 h-[72px] rounded-xl flex-shrink-0">
           <Badge className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
             <CheckCircle className="w-2.5 h-2.5 mr-0.5" />Ganado
           </Badge>
-        </div>
+        </VehicleThumbnail>
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-foreground text-base leading-tight truncate">{auction.brand} {auction.model}</h3>

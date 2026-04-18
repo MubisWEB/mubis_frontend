@@ -26,6 +26,7 @@ import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
 import Movimientos from './pages/Movimientos';
 import Cuenta from './pages/Cuenta';
 import Notificaciones from './pages/Notificaciones';
+import ConfiguracionNotificaciones from './pages/ConfiguracionNotificaciones';
 import Configuracion from './pages/Configuracion';
 import AyudaSoporte from './pages/AyudaSoporte';
 import Ganados from './pages/Ganados';
@@ -110,6 +111,7 @@ const App = () => (
           {/* Cuenta: all authenticated */}
           <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
           <Route path="/Notificaciones" element={<RequireAuth><Notificaciones /></RequireAuth>} />
+          <Route path="/ConfiguracionNotificaciones" element={<RequireAuth><ConfiguracionNotificaciones /></RequireAuth>} />
           <Route path="/Configuracion" element={<RequireAuth><Configuracion /></RequireAuth>} />
           <Route path="/AyudaSoporte" element={<RequireAuth><AyudaSoporte /></RequireAuth>} />
           <Route path="/SoporteCasos" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><SoporteCasos /></RequireRole>} />

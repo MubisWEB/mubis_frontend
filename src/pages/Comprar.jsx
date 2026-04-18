@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -37,10 +37,15 @@ const formatMoneyShort = (n) => `$${(n / 1000000).toFixed(0)}M`;
 
 export default function Comprar() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('ending_soon');
-  const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '', priceMin: '', priceMax: '', mileageMax: '', fuelType: '', bodyType: '', category: '' });
+  const [filters, setFilters] = useState({
+    brand: searchParams.get('brand') || '',
+    model: searchParams.get('model') || '',
+    yearFrom: '', yearTo: '', priceMin: '', priceMax: '', mileageMax: '', fuelType: '', bodyType: '', category: '',
+  });
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -160,6 +165,7 @@ export default function Comprar() {
     let list = [...vehicles];
     if (search) { const q = search.toLowerCase(); list = list.filter(v => (`${v.brand} ${v.model}`).toLowerCase().includes(q)); }
     if (filters.brand) list = list.filter(v => v.brand === filters.brand);
+    if (filters.model) list = list.filter(v => v.model === filters.model);
     if (filters.yearFrom) list = list.filter(v => v.year >= parseInt(filters.yearFrom));
     if (filters.yearTo) list = list.filter(v => v.year <= parseInt(filters.yearTo));
     if (filters.mileageMax) list = list.filter(v => (v.mileage || v.km || 0) <= parseInt(filters.mileageMax));

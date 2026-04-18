@@ -395,6 +395,32 @@ Estas validaciones estaban verdes en la ultima pasada:
 - Frontend audit: `0 vulnerabilities`.
 - Backend audit: `0 vulnerabilities`.
 
+## Features implementadas (2026-04)
+
+### Tarjetas con backdrop blur
+- `src/components/VehicleThumbnail.jsx`: componente reutilizable. Fondo = misma imagen blur+scale, imagen encima con object-contain. Usado en VehicleCard, WonAuctionCard, MisSubastas, B2BCatalogo.
+
+### SeBusca
+- `src/pages/SeBusca.jsx`: ahora permite "Todas las marcas" (sin filtro de marca obligatorio). Error real del backend visible en toast.
+- `src/api/services.js` `branchInventoryApi.search`: filtros yearMin/yearMax/kmMin/kmMax usan comparacion correcta (no truthy).
+- `src/constants/vehicleData.js`: agregadas Mini, BYD, Tesla, Porsche, Lexus, Volvo, Land Rover, Jaguar.
+
+### Preferencias (ahora con backend)
+- `src/pages/Preferencias.jsx`: reescrita. Consume `preferencesApi` (no localStorage). Muestra contador "X disponibles" por preferencia. Click en preferencia navega a /Comprar?brand=&model=. Boton "Cargar CSV" parsea con PapaParse columnas Marca/Modelo.
+- `src/pages/Comprar.jsx`: lee `useSearchParams()` para precargar brand y model. filteredVehicles incluye filtro por model.
+- `src/api/services.js`: nuevo `preferencesApi` (getAll, create, bulkCreate, remove).
+
+### Configuracion de notificaciones
+- `src/pages/ConfiguracionNotificaciones.jsx`: nueva pantalla con toggles por tipo, agrupados por categoria.
+- Ruta `/ConfiguracionNotificaciones` en App.tsx.
+- Icono engranaje en `Notificaciones.jsx` que navega a la pantalla de config.
+- `notificationsApi.getPreferences()` y `updatePreference()` agregados en services.js.
+
+### Movimientos
+- `src/pages/Movimientos.jsx`: filtro cambiado de status a Todos/Comprados/Vendidos. isSale basado en sellerId no en role. Botones Exportar XLSX y CSV.
+- `src/api/services.js`: `transactionsApi.export(queryString)` para descarga de archivo.
+- `src/pages/Cuenta.jsx`: eliminado link "Subastas Ganadas" de todos los roles. La pagina /Ganados sigue existiendo accesible desde el bottom nav de /Comprar.
+
 ## Cuidado antes de cambiar
 
 - No reintroducir datos `SIM_*` en dashboards ya conectados.

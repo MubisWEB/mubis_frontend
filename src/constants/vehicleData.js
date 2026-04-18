@@ -20,6 +20,14 @@ export const VEHICLE_CATALOG = {
   'Peugeot': ['208', '301', '308', '408', '508', '2008', '3008', '5008', 'Partner', 'Rifter'],
   'Fiat': ['Palio', 'Uno', 'Argo', 'Cronos', 'Mobi', '500', 'Toro', 'Ducato'],
   'JAC': ['S2', 'S3', 'S4', 'T6', 'T8', 'X200'],
+  'Mini': ['Cooper', 'Cooper S', 'Countryman', 'Countryman S', 'Clubman', 'Paceman', 'Cabrio'],
+  'BYD': ['Han', 'Tang', 'Song Plus', 'Song Pro', 'Yuan Plus', 'Dolphin', 'Seal', 'Atto 3', 'Sea Lion'],
+  'Tesla': ['Model 3', 'Model Y', 'Model S', 'Model X', 'Cybertruck'],
+  'Porsche': ['911', 'Cayenne', 'Macan', 'Panamera', 'Taycan', 'Cayman', 'Boxster'],
+  'Lexus': ['IS', 'ES', 'GS', 'LS', 'NX', 'RX', 'GX', 'LX', 'UX', 'RC', 'LC', 'CT'],
+  'Volvo': ['S60', 'S90', 'V60', 'V90', 'XC40', 'XC60', 'XC90', 'C40'],
+  'Land Rover': ['Defender', 'Discovery', 'Discovery Sport', 'Range Rover', 'Range Rover Sport', 'Range Rover Evoque', 'Range Rover Velar', 'Freelander'],
+  'Jaguar': ['XE', 'XF', 'XJ', 'F-Type', 'E-Pace', 'F-Pace', 'I-Pace'],
 };
 
 // Lista de todas las marcas

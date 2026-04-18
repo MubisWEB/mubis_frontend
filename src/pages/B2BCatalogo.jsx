@@ -13,6 +13,7 @@ import { Store, ShoppingCart, CheckSquare, Square, Loader2, Car } from 'lucide-r
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { b2bApi } from '@/api/services';
+import VehicleThumbnail from '@/components/VehicleThumbnail';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -136,14 +137,8 @@ export default function B2BCatalogo() {
                     onClick={() => toggleItem(auction)}
                   >
                     {/* Imagen */}
-                    <div className="relative h-40 bg-muted overflow-hidden">
-                      {auction.photos?.[0] ? (
-                        <img src={auction.photos[0]} alt={`${auction.brand} ${auction.model}`} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Car className="w-12 h-12 text-muted-foreground/30" />
-                        </div>
-                      )}
+                    <VehicleThumbnail src={auction.photos?.[0]} alt={`${auction.brand} ${auction.model}`} className="h-40 w-full">
+                      {!auction.photos?.[0] && <Car className="absolute inset-0 m-auto w-12 h-12 text-muted-foreground/30" />}
                       <div className="absolute top-2 right-2">
                         {isSelected
                           ? <CheckSquare className="w-6 h-6 text-secondary drop-shadow" />
@@ -152,7 +147,7 @@ export default function B2BCatalogo() {
                       <div className="absolute top-2 left-2">
                         <Badge className="bg-secondary/90 text-white text-[10px] border-0">Oferta mayorista</Badge>
                       </div>
-                    </div>
+                    </VehicleThumbnail>
 
                     <div className="p-3">
                       <p className="font-bold text-foreground">{auction.brand} {auction.model}</p>

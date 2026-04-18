@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { watchlistApi } from '@/api/services';
 import { getVehicleImage, DEFAULT_VEHICLE_IMAGE } from '@/constants/vehicleImages';
 import { toast } from 'sonner';
+import VehicleThumbnail from '@/components/VehicleThumbnail';
 
 export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, variant = 'compact' }) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -64,17 +65,18 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
   if (variant === 'grid') {
     return (
       <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm group ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
-        <Link to={detailUrl} className="block relative aspect-[4/3] bg-muted overflow-hidden">
-          <img src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          {vehicle.isLeading && (
-            <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5">
-              <Trophy className="w-3 h-3 mr-1" />LÍDER
-            </Badge>
-          )}
-          <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${isUrgent ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/80 text-foreground'}`}>
-            <Clock className="w-3 h-3 flex-shrink-0" />
-            <span className="font-semibold tabular-nums">{timeLeft}</span>
-          </div>
+        <Link to={detailUrl} className="block">
+          <VehicleThumbnail src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} ratio="4/3">
+            {vehicle.isLeading && (
+              <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5">
+                <Trophy className="w-3 h-3 mr-1" />LÍDER
+              </Badge>
+            )}
+            <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${isUrgent ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/80 text-foreground'}`}>
+              <Clock className="w-3 h-3 flex-shrink-0" />
+              <span className="font-semibold tabular-nums">{timeLeft}</span>
+            </div>
+          </VehicleThumbnail>
         </Link>
         <div className="p-3.5">
           <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -112,13 +114,14 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
     <div>
       <Card className={`overflow-hidden bg-card border border-border/60 shadow-sm ${vehicle.isLeading ? 'ring-2 ring-green-500' : ''}`}>
         <div className="flex p-3 gap-3">
-          <Link to={detailUrl} className="w-24 h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-muted relative">
-            <img src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
-            {vehicle.isLeading && (
-              <Badge className="absolute top-1 left-1 bg-green-600 text-white text-[10px] px-1.5 py-0">
-                <Trophy className="w-2.5 h-2.5 mr-0.5" />LIDER
-              </Badge>
-            )}
+          <Link to={detailUrl} className="flex-shrink-0">
+            <VehicleThumbnail src={vehicleImage} alt={`${vehicle.brand} ${vehicle.model}`} className="w-24 h-[72px] rounded-xl">
+              {vehicle.isLeading && (
+                <Badge className="absolute top-1 left-1 bg-green-600 text-white text-[10px] px-1.5 py-0">
+                  <Trophy className="w-2.5 h-2.5 mr-0.5" />LIDER
+                </Badge>
+              )}
+            </VehicleThumbnail>
           </Link>
           <Link to={detailUrl} className="flex-1 min-w-0 flex flex-col justify-between">
             <div>
