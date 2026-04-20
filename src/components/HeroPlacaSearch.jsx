@@ -44,14 +44,14 @@ export default function HeroPlacaSearch() {
               onChange={(e) =>
                 setPlaca(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))
               }
-              className="h-14 rounded-2xl bg-white border-0 text-foreground placeholder:text-foreground/35 font-semibold text-base tracking-widest shadow-none focus-visible:ring-2 focus-visible:ring-white/80"
+              className="h-14 rounded-2xl bg-white border-0 text-foreground placeholder:text-foreground/35 font-bold text-lg tracking-widest font-mono uppercase shadow-none focus-visible:ring-2 focus-visible:ring-white/80"
               maxLength={6}
             />
             <Input
               placeholder="Cédula  ·  1234567890"
               value={cedula}
               onChange={(e) => setCedula(e.target.value.replace(/\D/g, ''))}
-              className="h-14 rounded-2xl bg-white border-0 text-foreground placeholder:text-foreground/35 font-semibold text-base shadow-none focus-visible:ring-2 focus-visible:ring-white/80"
+              className="h-14 rounded-2xl bg-white border-0 text-foreground placeholder:text-foreground/35 font-bold text-lg shadow-none focus-visible:ring-2 focus-visible:ring-white/80"
               inputMode="numeric"
               maxLength={12}
             />

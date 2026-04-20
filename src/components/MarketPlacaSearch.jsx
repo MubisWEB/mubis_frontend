@@ -42,6 +42,10 @@ export default function MarketPlacaSearch({ onAdvance }) {
             vehicleData.brand,
             vehicleData.model,
             vehicleData.year,
+            undefined,
+            undefined,
+            undefined,
+            placa.trim(),
           );
         } catch { /* sin precio de mercado — ok */ }
       }
@@ -71,7 +75,12 @@ export default function MarketPlacaSearch({ onAdvance }) {
       color: result.vehicleData.color ?? '',
       combustible: result.vehicleData.combustible ?? '',
       bodyType: result.vehicleData.bodyType ?? '',
+      passengers: result.vehicleData.passengers ?? null,
       cilindraje: result.vehicleData.cilindraje ?? '',
+      transmision: result.vehicleData.transmision ?? '',
+      doors: result.vehicleData.doors ?? null,
+      airConditioning: result.vehicleData.airConditioning ?? null,
+      steering: result.vehicleData.steering ?? '',
     });
   };
 
@@ -100,7 +109,7 @@ export default function MarketPlacaSearch({ onAdvance }) {
               setFound(false);
               setResult(null);
             }}
-            className="rounded-xl h-11 font-mono uppercase tracking-widest"
+            className="rounded-xl h-12 font-mono uppercase tracking-widest text-lg font-bold"
             maxLength={6}
           />
         </div>
@@ -114,7 +123,7 @@ export default function MarketPlacaSearch({ onAdvance }) {
               setFound(false);
               setResult(null);
             }}
-            className="rounded-xl h-11"
+            className="rounded-xl h-12 text-lg font-bold"
             inputMode="numeric"
             maxLength={12}
           />
@@ -123,7 +132,7 @@ export default function MarketPlacaSearch({ onAdvance }) {
           <Button
             type="submit"
             disabled={loading || !placa.trim() || !cedula.trim()}
-            className="h-11 rounded-xl bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-5 gap-2 w-full sm:w-auto"
+            className="h-12 rounded-xl bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-5 gap-2 w-full sm:w-auto"
           >
             {loading
               ? <span className="animate-spin w-4 h-4 border-2 border-secondary-foreground border-t-transparent rounded-full" />

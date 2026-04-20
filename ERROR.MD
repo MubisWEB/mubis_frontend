@@ -16,6 +16,6 @@ Registro de errores cometidos para no repetirlos.
 
 ## Errores de integración con API/backend
 
-<!-- Ejemplo: Asumir endpoint incorrecto, formato de payload equivocado -->
+- **`getMarketEstimate` — parámetro `plate` faltaba (2026-04-20):** El wrapper en `services.js` no pasaba el 7° parámetro `plate` al backend, por lo que la fuente siempre era interna (`confidence: low`) en vez de Fasecolda (`confidence: high`). Corrección: agregar `plate` como parámetro opcional en `getMarketEstimate(brand, model, year, km, transmision, combustible, plate)`.
 
 ## Otros

@@ -40,6 +40,11 @@ export default defineConfig(() => ({
             if (normalizedId.includes('/src/components/')) return 'app-components';
             return undefined;
           }
+          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('/react/')) return 'vendor-react';
+          if (id.includes('@tanstack/react-query') || id.includes('axios') || id.includes('socket.io-client')) return 'vendor-data';
+          if (id.includes('framer-motion') || id.includes('@hello-pangea/dnd')) return 'vendor-motion';
+          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) return 'vendor-forms';
+          if (id.includes('date-fns') || id.includes('moment') || id.includes('lodash')) return 'vendor-utils';
           if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
           if (id.includes('@radix-ui') || id.includes('lucide-react')) return 'vendor-ui';
           if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-maps';

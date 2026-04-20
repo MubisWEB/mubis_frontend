@@ -174,14 +174,34 @@ UI de Verifik en `PublicarCarroDialog`:
 
 ### Estimacion de precio de mercado
 
-En `PublicarCarroDialog` existe logica de estimacion de precio real via TuCarro:
+En `PublicarCarroDialog` existe logica de estimacion de precio real via Fasecolda/interno:
 
-- Boton "Buscar precio de mercado" llama a `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible)`.
-- Muestra card con `marketPrice`, rango `minPrice-maxPrice` y nivel de confianza.
-- `PRICE_RELEVANT_FIELDS = ['brand','model','year','km','transmision','combustible','city']`: cualquier cambio en estos campos resetea el precio estimado (obliga a re-buscar).
-- Cambiar placa tambien resetea el precio.
-- Icono RefreshCw permite volver a buscar precio manualmente despues de modificaciones.
-- Wrapper en `services.js`: `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible)`.
+- El precio se busca automáticamente con debounce de 900ms al cambiar km, transmisión o combustible (cuando ya hay placa encontrada).
+- También se puede refrescar manualmente con botón RefreshCw.
+- Wrapper en `services.js`: `vehiclesApi.getMarketEstimate(brand, model, year, km, transmision, combustible, plate)` — 7 parámetros, `plate` es opcional pero mejora confidence a 'high' via Fasecolda.
+- Respuesta: `{ marketPrice, minPrice, maxPrice, confidence ('high'|'low'), comparablesCount, source }`.
+
+### Busqueda de placa — HeroPlacaSearch (Landing)
+
+`src/components/HeroPlacaSearch.jsx` — caja visual en el hero del landing:
+- Inputs placa (uppercase, 6 chars, font-mono) + cédula (numérico).
+- **No llama a ninguna API.** Al hacer submit abre Dialog teaser de login/registro.
+- Pasa `{ placa, cedula }` como `location.state` a `/login` y `/registro`.
+- Posición: dentro del `<HeroSection>` como sección independiente (después del CTA principal).
+
+### Busqueda de placa — MarketPlacaSearch (MisSubastas)
+
+`src/components/MarketPlacaSearch.jsx` — caja real con lookup de Verifik:
+- Inputs placa + cédula → llama `vehiclesApi.lookupPlate` y luego `vehiclesApi.getMarketEstimate` con plate.
+- Muestra datos del carro + precio de mercado + badge de confianza.
+- Botón "¿Quieres avanzar?" → abre `PublicarCarroDialog` con `initialPrefill` ya llenado.
+- Posición: en `MisSubastas.jsx` arriba del layout aside+main, full-width.
+
+### PublicarCarroDialog — initialPrefill y campos nuevos
+
+- Prop `initialPrefill` opcional: cuando open+initialPrefill, prellenado automático con todos los campos incluyendo transmisión, doors, airConditioning, steering, passengers.
+- Auto-price debounce: `useEffect` con 900ms detecta cambios en km/transmision/combustible y actualiza precio automáticamente (sin que el usuario presione botón).
+- `handleLookupPlate` ahora extrae y guarda: transmisión, doors, airConditioning, steering, passengers desde la respuesta del backend.
 
 ### Peritaje
 
@@ -395,7 +415,11 @@ Estas validaciones estaban verdes en la ultima pasada:
 - Frontend audit: `0 vulnerabilities`.
 - Backend audit: `0 vulnerabilities`.
 
-## Features implementadas (2026-04)
+### Catálogo Chevrolet (2026-04-20)
+- `src/constants/vehicleData.js`: Chevrolet expandido a 23 modelos (Onix, Onix Plus, Spark, Beat, Sail, Sonic, Cruze, Groove, Tracker, Trax, Trailblazer, Captiva, Equinox, Blazer, Traverse, Camaro, Malibu, Tahoe, Suburban, S10, Montana, Colorado, Silverado).
+- `src/constants/vehicleImages.js`: imágenes para onix, onixplus, groove, trailblazer, captiva, s10.
+
+## Features implementadas (2026-04 — sesiones anteriores)
 
 ### Tarjetas con backdrop blur
 - `src/components/VehicleThumbnail.jsx`: componente reutilizable. Fondo = misma imagen blur+scale, imagen encima con object-contain. Usado en VehicleCard, WonAuctionCard, MisSubastas, B2BCatalogo.

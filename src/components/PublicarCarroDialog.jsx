@@ -78,22 +78,41 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       const matched = matchFromList(initialPrefill.bodyType, BODY_TYPES);
       if (matched) updates.body_type = matched;
     }
+    if (initialPrefill.passengers) {
+      const passengers = String(initialPrefill.passengers);
+      if (PASSENGERS.includes(passengers)) updates.passengers = passengers;
+    }
+    if (initialPrefill.transmision) {
+      const matched = matchFromList(initialPrefill.transmision, TRANSMISSIONS);
+      if (matched) updates.transmision = matched;
+    }
+    if (initialPrefill.doors) {
+      const d = String(initialPrefill.doors);
+      if (DOORS.includes(d)) updates.doors = d;
+    }
+    if (initialPrefill.airConditioning !== null && initialPrefill.airConditioning !== undefined) {
+      updates.air_conditioning = initialPrefill.airConditioning ? 'Sí' : 'No';
+    }
+    if (initialPrefill.steering) {
+      const matched = matchFromList(initialPrefill.steering, STEERINGS);
+      if (matched) updates.steering = matched;
+    }
     if (initialPrefill.cilindraje) updates.cilindraje = initialPrefill.cilindraje;
     setForm(JSON.parse(JSON.stringify({ ...initialForm, ...updates })));
     setErrors({});
     setPlateFound(true);
     if (updates.brand && updates.model && updates.year) {
-      fetchMarketPrice(updates.brand, updates.model, updates.year, '', '', '');
+      fetchMarketPrice(updates.brand, updates.model, updates.year, '', '', '', initialPrefill?.placa);
     }
   }, [open, initialPrefill]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBack = () => onOpenChange(false);
 
-  const fetchMarketPrice = (brand, model, year, km, transmision, combustible) => {
+  const fetchMarketPrice = (brand, model, year, km, transmision, combustible, plate) => {
     if (!brand || !model || !year) return;
     setLoadingMarketPrice(true);
     setMarketPrice(null);
-    vehiclesApi.getMarketEstimate(brand, model, parseInt(year, 10), km || undefined, transmision || undefined, combustible || undefined)
+    vehiclesApi.getMarketEstimate(brand, model, parseInt(year, 10), km || undefined, transmision || undefined, combustible || undefined, plate || undefined)
       .then(res => {
         setMarketPrice(res?.marketPrice ?? null);
         setMarketPriceMin(res?.minPrice ?? null);
@@ -104,13 +123,21 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       .finally(() => setLoadingMarketPrice(false));
   };
 
-  const PRICE_RELEVANT_FIELDS = ['brand', 'model', 'year', 'km', 'transmision', 'combustible', 'city'];
+  const PRICE_RELEVANT_FIELDS = ['brand', 'model', 'year', 'km', 'transmision', 'combustible'];
+
+  // Auto-refresh market price when relevant fields change (debounced 900ms)
+  useEffect(() => {
+    if (!plateFound || !form.brand || !form.model || !form.year) return;
+    const timer = setTimeout(() => {
+      fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa);
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [form.brand, form.model, form.year, form.km, form.transmision, form.combustible, plateFound]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));
     setErrors(prev => ({ ...prev, [key]: undefined }));
     if (key === 'placa') { setPlateFound(false); setMarketPrice(null); }
-    else if (PRICE_RELEVANT_FIELDS.includes(key)) setMarketPrice(null);
   };
 
   const handleLookupPlate = async () => {
@@ -151,6 +178,25 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
         const matched = matchFromList(data.bodyType, BODY_TYPES);
         if (matched) updates.body_type = matched;
       }
+      if (data.passengers) {
+        const p = String(data.passengers);
+        if (PASSENGERS.includes(p)) updates.passengers = p;
+      }
+      if (data.transmision) {
+        const matched = matchFromList(data.transmision, TRANSMISSIONS);
+        if (matched) updates.transmision = matched;
+      }
+      if (data.doors) {
+        const d = String(data.doors);
+        if (DOORS.includes(d)) updates.doors = d;
+      }
+      if (data.airConditioning !== null && data.airConditioning !== undefined) {
+        updates.air_conditioning = data.airConditioning ? 'Sí' : 'No';
+      }
+      if (data.steering) {
+        const matched = matchFromList(data.steering, STEERINGS);
+        if (matched) updates.steering = matched;
+      }
 
       setForm(prev => ({ ...prev, ...updates }));
       setPlateFound(true);
@@ -161,7 +207,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       const brand = updates.brand ?? data.brand;
       const model = updates.model ?? data.model;
       const year = updates.year ?? (data.year ? String(data.year) : null);
-      fetchMarketPrice(brand, model, year, form.km, form.transmision, form.combustible);
+      fetchMarketPrice(brand, model, year, form.km, form.transmision, form.combustible, form.placa);
     } catch (err) {
       const code = err?.response?.data?.code;
       if (code === 'VERIFIK_NO_CREDITS') {
@@ -303,7 +349,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
             <p className="text-xs text-muted-foreground">
               Ingresa la placa y tu cédula para cargar automáticamente marca, modelo, año y más datos desde el RUNT.
             </p>
-            <div className="flex gap-2 items-end">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
               <div className="flex-1">
                 <Label className="text-xs font-medium">Placa *</Label>
                 <Input
@@ -355,7 +401,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
             {loadingMarketPrice ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Consultando precios en MercadoLibre...
+                Consultando fuentes de mercado...
               </div>
             ) : marketPrice ? (
               <div className="rounded-xl border border-border/60 bg-muted/30 p-4 flex items-center gap-3">
@@ -373,7 +419,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
                   variant="ghost"
                   size="icon"
                   className="rounded-full h-8 w-8 shrink-0"
-                  onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible)}
+                  onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa)}
                   title="Recalcular precio"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -390,7 +436,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
                     variant="outline"
                     size="sm"
                     className="rounded-xl text-xs shrink-0"
-                    onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible)}
+                    onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa)}
                   >
                     Buscar precio
                   </Button>
@@ -402,7 +448,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
           {/* ── Datos del vehículo ── */}
           <div>
             <SectionTitle>Datos del vehículo</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-medium">Marca *</Label>
                 <datalist id="brands-list">
@@ -515,7 +561,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
           {/* ── Datos personales del vendedor ── */}
           <div>
             <SectionTitle>Datos personales del vendedor</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-medium">Nombre completo *</Label>
                 <Input className="mt-1 rounded-xl" placeholder="Juan Pérez" value={form.nombre_completo} onChange={e => set('nombre_completo', e.target.value)} />
