@@ -1,7 +1,7 @@
 // Catálogo completo de marcas y modelos de vehículos
 export const VEHICLE_CATALOG = {
   'Toyota': ['Corolla', 'Camry', 'RAV4', 'Hilux', 'Prado', 'Fortuner', 'Yaris', 'Land Cruiser', 'Tacoma', 'Prius', 'Highlander', '4Runner'],
-  'Chevrolet': ['Spark', 'Sail', 'Cruze', 'Tracker', 'Captiva', 'Tahoe', 'Silverado', 'Blazer', 'Equinox', 'Traverse', 'Suburban', 'Colorado'],
+  'Chevrolet': ['Onix', 'Onix Plus', 'Spark', 'Sail', 'Beat', 'Sonic', 'Cruze', 'Malibu', 'Camaro', 'Groove', 'Trax', 'Tracker', 'Trailblazer', 'Captiva', 'Equinox', 'Blazer', 'Traverse', 'Tahoe', 'Suburban', 'S10', 'Montana', 'Colorado', 'Silverado'],
   'Mazda': ['2', '3', '6', 'CX-3', 'CX-5', 'CX-9', 'CX-30', 'MX-5', 'BT-50'],
   'Renault': ['Logan', 'Sandero', 'Duster', 'Kwid', 'Captur', 'Koleos', 'Stepway', 'Oroch'],
   'Kia': ['Picanto', 'Rio', 'Cerato', 'Sportage', 'Sorento', 'Seltos', 'Stonic', 'Carnival', 'Soul', 'Optima'],

@@ -58,6 +58,30 @@ export const VEHICLE_IMAGES = {
       images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGX59VKp-VQrHMw-R3hqCVoZVEZT88nxjH2g&s', '', '', ''],
       thumbnail: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGX59VKp-VQrHMw-R3hqCVoZVEZT88nxjH2g&s'
     },
+    onix: {
+      images: ['https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/cars/onix/01-images/onix-masthead-01.jpg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXALHmB4VKqMKv_b-gWbMJfHDm5dPBbH9iBQ&s', '', ''],
+      thumbnail: 'https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/cars/onix/01-images/onix-masthead-01.jpg'
+    },
+    onixplus: {
+      images: ['https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/cars/onix/01-images/onix-masthead-01.jpg', '', '', ''],
+      thumbnail: 'https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/cars/onix/01-images/onix-masthead-01.jpg'
+    },
+    groove: {
+      images: ['https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/crossovers-and-suvs/groove/01-images/groove-masthead-01.jpg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuXqp7K1VsRs_OFzfQYsmXBuLt3pHjEHjUqg&s', '', ''],
+      thumbnail: 'https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/crossovers-and-suvs/groove/01-images/groove-masthead-01.jpg'
+    },
+    trailblazer: {
+      images: ['https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/crossovers-and-suvs/trailblazer/01-images/trailblazer-masthead-01.jpg', '', '', ''],
+      thumbnail: 'https://www.chevrolet.com.co/content/dam/chevrolet/na/colombia/espanol/index/crossovers-and-suvs/trailblazer/01-images/trailblazer-masthead-01.jpg'
+    },
+    captiva: {
+      images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9sYi5w2VqLfqv5I4eDcxu3B8iJqZO7mxNqw&s', '', '', ''],
+      thumbnail: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9sYi5w2VqLfqv5I4eDcxu3B8iJqZO7mxNqw&s'
+    },
+    s10: {
+      images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3vJK8Bk5p8y0qKlVr3kBnHKCivVAnIqyXoA&s', '', '', ''],
+      thumbnail: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3vJK8Bk5p8y0qKlVr3kBnHKCivVAnIqyXoA&s'
+    },
   },
 
   // Mazda
