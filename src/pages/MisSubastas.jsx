@@ -13,6 +13,7 @@ import Header from '@/components/Header';
 import PublishFAB from '@/components/PublishFAB';
 import { useNavigate } from 'react-router-dom';
 import PublicarCarroDialog from '@/components/PublicarCarroDialog';
+import MarketPlacaSearch from '@/components/MarketPlacaSearch';
 import { auctionsApi, publicationsApi, usersApi, branchesApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 import { normalizeRole } from '@/lib/roles';
@@ -311,6 +312,7 @@ export default function MisSubastas() {
   const isAdminRole = role === 'admin_general' || role === 'admin_sucursal';
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogPrefill, setDialogPrefill] = useState(null);
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ brand: '', yearFrom: '', yearTo: '' });
@@ -504,6 +506,18 @@ export default function MisSubastas() {
         </div>
       </div>
 
+      {/* Placa market search — visible para dealers */}
+      {!isAdminRole && (
+        <div className="px-4 md:px-8 pt-4 pb-2">
+          <MarketPlacaSearch
+            onAdvance={(prefill) => {
+              setDialogPrefill(prefill);
+              setDialogOpen(true);
+            }}
+          />
+        </div>
+      )}
+
       {/* Main content */}
       <div className="px-4 md:px-8 pb-4 md:flex gap-6">
         <aside className="hidden md:block w-64 flex-shrink-0">
@@ -575,8 +589,13 @@ export default function MisSubastas() {
         </div>
       </div>
 
-      <PublishFAB onClick={() => setDialogOpen(true)} />
-      <PublicarCarroDialog open={dialogOpen} onOpenChange={setDialogOpen} onPublished={loadData} />
+      <PublishFAB onClick={() => { setDialogPrefill(null); setDialogOpen(true); }} />
+      <PublicarCarroDialog
+        open={dialogOpen}
+        onOpenChange={(v) => { setDialogOpen(v); if (!v) setDialogPrefill(null); }}
+        onPublished={loadData}
+        initialPrefill={dialogPrefill}
+      />
       <BottomNav />
     </div>
   );

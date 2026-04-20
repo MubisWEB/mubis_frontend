@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from '@/components/ui/dialog';
@@ -43,7 +43,7 @@ function matchFromList(value, list) {
   return list.find(item => item.toLowerCase() === lower) ?? '';
 }
 
-export default function PublicarCarroDialog({ open, onOpenChange, onPublished }) {
+export default function PublicarCarroDialog({ open, onOpenChange, onPublished, initialPrefill }) {
   const [form, setForm] = useState(JSON.parse(JSON.stringify(initialForm)));
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -56,6 +56,36 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
   const [loadingMarketPrice, setLoadingMarketPrice] = useState(false);
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+
+  // When dialog opens with prefill data (from MarketPlacaSearch), populate the form directly
+  useEffect(() => {
+    if (!open || !initialPrefill) return;
+    const updates = {};
+    if (initialPrefill.placa) updates.placa = initialPrefill.placa;
+    if (initialPrefill.cedula) updates.cedula = initialPrefill.cedula;
+    if (initialPrefill.brand) {
+      const matched = matchFromList(initialPrefill.brand, BRANDS);
+      updates.brand = matched || initialPrefill.brand;
+    }
+    if (initialPrefill.model) updates.model = initialPrefill.model;
+    if (initialPrefill.year) updates.year = String(initialPrefill.year);
+    if (initialPrefill.color) updates.color = initialPrefill.color;
+    if (initialPrefill.combustible) {
+      const matched = matchFromList(initialPrefill.combustible, FUELS);
+      if (matched) updates.combustible = matched;
+    }
+    if (initialPrefill.bodyType) {
+      const matched = matchFromList(initialPrefill.bodyType, BODY_TYPES);
+      if (matched) updates.body_type = matched;
+    }
+    if (initialPrefill.cilindraje) updates.cilindraje = initialPrefill.cilindraje;
+    setForm(JSON.parse(JSON.stringify({ ...initialForm, ...updates })));
+    setErrors({});
+    setPlateFound(true);
+    if (updates.brand && updates.model && updates.year) {
+      fetchMarketPrice(updates.brand, updates.model, updates.year, '', '', '');
+    }
+  }, [open, initialPrefill]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBack = () => onOpenChange(false);
 
@@ -161,7 +191,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
     ['placa', 'brand', 'model', 'year', 'km', 'color', 'cilindraje', 'combustible', 'city', 'transmision'].forEach(k => {
       if (!form[k]) e[k] = 'Obligatorio';
     });
-    if (form.year && (isNaN(form.year) || +form.year < 2000 || +form.year > currentYear)) e.year = 'Año inválido';
+    if (form.year && (isNaN(form.year) || +form.year < 1980 || +form.year > currentYear + 1)) e.year = 'Año inválido';
     if (form.km && (isNaN(form.km) || +form.km < 0)) e.km = 'Kilometraje inválido';
     ['cedula', 'nombre_completo', 'email', 'telefono'].forEach(k => { if (!form[k]) e[k] = 'Obligatorio'; });
     if (form.email && !validateEmail(form.email)) e.email = 'Email inválido';
@@ -375,10 +405,16 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-medium">Marca *</Label>
-                <Select value={form.brand} onValueChange={v => set('brand', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                  <SelectContent>{BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-                </Select>
+                <datalist id="brands-list">
+                  {BRANDS.map(b => <option key={b} value={b} />)}
+                </datalist>
+                <Input
+                  className="mt-1 rounded-xl"
+                  placeholder="Ej: Toyota, Renault"
+                  list="brands-list"
+                  value={form.brand}
+                  onChange={e => set('brand', e.target.value)}
+                />
                 {fieldError('brand')}
               </div>
               <div>
@@ -388,10 +424,15 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished })
               </div>
               <div>
                 <Label className="text-xs font-medium">Año *</Label>
-                <Select value={form.year} onValueChange={v => set('year', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                  <SelectContent>{Array.from({ length: 50 }, (_, i) => currentYear - i).map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-                </Select>
+                <Input
+                  className="mt-1 rounded-xl"
+                  type="number"
+                  placeholder={String(currentYear)}
+                  min="1980"
+                  max={String(currentYear + 1)}
+                  value={form.year}
+                  onChange={e => set('year', e.target.value)}
+                />
                 {fieldError('year')}
               </div>
               <div>
