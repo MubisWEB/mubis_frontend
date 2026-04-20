@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText, Handshake, Warehouse, SlidersHorizontal, Heart } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Pencil, HelpCircle, Bell, Gavel, Car, ClipboardCheck, UserCheck, Bookmark, DollarSign, MessageCircle, Package, Trophy, TrendingUp, Target, LayoutDashboard, Building2, ImagePlus, Users, FileText, Handshake, Warehouse, SlidersHorizontal, Heart, Receipt } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
@@ -53,7 +53,7 @@ export default function Cuenta() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pubBalance, setPubBalance] = useState(0);
-  const [rechargeQty, setRechargeQty] = useState(10);
+  const [rechargeQty, setRechargeQty] = useState(50);
   const [rechargeOpen, setRechargeOpen] = useState(false);
   const canManagePublications = ['dealer', 'admin_general', 'admin_sucursal'].includes(role);
 
@@ -216,6 +216,7 @@ export default function Cuenta() {
       ...(role === 'dealer' ? [{ icon: Warehouse, label: 'Inventario', action: () => navigate('/AdminInventarioSucursal') }] : []),
       { icon: SlidersHorizontal, label: 'Preferencias', action: () => navigate('/Preferencias') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
+      ...(role === 'dealer' ? [{ icon: Receipt, label: 'Historial de recargas', action: () => navigate('/MisRecargas') }] : []),
       { icon: TrendingUp, label: 'Analítica', action: () => navigate('/MiRendimiento') },
       { icon: Target, label: 'Mis Metas', action: () => navigate('/MisMetas') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
@@ -335,13 +336,13 @@ export default function Cuenta() {
                     <Slider
                       value={[rechargeQty]}
                       onValueChange={([v]) => setRechargeQty(v)}
-                      min={10}
-                      max={500}
+                      min={50}
+                      max={1000}
                       step={10}
                       className="w-full"
                     />
                     <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                      <span>10</span><span>500</span>
+                      <span>50</span><span>1.000</span>
                     </div>
                   </div>
                   <div className="bg-muted/50 rounded-xl p-3 text-center">

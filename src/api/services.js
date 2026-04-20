@@ -196,9 +196,11 @@ export const casesApi = {
 
 export const publicationsApi = {
   getBalance: async () => (await api.get('/publications/balance')).data,
+  getBalanceOf: async (userId) => (await api.get(`/publications/balance/${userId}`)).data,
   recharge: async (userId, amount) => (await api.post('/publications/recharge', { userId, amount })).data,
   createCheckout: async (quantity) => (await api.post('/publications/checkout', { quantity })).data,
   getTransactionStatus: async (reference) => (await api.get(`/publications/transaction/${reference}`)).data,
+  getMyTransactions: async () => (await api.get('/publications/my-transactions')).data,
 };
 
 // ── PRONTO PAGO ───────────────────────────────────────────────────────────────

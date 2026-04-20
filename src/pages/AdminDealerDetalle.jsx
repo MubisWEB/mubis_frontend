@@ -3,14 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Shield, Mail, Phone, MapPin, Building,
-  CheckCircle2, XCircle, Calendar, Briefcase, UserCheck,
+  CheckCircle2, XCircle, Calendar, Briefcase, UserCheck, Package,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
-import { usersApi } from '@/api/services';
+import { usersApi, publicationsApi } from '@/api/services';
 
 const ROLE_LABELS = {
   dealer: 'Dealer',
@@ -41,13 +42,36 @@ export default function AdminDealerDetalle() {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pubBalance, setPubBalance] = useState(null);
+  const [rechargeQty, setRechargeQty] = useState(10);
+  const [recharging, setRecharging] = useState(false);
 
   useEffect(() => {
     usersApi.getById(userId)
       .then(setUser)
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
+
+    publicationsApi.getBalanceOf(userId)
+      .then((data) => setPubBalance(data?.balance ?? 0))
+      .catch(() => setPubBalance(0));
   }, [userId]);
+
+  const handleManualRecharge = async () => {
+    const qty = parseInt(rechargeQty, 10);
+    if (!qty || qty < 1) return toast.error('Ingresa una cantidad válida');
+    setRecharging(true);
+    try {
+      await publicationsApi.recharge(userId, qty);
+      setPubBalance((prev) => (prev ?? 0) + qty);
+      setRechargeQty(10);
+      toast.success(`${qty} créditos otorgados correctamente`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error al recargar créditos');
+    } finally {
+      setRecharging(false);
+    }
+  };
 
   const handleToggleVerification = async () => {
     const newStatus = user.verification_status === 'VERIFIED' ? 'PENDING' : 'VERIFIED';
@@ -161,6 +185,43 @@ export default function AdminDealerDetalle() {
           <InfoRow icon={Briefcase} label="NIT" value={user.nit} />
           <InfoRow icon={Calendar} label="Miembro desde" value={joinDate} />
         </Card>
+
+        {/* Créditos de publicación — solo dealers */}
+        {user.role === 'dealer' && (
+          <Card className="p-4 border border-border shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1 h-4 rounded-full bg-secondary" />
+              <Package className="w-4 h-4 text-secondary" />
+              <h2 className="font-bold text-sm text-foreground">Créditos de publicación</h2>
+            </div>
+            <div className="flex items-center justify-between mb-4 bg-muted/40 rounded-xl p-3">
+              <p className="text-sm text-muted-foreground">Saldo actual</p>
+              <p className="text-2xl font-bold text-secondary">
+                {pubBalance === null ? '—' : pubBalance}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                min={1}
+                value={rechargeQty}
+                onChange={(e) => setRechargeQty(e.target.value)}
+                className="rounded-xl h-11"
+                placeholder="Cantidad"
+              />
+              <Button
+                onClick={handleManualRecharge}
+                disabled={recharging}
+                className="h-11 rounded-xl bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-5 flex-shrink-0"
+              >
+                {recharging ? 'Recargando...' : 'Recargar'}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 text-center">
+              Esta recarga no pasa por Wompi — úsala solo para cortesías o compensaciones.
+            </p>
+          </Card>
+        )}
 
         {/* Verificación */}
         <Card className="p-4 border border-border shadow-sm">

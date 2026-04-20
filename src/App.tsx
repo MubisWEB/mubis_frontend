@@ -24,6 +24,7 @@ import DetalleSubasta from './pages/DetalleSubasta';
 import MisSubastas from './pages/MisSubastas';
 import DetalleSubastaVendedor from './pages/DetalleSubastaVendedor';
 import Movimientos from './pages/Movimientos';
+import MisRecargas from './pages/MisRecargas';
 import Cuenta from './pages/Cuenta';
 import Notificaciones from './pages/Notificaciones';
 import ConfiguracionNotificaciones from './pages/ConfiguracionNotificaciones';
@@ -107,6 +108,7 @@ const App = () => (
 
           {/* Movimientos: dealer + recomprador + admin_general + admin_sucursal */}
           <Route path="/Movimientos" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><Movimientos /></RequireRole>} />
+          <Route path="/MisRecargas" element={<RequireRole roles={['dealer','admin_general','admin_sucursal']}><MisRecargas /></RequireRole>} />
 
           {/* Cuenta: all authenticated */}
           <Route path="/Cuenta" element={<RequireAuth><Cuenta /></RequireAuth>} />
