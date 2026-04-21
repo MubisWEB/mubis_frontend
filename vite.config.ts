@@ -44,30 +44,9 @@ export default defineConfig(() => ({
             if (normalizedId.includes('/src/components/')) return 'app-components';
             return undefined;
           }
-          if (
-            normalizedId.includes('/node_modules/react/') ||
-            normalizedId.includes('/node_modules/react-dom/') ||
-            normalizedId.includes('/node_modules/react-router-dom/') ||
-            normalizedId.includes('/node_modules/@tanstack/')
-          ) return 'vendor-react';
-          if (
-            normalizedId.includes('/node_modules/@radix-ui/') ||
-            normalizedId.includes('/node_modules/lucide-react/') ||
-            normalizedId.includes('/node_modules/class-variance-authority/') ||
-            normalizedId.includes('/node_modules/tailwind-merge/')
-          ) return 'vendor-ui';
-          if (normalizedId.includes('/node_modules/framer-motion/')) return 'vendor-motion';
-          if (
-            normalizedId.includes('/node_modules/recharts/') ||
-            normalizedId.includes('/node_modules/d3-')
-          ) return 'vendor-charts';
-          if (
-            normalizedId.includes('/node_modules/axios/') ||
-            normalizedId.includes('/node_modules/date-fns/') ||
-            normalizedId.includes('/node_modules/lodash/') ||
-            normalizedId.includes('/node_modules/moment/') ||
-            normalizedId.includes('/node_modules/zod/')
-          ) return 'vendor-utils';
+          // Keep all external dependencies together. Splitting node_modules can
+          // break runtime ordering for tightly coupled packages such as Radix,
+          // Floating UI, Remix, scheduler, sonner and next-themes.
           return 'vendor';
         },
       },
