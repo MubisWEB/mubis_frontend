@@ -63,6 +63,8 @@ La UI debe mostrar:
 
 Nunca debe ver datos de otras sucursales.
 
+**Es el ÚNICO rol que ve inventario.** `SeBusca` lo ven admin sucursal y recomprador únicamente. Ningún otro rol (superadmin, admin general, dealer, perito) ve ninguno de los dos.
+
 ### DEALER
 
 Concesionario/vendedor-comprador comun.
@@ -221,7 +223,6 @@ Pantallas clave:
 - `DetalleSubasta`.
 - `Ganadas`.
 - `Deseados`.
-- `SeBusca`.
 
 Reglas UI:
 
@@ -314,11 +315,11 @@ La UI usa proteccion por rol, pero backend es la fuente de verdad. La UI debe ay
 
 Rutas comunes por rol:
 
-- Superadmin: dashboard admin, usuarios, solicitudes, soporte, empresas, sucursales, subastas, inventario, banners, partners, carga masiva, analiticas, peritajes si aplica.
-- Admin general: `AdminGeneralDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, compra/publicacion segun rol.
-- Admin sucursal: `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, compra/publicacion segun rol.
-- Dealer: `Comprar`, `MisSubastas`, `Movimientos`, `Ganadas`, `Deseados`, `SeBusca`, `Cuenta`.
-- Recomprador: `Comprar`, `Ganadas`, `Deseados`, `Movimientos`, `B2BCatalogo`, `Cuenta`.
+- Superadmin: dashboard admin, usuarios, solicitudes, soporte, empresas, sucursales, subastas, banners, partners, carga masiva, analiticas, peritajes si aplica. **NO ve SeBusca ni inventario.**
+- Admin general: `AdminGeneralDashboard`, `AdminAnaliticas`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, compra/publicacion segun rol. **NO ve SeBusca ni inventario.**
+- Admin sucursal: `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, `SeBusca`, compra/publicacion segun rol. **Único rol con acceso a inventario. Comparte SeBusca solo con recomprador.**
+- Dealer: `Comprar`, `MisSubastas`, `Movimientos`, `Ganadas`, `Deseados`, `Cuenta`. **NO ve SeBusca ni inventario.**
+- Recomprador: `Comprar`, `Ganadas`, `Deseados`, `Movimientos`, `SeBusca`, `Cuenta`. **NO ve inventario.**
 - Perito: `PeritajesPendientes`, `HistorialPeritajes`, `Cuenta`.
 
 Si una ruta es compartida, el componente debe adaptar queries y UI por role/scope.
@@ -414,6 +415,16 @@ Estas validaciones estaban verdes en la ultima pasada:
 - Backend business flow e2e: `5/5`.
 - Frontend audit: `0 vulnerabilities`.
 - Backend audit: `0 vulnerabilities`.
+
+### Carga masiva y comunicaciones (2026-04-21)
+- `src/pages/AdminCargaMasiva.jsx` permite subir `.xlsx`, `.xls` o `.csv`.
+- La plantilla descargable incluye columnas: Rol, Nombre, Email, Telefono, Ciudad, Empresa, Sucursal, NIT, Direccion.
+- Roles aceptados desde la UI/Excel: `dealer`, `perito`, `recomprador`, `admin_general`, `admin_sucursal`.
+- `admin_general` debe dejar Sucursal vacia; `admin_sucursal` debe traer una sucursal existente.
+- El backend resuelve Empresa/Sucursal contra Company/Branch para mantener scoping real de dashboards y permisos.
+- Los correos se mandan desde backend con `EMAIL_FROM=info@mubis.com` cuando el proveedor este activo; la UI no debe simular envio.
+- WhatsApp automatizado aun no debe prometer envio real si no hay cuenta Meta/Twilio configurada; backend queda en modo disabled/log.
+- Produccion esperada: `VITE_API_URL=https://api.mubis.co/api` y `VITE_WS_URL=https://api.mubis.co`.
 
 ### Catálogo Chevrolet (2026-04-20)
 - `src/constants/vehicleData.js`: Chevrolet expandido a 23 modelos (Onix, Onix Plus, Spark, Beat, Sail, Sonic, Cruze, Groove, Tracker, Trax, Trailblazer, Captiva, Equinox, Blazer, Traverse, Camaro, Malibu, Tahoe, Suburban, S10, Montana, Colorado, Silverado).

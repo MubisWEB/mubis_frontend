@@ -213,7 +213,6 @@ export default function Cuenta() {
 
   if (role === 'dealer' || role === 'recomprador') {
     menuItems.splice(1, 0,
-      ...(role === 'dealer' ? [{ icon: Warehouse, label: 'Inventario', action: () => navigate('/AdminInventarioSucursal') }] : []),
       { icon: SlidersHorizontal, label: 'Preferencias', action: () => navigate('/Preferencias') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
       ...(role === 'dealer' ? [{ icon: Receipt, label: 'Historial de recargas', action: () => navigate('/MisRecargas') }] : []),
@@ -236,7 +235,6 @@ export default function Cuenta() {
   if (role === 'admin_general') {
     menuItems.splice(0, 0, { icon: LayoutDashboard, label: 'Panel General', action: () => navigate('/AdminGeneralDashboard') });
     menuItems.splice(1, 0,
-      { icon: Warehouse, label: 'Inventario', action: () => navigate('/AdminInventarioSucursal') },
       { icon: FileText, label: 'Solicitudes', action: () => navigate('/AdminSolicitudes') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
       { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },

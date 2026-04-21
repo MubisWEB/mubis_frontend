@@ -1,14 +1,15 @@
-import React, { useState, useRef } from 'react';
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Upload, FileSpreadsheet, CheckCircle, AlertTriangle, X, Download } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, CheckCircle, Download, FileSpreadsheet, Upload, X } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { superadminApi } from '@/api/services';
 import { toast } from 'sonner';
 
-const EXPECTED_COLUMNS = ['Rol', 'Nombre', 'Email', 'Teléfono', 'Ciudad', 'Empresa', 'Sucursal (opc)', 'NIT (opc)', 'Dirección (opc)'];
+const EXPECTED_COLUMNS = ['Rol', 'Nombre', 'Email', 'Telefono', 'Ciudad', 'Empresa', 'Sucursal', 'NIT (opc)', 'Direccion (opc)'];
+const ROLE_EXAMPLES = ['dealer', 'perito', 'recomprador', 'admin_general', 'admin_sucursal'];
 
 export default function AdminCargaMasiva() {
   const fileInputRef = useRef(null);
@@ -20,8 +21,9 @@ export default function AdminCargaMasiva() {
     const selected = e.target.files?.[0];
     if (!selected) return;
 
-    if (!selected.name.endsWith('.xlsx') && !selected.name.endsWith('.xls')) {
-      toast.error('Solo se aceptan archivos Excel (.xlsx)');
+    const lowerName = selected.name.toLowerCase();
+    if (!lowerName.endsWith('.xlsx') && !lowerName.endsWith('.xls') && !lowerName.endsWith('.csv')) {
+      toast.error('Solo se aceptan archivos Excel (.xlsx, .xls) o CSV');
       return;
     }
 
@@ -46,7 +48,7 @@ export default function AdminCargaMasiva() {
       } else if (data.created > 0) {
         toast.warning(`${data.created} creados, ${data.errors.length} errores`);
       } else {
-        toast.error('No se pudo crear ningún usuario');
+        toast.error('No se pudo crear ningun usuario');
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al procesar el archivo');
@@ -61,21 +63,44 @@ export default function AdminCargaMasiva() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleDownloadTemplate = () => {
+    const rows = [
+      EXPECTED_COLUMNS.map(col => col.replace(' (opc)', '')).join(','),
+      'dealer,Juan Dealer,juan.dealer@mubis.com,3001234567,Bogota,Autoniza,Autoniza 170,900123456-1,Carrera 1 # 2-3',
+      'perito,Ana Perito,ana.perito@mubis.com,3001234568,Bogota,Autoniza,Autoniza 170,,',
+      'recomprador,Carlos Recomprador,carlos.recomprador@mubis.com,3001234569,Bogota,Autoniza,,,',
+      'admin_general,Gerente General,gerente@mubis.com,3001234570,Bogota,Autoniza,,,',
+      'admin_sucursal,Admin Sucursal,admin.sucursal@mubis.com,3001234571,Bogota,Autoniza,Autoniza 170,,',
+    ];
+    const blob = new Blob([`\ufeff${rows.join('\n')}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'plantilla-carga-masiva-mubis.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-muted pb-28">
       <Header title="Carga Masiva" subtitle="Registrar usuarios por Excel" backTo="/AdminDashboard" />
 
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
-        {/* Instructions */}
         <Card className="p-4 border border-border shadow-sm">
           <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-secondary" />
             Instrucciones
           </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Sube un archivo Excel (.xlsx) con los datos de los usuarios a registrar.
-            Cada usuario recibirá un correo para establecer su contraseña.
+            Sube un archivo Excel (.xlsx, .xls) o CSV con los datos de los usuarios a registrar.
+            Cada usuario recibira un correo para establecer su contrasena.
           </p>
+          <Button onClick={handleDownloadTemplate} variant="outline" size="sm" className="mb-3 rounded-full gap-2">
+            <Download className="w-4 h-4" />
+            Descargar plantilla
+          </Button>
           <div className="bg-muted rounded-xl p-3">
             <p className="text-xs font-medium text-foreground mb-2">Columnas requeridas:</p>
             <div className="flex flex-wrap gap-1.5">
@@ -87,17 +112,21 @@ export default function AdminCargaMasiva() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Los roles válidos son: <strong>dealer</strong>, <strong>perito</strong>, <strong>recomprador</strong>.
-            Los usuarios se crean como verificados automáticamente.
+            Los roles validos son: {ROLE_EXAMPLES.map((role, index) => (
+              <React.Fragment key={role}>
+                <strong>{role}</strong>{index < ROLE_EXAMPLES.length - 1 ? ', ' : '.'}
+              </React.Fragment>
+            ))}
+            {' '}Admin general no lleva sucursal; admin sucursal si requiere una sucursal existente.
+            Los usuarios se crean como verificados automaticamente.
           </p>
         </Card>
 
-        {/* Upload area */}
         <Card className="border border-border shadow-sm overflow-hidden">
           <input
             ref={fileInputRef}
             type="file"
-            accept=".xlsx,.xls"
+            accept=".xlsx,.xls,.csv"
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -112,24 +141,24 @@ export default function AdminCargaMasiva() {
               </div>
               <div className="text-center">
                 <p className="font-bold text-foreground">Seleccionar archivo Excel</p>
-                <p className="text-xs text-muted-foreground mt-1">Máximo 10MB · Formato .xlsx</p>
+                <p className="text-xs text-muted-foreground mt-1">Maximo 10MB · Formato .xlsx, .xls o .csv</p>
               </div>
             </button>
           ) : (
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <FileSpreadsheet className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{file.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">{file.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {(file.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleReset} className="h-8 w-8 p-0 rounded-full">
+                <Button variant="ghost" size="sm" onClick={handleReset} className="h-8 w-8 p-0 rounded-full flex-shrink-0">
                   <X className="w-4 h-4" />
                 </Button>
               </div>
@@ -157,7 +186,6 @@ export default function AdminCargaMasiva() {
           )}
         </Card>
 
-        {/* Results */}
         {result && (
           <Card className="p-4 border border-border shadow-sm space-y-3">
             <h3 className="font-bold text-foreground">Resultado de la carga</h3>

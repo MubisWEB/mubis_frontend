@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
+  Bookmark,
   Building2,
   ClipboardCheck,
   FileText,
@@ -19,7 +20,6 @@ import { normalizeRole } from '@/lib/roles';
 const DEALER_NAV = [
   { icon: Search, label: 'Comprar', path: '/Comprar' },
   { icon: Heart, label: 'Vender', path: '/MisSubastas' },
-  { icon: Search, label: 'Se Busca', path: '/SeBusca' },
   { icon: User, label: 'Cuenta', path: '/Cuenta' },
 ];
 
@@ -52,6 +52,7 @@ const NAV_CONFIGS = {
     { icon: Building2, label: 'Sucursal', path: '/AdminSucursalDashboard' },
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Heart, label: 'Vender', path: '/MisSubastas' },
+    { icon: Bookmark, label: 'Se Busca', path: '/SeBusca' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
 };

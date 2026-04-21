@@ -103,7 +103,7 @@ const App = () => (
           <Route path="/DetalleSubastaVendedor/:auctionId" element={<RequireRole roles={['dealer','admin_general','admin_sucursal']}><DetalleSubastaVendedor /></RequireRole>} />
 
           {/* Se Busca + Deseados */}
-          <Route path="/SeBusca" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><SeBusca /></RequireRole>} />
+          <Route path="/SeBusca" element={<RequireRole roles={['recomprador','admin_sucursal']}><SeBusca /></RequireRole>} />
           <Route path="/Deseados" element={<RequireRole roles={['recomprador','dealer','admin_general','admin_sucursal']}><Deseados /></RequireRole>} />
 
           {/* Movimientos: dealer + recomprador + admin_general + admin_sucursal */}
@@ -150,7 +150,7 @@ const App = () => (
           {/* Admin — Nuevos roles */}
           <Route path="/AdminGeneralDashboard" element={<RequireRole roles={['admin_general','superadmin']}><AdminGeneralDashboard /></RequireRole>} />
           <Route path="/AdminSucursalDashboard" element={<RequireRole roles={['admin_sucursal','admin_general','superadmin']}><AdminSucursalDashboard /></RequireRole>} />
-          <Route path="/AdminInventarioSucursal" element={<RequireRole roles={['dealer','admin_sucursal','admin_general','superadmin']}><AdminInventarioSucursal /></RequireRole>} />
+          <Route path="/AdminInventarioSucursal" element={<RequireRole roles={['admin_sucursal']}><AdminInventarioSucursal /></RequireRole>} />
 
           {/* Dealer */}
           <Route path="/Preferencias" element={<RequireRole roles={['dealer','recomprador']}><Preferencias /></RequireRole>} />
