@@ -21,6 +21,7 @@ export default defineConfig(() => ({
         manualChunks(id) {
           const normalizedId = id.replace(/\\/g, '/');
 
+          // App code — split by route for lazy loading
           if (!normalizedId.includes('node_modules')) {
             if (normalizedId.includes('/src/pages/Admin')) return 'pages-admin';
             if (
@@ -43,15 +44,7 @@ export default defineConfig(() => ({
             if (normalizedId.includes('/src/components/')) return 'app-components';
             return undefined;
           }
-          if (id.includes('react-dom') || id.includes('react-router') || id.includes('@remix-run') || id.includes('/react/') || id.includes('/scheduler/') || id.includes('/react-is/') || id.includes('/use-sync-external-store/')) return 'vendor-react';
-          if (id.includes('@tanstack/react-query') || id.includes('axios') || id.includes('socket.io-client')) return 'vendor-data';
-          if (id.includes('framer-motion') || id.includes('@hello-pangea/dnd')) return 'vendor-motion';
-          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) return 'vendor-forms';
-          if (id.includes('date-fns') || id.includes('moment') || id.includes('lodash')) return 'vendor-utils';
-          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
-          if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('sonner') || id.includes('vaul') || id.includes('cmdk') || id.includes('react-day-picker') || id.includes('next-themes')) return 'vendor-ui';
-          if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-maps';
-          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('react-quill')) return 'vendor-docs';
+          // All node_modules → single vendor chunk (avoids circular dep between vendor sub-chunks)
           return 'vendor';
         },
       },
