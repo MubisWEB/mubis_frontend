@@ -20,6 +20,10 @@ Registro de errores cometidos para no repetirlos.
 
 ## Errores de bundling / Vite
 
-- **`Cannot read properties of undefined (reading 'createContext')` en vendor chunk (recurrente):** `sonner`, `vaul`, `cmdk` y `react-day-picker` son librerías que usan React internamente pero no tenían regla en `manualChunks` → caían en el catch-all `vendor`. Cuando ese chunk se evalúa antes que `vendor-react`, `React` es `undefined` al intentar llamar `createContext`. Corrección: agregar esas librerías a la regla `vendor-ui` en `vite.config.ts` para que queden junto a `@radix-ui`. También agregar `optimizeDeps.include: ['react', 'react-dom', 'react/jsx-runtime']` para pre-bundling en dev. **Cada vez que se agregue una nueva dependencia React-based de UI, añadirla a la regla `vendor-ui`.**
+- **`Cannot read properties of undefined (reading 'createContext')` en vendor chunk (recurrente):** Causa raíz: dependencia circular entre chunks en el build de producción. `react-dom` (en `vendor-react`) depende de `scheduler`, `react-is` y `use-sync-external-store`. Esos paquetes no tenían regla en `manualChunks` → caían al catch-all `vendor`. El catch-all `vendor` importa React (de `vendor-react`), creando el ciclo: `vendor-react → vendor (scheduler) → vendor-react (react)`. Cuando el ciclo se evalúa, React está `undefined` → `createContext` falla. Correcciones aplicadas en `vite.config.ts`:
+  1. Agregar `scheduler`, `react-is`, `use-sync-external-store` a la regla de `vendor-react`.
+  2. Agregar `sonner`, `vaul`, `cmdk`, `react-day-picker` a la regla de `vendor-ui` (también usan React).
+  3. Agregar `optimizeDeps.include: ['react', 'react-dom', 'react/jsx-runtime']` para pre-bundling en dev.
+  **Regla general: al agregar cualquier paquete que dependa de React, asignarle explícitamente un chunk en `manualChunks`, nunca dejar que caiga al catch-all `vendor`.**
 
 ## Otros
