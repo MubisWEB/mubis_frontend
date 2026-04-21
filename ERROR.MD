@@ -21,9 +21,11 @@ Registro de errores cometidos para no repetirlos.
 ## Errores de bundling / Vite
 
 - **`Cannot read properties of undefined (reading 'createContext')` en vendor chunk (recurrente):** Causa raíz: dependencia circular entre chunks en el build de producción. `react-dom` (en `vendor-react`) depende de `scheduler`, `react-is` y `use-sync-external-store`. Esos paquetes no tenían regla en `manualChunks` → caían al catch-all `vendor`. El catch-all `vendor` importa React (de `vendor-react`), creando el ciclo: `vendor-react → vendor (scheduler) → vendor-react (react)`. Cuando el ciclo se evalúa, React está `undefined` → `createContext` falla. Correcciones aplicadas en `vite.config.ts`:
-  1. Agregar `scheduler`, `react-is`, `use-sync-external-store` a la regla de `vendor-react`.
-  2. Agregar `sonner`, `vaul`, `cmdk`, `react-day-picker`, `next-themes` a la regla de `vendor-ui` (también usan React). `next-themes` fue el culpable confirmado via DevTools: su `createContext` con `setTheme/themes/forcedTheme/storageKey` era visible en el stack.
-  3. Agregar `optimizeDeps.include: ['react', 'react-dom', 'react/jsx-runtime']` para pre-bundling en dev.
-  **Regla general: al agregar cualquier paquete que dependa de React, asignarle explícitamente un chunk en `manualChunks`, nunca dejar que caiga al catch-all `vendor`.**
+  Correcciones aplicadas en `vite.config.ts` (en orden de diagnóstico, todas necesarias):
+  1. Agregar `scheduler`, `react-is`, `use-sync-external-store` a `vendor-react` (dependencias internas de react-dom).
+  2. Agregar `sonner`, `vaul`, `cmdk`, `react-day-picker`, `next-themes` a `vendor-ui`. `next-themes` fue el culpable confirmado via DevTools: su `createContext` con `setTheme/themes/forcedTheme/storageKey` era visible en el minificado.
+  3. Agregar `react-router` (base package, ≠ react-router-dom) y `@remix-run` a `vendor-react`. Eran el ciclo restante: `vendor-react (react-router-dom) → vendor (@remix-run/router, react-router) → vendor-react (react)`.
+  4. Agregar `optimizeDeps.include: ['react', 'react-dom', 'react/jsx-runtime']` para pre-bundling en dev.
+  **Regla general: cualquier paquete que use React o que sea dependencia interna de React debe asignarse explícitamente a `vendor-react` o `vendor-ui` en `manualChunks`. Nunca dejar que caiga al catch-all `vendor`. Al agregar nuevas dependencias, verificar si son React-based.**
 
 ## Otros

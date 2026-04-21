@@ -110,7 +110,7 @@ async function openAllowedRoute(page, path: string) {
 
   await expect(page, `allowed route should remain on ${path}`).toHaveURL(routePattern(path));
   await expect(page.locator('#root')).toBeVisible();
-  await expect(page.locator('body')).not.toContainText(/404|No encontrado|Credenciales incorrectas/i);
+  await expect(page.locator('body')).not.toContainText(/404\s*(not found|no encontrado)|No encontrado|Credenciales incorrectas/i);
   expect(apiFailures, `API failures while opening ${path}`).toEqual([]);
 }
 

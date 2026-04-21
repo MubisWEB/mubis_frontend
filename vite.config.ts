@@ -43,7 +43,7 @@ export default defineConfig(() => ({
             if (normalizedId.includes('/src/components/')) return 'app-components';
             return undefined;
           }
-          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('/react/') || id.includes('/scheduler/') || id.includes('/react-is/') || id.includes('/use-sync-external-store/')) return 'vendor-react';
+          if (id.includes('react-dom') || id.includes('react-router') || id.includes('@remix-run') || id.includes('/react/') || id.includes('/scheduler/') || id.includes('/react-is/') || id.includes('/use-sync-external-store/')) return 'vendor-react';
           if (id.includes('@tanstack/react-query') || id.includes('axios') || id.includes('socket.io-client')) return 'vendor-data';
           if (id.includes('framer-motion') || id.includes('@hello-pangea/dnd')) return 'vendor-motion';
           if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) return 'vendor-forms';
