@@ -12,6 +12,9 @@ export default defineConfig(() => ({
     },
   },
   plugins: [react()],
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
   build: {
     rollupOptions: {
       output: {
@@ -46,7 +49,7 @@ export default defineConfig(() => ({
           if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) return 'vendor-forms';
           if (id.includes('date-fns') || id.includes('moment') || id.includes('lodash')) return 'vendor-utils';
           if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
-          if (id.includes('@radix-ui') || id.includes('lucide-react')) return 'vendor-ui';
+          if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('sonner') || id.includes('vaul') || id.includes('cmdk') || id.includes('react-day-picker')) return 'vendor-ui';
           if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-maps';
           if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('react-quill')) return 'vendor-docs';
           return 'vendor';

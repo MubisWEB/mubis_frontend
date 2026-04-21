@@ -13,7 +13,6 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { analyticsApi, usersApi } from '@/api/services';
 
-// ── Datos simulados ───────────────────────────────────────────────────────────
 const MONTHS_LABELS = (() => {
   const now = new Date();
   return Array.from({ length: 6 }, (_, i) => {
@@ -21,32 +20,6 @@ const MONTHS_LABELS = (() => {
     return d.toLocaleString('es-CO', { month: 'short', year: '2-digit' });
   });
 })();
-
-const SIM_AS = {
-  pipeline: [
-    { etapa: 'Solicitudes', count: 14, color: '#8b5cf6' },
-    { etapa: 'Inspeccionados', count: 9, color: '#6366f1' },
-    { etapa: 'En subasta', count: 7, color: '#3b82f6' },
-    { etapa: 'Con oferta', count: 5, color: '#06b6d4' },
-    { etapa: 'Cerrados', count: 3, color: '#10b981' },
-  ],
-  vendedores: [
-    { nombre: 'Ana Martinez', solicitudes: 6, cierres: 2, funnel: { inspeccion: 5, subasta: 3, oferta: 2 } },
-    { nombre: 'Carlos Ruiz', solicitudes: 4, cierres: 1, funnel: { inspeccion: 3, subasta: 2, oferta: 1 } },
-  ],
-  inventario: { enStock: 12, reservadas: 3, vendidasMes: 5 },
-  inventarioRetail: { vestido: 8, patio: 4, metaMes: 15, gap: 3 },
-  metas: { capacidadPatio: 20, comprasActual: 14, metaCompras: 18 },
-  monthly: [
-    { publicados: 4, vendidos: 2, comprados: 2 },
-    { publicados: 5, vendidos: 3, comprados: 2 },
-    { publicados: 4, vendidos: 2, comprados: 2 },
-    { publicados: 6, vendidos: 3, comprados: 3 },
-    { publicados: 5, vendidos: 3, comprados: 2 },
-    { publicados: 7, vendidos: 4, comprados: 3 },
-  ].map((d, i) => ({ ...d, mes: MONTHS_LABELS[i] })),
-  alertas: { sinLeer: 2, peritajesSinAsignar: 1, stockBajo: true },
-};
 
 const EMPTY_MONTHLY = MONTHS_LABELS.map((mes) => ({ mes, publicados: 0, vendidos: 0, comprados: 0 }));
 const EMPTY_PIPELINE = [
@@ -129,10 +102,11 @@ export default function AdminSucursalDashboard() {
   };
 
   useEffect(() => {
+    setLoading(true);
     loadData();
     const iv = setInterval(loadData, 30000);
     return () => clearInterval(iv);
-  }, []);
+  }, [branchId]);
 
   const byStatus = dashboard?.auctions?.byStatus || {};
   const team = dashboard?.team || {};

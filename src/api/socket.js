@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
 
-const wsUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const wsUrl = import.meta.env.VITE_WS_URL || apiUrl.replace(/\/api\/?$/, '');
 
 const socket = io(wsUrl, {
   autoConnect: false,

@@ -1,13 +1,15 @@
 import axios from 'axios';
 
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_URL,
 });
 
 // Public axios instance — no auth header, no refresh interceptor.
 // Use for endpoints that don't require authentication (login, register, etc.)
 export const publicApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_URL,
 });
 
 api.interceptors.request.use((config) => {
@@ -33,7 +35,7 @@ api.interceptors.response.use(
       if (refreshToken) {
         if (!_refreshing) {
           _refreshing = axios.post(
-            `${import.meta.env.VITE_API_URL}/auth/refresh`,
+            `${API_URL}/auth/refresh`,
             {},
             { headers: { Authorization: `Bearer ${refreshToken}` } }
           ).then(({ data }) => {

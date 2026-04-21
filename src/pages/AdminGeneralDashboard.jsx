@@ -20,7 +20,6 @@ import { toast } from 'sonner';
 import { analyticsApi, usersApi, branchesApi, companiesApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 
-// ── Datos simulados ───────────────────────────────────────────────────────────
 const MONTHS_LABELS = (() => {
   const now = new Date();
   return Array.from({ length: 6 }, (_, i) => {
@@ -28,45 +27,6 @@ const MONTHS_LABELS = (() => {
     return d.toLocaleString('es-CO', { month: 'short', year: '2-digit' });
   });
 })();
-
-const SIM_AG = {
-  pipeline: [
-    { etapa: 'Solicitudes', count: 38, color: '#8b5cf6' },
-    { etapa: 'Inspeccionados', count: 26, color: '#6366f1' },
-    { etapa: 'En subasta', count: 19, color: '#3b82f6' },
-    { etapa: 'Con oferta', count: 13, color: '#06b6d4' },
-    { etapa: 'Cerrados', count: 8, color: '#10b981' },
-  ],
-  vendedores: [
-    { nombre: 'Ana Martinez', solicitudes: 12, cierres: 5, tasa: 42 },
-    { nombre: 'Carlos Ruiz', solicitudes: 9, cierres: 4, tasa: 44 },
-    { nombre: 'Laura Gomez', solicitudes: 8, cierres: 3, tasa: 38 },
-  ],
-  tasadores: [
-    { nombre: 'Pedro Diaz', tiempoRespuesta: '2.3h', tasaCierre: 68 },
-    { nombre: 'Maria Lopez', tiempoRespuesta: '1.8h', tasaCierre: 72 },
-  ],
-  inspectores: [
-    { nombre: 'Juan Perez', tiempoPeritaje: '45min', llenado: 94, costoReparacion: 2800000 },
-    { nombre: 'Sofia Castro', tiempoPeritaje: '52min', llenado: 88, costoReparacion: 3200000 },
-  ],
-  metas: { objetivo: 25, actual: 19 },
-  demanda: [
-    { modelo: 'Toyota Corolla', solicitudes: 8 },
-    { modelo: 'Mazda 3', solicitudes: 6 },
-    { modelo: 'Chevrolet Onix', solicitudes: 5 },
-    { modelo: 'Renault Duster', solicitudes: 4 },
-  ],
-  monthly: [
-    { publicados: 8, vendidos: 5, comprados: 4 },
-    { publicados: 11, vendidos: 7, comprados: 6 },
-    { publicados: 9, vendidos: 6, comprados: 5 },
-    { publicados: 14, vendidos: 9, comprados: 7 },
-    { publicados: 12, vendidos: 7, comprados: 6 },
-    { publicados: 16, vendidos: 10, comprados: 8 },
-  ].map((d, i) => ({ ...d, mes: MONTHS_LABELS[i] })),
-  alertas: { sinLeer: 4, peritajesSinAsignar: 2, rechazadas: 3 },
-};
 
 const EMPTY_MONTHLY = MONTHS_LABELS.map((mes) => ({ mes, publicados: 0, vendidos: 0, comprados: 0 }));
 const EMPTY_PIPELINE = [

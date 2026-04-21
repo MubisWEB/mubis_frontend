@@ -104,7 +104,9 @@ async function openAllowedRoute(page, path: string) {
   });
 
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(800);
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  await page.locator('.react-loading-skeleton').first().waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(200);
 
   await expect(page, `allowed route should remain on ${path}`).toHaveURL(routePattern(path));
   await expect(page.locator('#root')).toBeVisible();

@@ -499,7 +499,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
               <div>
                 <Label className="text-xs font-medium">Combustible *</Label>
                 <Select value={form.combustible} onValueChange={v => set('combustible', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Combustible"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{FUELS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                 </Select>
                 {fieldError('combustible')}
@@ -507,7 +507,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
               <div>
                 <Label className="text-xs font-medium">Transmisión *</Label>
                 <Select value={form.transmision} onValueChange={v => set('transmision', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Transmisión"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{TRANSMISSIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select>
                 {fieldError('transmision')}
@@ -515,7 +515,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
               <div>
                 <Label className="text-xs font-medium">Ciudad / Sucursal *</Label>
                 <Select value={form.city} onValueChange={v => set('city', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Ciudad o sucursal"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{CITIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select>
                 {fieldError('city')}
@@ -523,35 +523,35 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
               <div>
                 <Label className="text-xs font-medium">Tipo de carrocería</Label>
                 <Select value={form.body_type} onValueChange={v => set('body_type', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Tipo de carrocería"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{BODY_TYPES.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-xs font-medium">Número de puertas</Label>
                 <Select value={form.doors} onValueChange={v => set('doors', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Número de puertas"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{DOORS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-xs font-medium">Número de pasajeros</Label>
                 <Select value={form.passengers} onValueChange={v => set('passengers', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Número de pasajeros"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{PASSENGERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-xs font-medium">Dirección</Label>
                 <Select value={form.steering} onValueChange={v => set('steering', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Dirección"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{STEERINGS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-xs font-medium">Aire acondicionado</Label>
                 <Select value={form.air_conditioning} onValueChange={v => set('air_conditioning', v)}>
-                  <SelectTrigger className="mt-1 rounded-xl"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 rounded-xl" aria-label="Aire acondicionado"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>{AC_OPTIONS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
                 </Select>
               </div>

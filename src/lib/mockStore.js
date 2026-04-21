@@ -722,7 +722,6 @@ function spawnTestSnipingAuction() {
   const aIdx = auctions.findIndex(a => a.id === testId);
   if (aIdx >= 0) auctions[aIdx] = auction; else auctions.unshift(auction);
   save(KEYS.auctions, auctions);
-  console.log('🧪 Subasta anti-sniping creada — termina en 30 seg');
 }
 spawnTestSnipingAuction();
 

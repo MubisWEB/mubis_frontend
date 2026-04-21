@@ -23,7 +23,6 @@ const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
 
 const CHART_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
-// ── Datos simulados (6 meses en loop) ─────────────────────────────────────────
 const MONTHS_LABELS = (() => {
   const now = new Date();
   return Array.from({ length: 6 }, (_, i) => {

@@ -339,7 +339,7 @@ Areas clave:
 - Analytics/dashboards.
 - Publications/saldo de publicaciones.
 - Verifik/autollenado: `vehiclesService.lookupPlate(placa, documentType, documentNumber)`.
-- Market estimate/precio de mercado: `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible)`.
+- Market estimate/precio de mercado: `vehiclesService.getMarketEstimate(brand, model, year, km, transmision, combustible, plate)`.
 
 Cuando una accion cambia estado, refrescar datos relevantes:
 

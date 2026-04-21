@@ -583,6 +583,7 @@ export default function PeritajeDetalle() {
 
       <input
         ref={photoInputRef}
+        aria-label="Fotos del vehiculo"
         type="file"
         accept="image/*"
         multiple
@@ -638,6 +639,7 @@ export default function PeritajeDetalle() {
         )}
         <input
           ref={tarjetaInputRef}
+          aria-label="Foto tarjeta de propiedad"
           type="file"
           accept="image/*"
           className="hidden"
@@ -692,7 +694,7 @@ export default function PeritajeDetalle() {
               value={documentacion.soat.status} 
               onValueChange={(val) => updateDocumentacion('soat', 'status', val)}
             >
-              <SelectTrigger className="rounded-xl">
+              <SelectTrigger aria-label="SOAT estado" className="rounded-xl">
                 <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
@@ -740,7 +742,7 @@ export default function PeritajeDetalle() {
               value={documentacion.tecnomecanica.status} 
               onValueChange={(val) => updateDocumentacion('tecnomecanica', 'status', val)}
             >
-              <SelectTrigger className="rounded-xl">
+              <SelectTrigger aria-label="Tecnomecanica estado" className="rounded-xl">
                 <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
@@ -786,7 +788,7 @@ export default function PeritajeDetalle() {
               value={documentacion.multas.tiene} 
               onValueChange={(val) => updateDocumentacion('multas', 'tiene', val)}
             >
-              <SelectTrigger className="rounded-xl">
+              <SelectTrigger aria-label="Multas" className="rounded-xl">
                 <SelectValue placeholder="Seleccionar" />
               </SelectTrigger>
               <SelectContent>
@@ -854,6 +856,7 @@ export default function PeritajeDetalle() {
             errors.reportPdf ? "border-destructive/60" : "border-muted-foreground/40"
           )}>
             <input
+              aria-label="PDF del peritaje"
               type="file"
               accept=".pdf,application/pdf"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl"
@@ -967,6 +970,7 @@ export default function PeritajeDetalle() {
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
           <Input
+            aria-label="Precio recomendado"
             type="number"
             min={0}
             placeholder="50.000.000"
