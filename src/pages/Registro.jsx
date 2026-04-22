@@ -199,7 +199,7 @@ export default function Registro() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {['dealer', 'perito'].includes(formData.role) ? (
+                  {['dealer', 'perito'].includes(formData.role) && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">
                         Empresa / Concesionario *
@@ -215,20 +215,15 @@ export default function Registro() {
                         ))}
                       </select>
                     </div>
-                  ) : (
+                  )}
+                  {formData.role && formData.role !== 'recomprador' && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">
-                        Empresa compradora <span className="text-muted-foreground">(opcional)</span>
+                        NIT {formData.role === 'dealer' ? '*' : <span className="text-muted-foreground">(opcional)</span>}
                       </label>
-                      <Input type="text" placeholder="Nombre de tu empresa" value={formData.companyName} onChange={(e) => handleChange("companyName", e.target.value)} className={inputClass} disabled={loading} />
+                      <Input type="text" placeholder="900.123.456-7" value={formData.nit} onChange={(e) => handleChange("nit", e.target.value)} className={inputClass} disabled={loading} />
                     </div>
                   )}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      NIT {formData.role === 'dealer' ? '*' : <span className="text-muted-foreground">(opcional)</span>}
-                    </label>
-                    <Input type="text" placeholder="900.123.456-7" value={formData.nit} onChange={(e) => handleChange("nit", e.target.value)} className={inputClass} disabled={loading} />
-                  </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Nombre de contacto *</label>
                     <Input type="text" placeholder="Carlos Mendoza" value={formData.contacto} onChange={(e) => handleChange("contacto", e.target.value)} className={inputClass} disabled={loading} />

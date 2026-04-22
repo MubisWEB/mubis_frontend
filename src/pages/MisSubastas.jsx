@@ -377,6 +377,14 @@ export default function MisSubastas() {
   const pendienteDecision = useMemo(() => applyFilters(items.filter(i => i.pipelineStatus === 'decision')), [items, search, filters]);
   const finalizadas = useMemo(() => applyFilters(items.filter(i => i.pipelineStatus === 'finalized')), [items, search, filters]);
 
+  // Auto-switch to Decisión when current tab empties and there are pending decisions
+  useEffect(() => {
+    if (loading) return;
+    if (activeTab === 'activas' && activas.length === 0 && pendienteDecision.length > 0) {
+      setActiveTab('decision');
+    }
+  }, [loading, activas.length, pendienteDecision.length, activeTab]);
+
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header />
@@ -505,6 +513,23 @@ export default function MisSubastas() {
           <SellerFilterSheet filters={filters} setFilters={setFilters} />
         </div>
       </div>
+
+      {/* Decisión pending banner */}
+      {!loading && pendienteDecision.length > 0 && activeTab !== 'decision' && (
+        <div
+          className="mx-4 md:mx-8 mb-2 mt-1 flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 cursor-pointer"
+          onClick={() => setActiveTab('decision')}
+        >
+          <Trophy className="w-5 h-5 text-orange-500 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-orange-800">
+              {pendienteDecision.length === 1 ? '¡Tienes una oferta por decidir!' : `¡Tienes ${pendienteDecision.length} ofertas por decidir!`}
+            </p>
+            <p className="text-xs text-orange-600 mt-0.5">Acepta o rechaza la puja para completar la venta.</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-orange-400 flex-shrink-0" />
+        </div>
+      )}
 
       {/* Placa market search — visible para dealers */}
       {!isAdminRole && (

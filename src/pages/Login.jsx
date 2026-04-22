@@ -63,13 +63,14 @@ export default function Login() {
     setLoading(true);
     try {
       const loggedUser = await login(email, password, resolvedTenantSlug);
-      toast.success("Bienvenido de nuevo");
 
       if (!isAdminRole(loggedUser.role) && loggedUser.verification_status !== "VERIFIED") {
+        toast.warning("Tu cuenta aún no está verificada");
         navigate("/PendienteVerificacion", { replace: true });
         return;
       }
 
+      toast.success("Bienvenido de nuevo");
       navigate(getRedirectForRole(loggedUser.role, loggedUser.id), { replace: true });
     } catch {
       toast.error("Credenciales incorrectas");

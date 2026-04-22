@@ -9,9 +9,9 @@ import TopBar from "@/components/TopBar";
 import { useAuth } from '@/lib/AuthContext';
 
 const STATUS_CONFIG = {
-  PENDING: { icon: Clock, label: 'En revisión', color: 'bg-accent/10 text-accent-foreground', message: 'Tu cuenta está siendo revisada por nuestro equipo. Te notificaremos cuando sea aprobada.' },
-  REJECTED: { icon: XCircle, label: 'Rechazada', color: 'bg-destructive/10 text-destructive', message: 'Tu solicitud fue rechazada. Contacta soporte si crees que es un error.' },
-  SUSPENDED: { icon: AlertTriangle, label: 'Suspendida', color: 'bg-destructive/10 text-destructive', message: 'Tu cuenta ha sido suspendida. Contacta soporte para más información.' },
+  PENDING: { icon: Clock, label: 'En revisión', color: 'bg-purple-100 text-purple-900 border border-purple-200', iconBg: 'bg-purple-100 text-purple-700', message: 'Tu cuenta está siendo revisada por nuestro equipo. Te notificaremos cuando sea aprobada.' },
+  REJECTED: { icon: XCircle, label: 'Rechazada', color: 'bg-destructive/10 text-destructive border border-destructive/20', iconBg: 'bg-destructive/10 text-destructive', message: 'Tu solicitud fue rechazada. Contacta soporte si crees que es un error.' },
+  SUSPENDED: { icon: AlertTriangle, label: 'Suspendida', color: 'bg-destructive/10 text-destructive border border-destructive/20', iconBg: 'bg-destructive/10 text-destructive', message: 'Tu cuenta ha sido suspendida. Contacta soporte para más información.' },
 };
 
 export default function PendienteVerificacion() {
@@ -36,9 +36,9 @@ export default function PendienteVerificacion() {
       </nav>
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <Card className="max-w-md w-full p-8 text-center border border-border/60 shadow-sm rounded-2xl">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-muted">
-            <Icon className="w-8 h-8 text-muted-foreground" />
+        <Card className="max-w-md w-full p-8 text-center border-2 border-purple-200 shadow-sm rounded-2xl">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${config.iconBg}`}>
+            <Icon className="w-8 h-8" />
           </div>
           <Badge className={`mb-4 ${config.color}`}>{config.label}</Badge>
           <h1 className="text-xl font-bold text-foreground mb-2 font-sans">Estado de tu cuenta</h1>

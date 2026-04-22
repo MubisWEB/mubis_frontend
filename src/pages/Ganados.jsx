@@ -78,8 +78,8 @@ export default function Ganados() {
 
   const currentList = grouped[activeTab] || [];
 
-  const handleExtend = (auction) => {
-    navigate(`/DetalleSubasta/${auction.id}?from=ganados`);
+  const handleChat = (auction) => {
+    navigate(`/Chat/${auction.id}`);
   };
 
   const renderAuctionCard = (auction) => {
@@ -89,10 +89,8 @@ export default function Ganados() {
       formatPrice,
       navigate,
       isCompleted: auction.isCompleted,
-      canExtend: auction.canExtend,
-      remaining: auction.remaining,
-      onExtend: handleExtend,
       isCancelled: auction.isCancelled,
+      onChat: handleChat,
     };
 
     if (window.innerWidth < 768) {

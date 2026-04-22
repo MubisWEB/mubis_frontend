@@ -37,6 +37,8 @@ export const leaveAuction = (auctionId) => socket.emit('leave_auction', auctionI
 export const joinNotifications = (userId) => socket.emit('join_notifications', userId);
 export const joinActivity = () => socket.emit('join_activity');
 export const joinInspections = (branch) => socket.emit('join_inspections', branch);
+export const joinChat = (auctionId) => socket.emit('join_chat', auctionId);
+export const leaveChat = (auctionId) => socket.emit('leave_chat', auctionId);
 
 // Eventos entrantes:
 // socket.on('new_bid', ({ auctionId, currentBid, bidsCount, leaderId, userName }) => ...)

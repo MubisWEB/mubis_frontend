@@ -193,6 +193,13 @@ export const casesApi = {
   update: async (id, updates) => (await api.patch(`/support/cases/${id}`, updates)).data,
 };
 
+// ── CHAT COMPRADOR–VENDEDOR ───────────────────────────────────────────────────
+
+export const chatApi = {
+  getConversation: async (auctionId) => (await api.get(`/chat/${auctionId}`)).data,
+  sendMessage: async (auctionId, text) => (await api.post(`/chat/${auctionId}/messages`, { text })).data,
+};
+
 // ── PUBLICATIONS ──────────────────────────────────────────────────────────────
 
 export const publicationsApi = {

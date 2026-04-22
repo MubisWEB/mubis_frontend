@@ -39,10 +39,18 @@ const TYPE_ICONS = {
 };
 
 function getNotificationRoute(n) {
+  // Normalize to lowercase since Prisma enums are stored uppercase in DB
+  const type = (n.type || '').toLowerCase();
+
+  // Buyer won — go to Ganados "En proceso" tab
+  if (type === 'auction_won') {
+    return '/Ganados';
+  }
+
   if (n.auctionId) {
     // Seller types go to seller detail
     const sellerTypes = ['new_bid', 'pending_decision', 'auction_ended', 'auction_published'];
-    if (sellerTypes.includes(n.type)) {
+    if (sellerTypes.includes(type)) {
       return `/DetalleSubastaVendedor/${n.auctionId}`;
     }
     return `/DetalleSubasta/${n.auctionId}`;
@@ -50,7 +58,7 @@ function getNotificationRoute(n) {
   if (n.vehicleId) {
     return `/PeritajeDetalle/${n.vehicleId}`;
   }
-  if (['partner_invitation', 'partner_accepted', 'partner_rejected'].includes(n.type)) {
+  if (['partner_invitation', 'partner_accepted', 'partner_rejected'].includes(type)) {
     return '/Partners';
   }
   return null;
@@ -144,7 +152,7 @@ export default function Notificaciones() {
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
           ) : (notifications.map((n) => {
-              const Icon = TYPE_ICONS[n.type] || Bell;
+              const Icon = TYPE_ICONS[(n.type || '').toLowerCase()] || Bell;
               const hasRoute = !!getNotificationRoute(n);
               return (
                 <motion.div

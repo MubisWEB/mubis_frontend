@@ -5,7 +5,7 @@ import PhotoGallery from '@/components/PhotoGallery';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, Eye, TrendingUp, Calendar, Gauge, Settings2, Fuel, Palette, MapPin, ChevronLeft, ChevronRight, Camera, FileCheck, Shield, XCircle, FileText, CheckCircle, AlertTriangle, ChevronDown, ChevronUp, Car, Wind, Trophy, Gavel } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Eye, TrendingUp, Calendar, Gauge, Settings2, Fuel, Palette, MapPin, ChevronLeft, ChevronRight, Camera, FileCheck, Shield, XCircle, FileText, CheckCircle, AlertTriangle, ChevronDown, ChevronUp, Car, Wind, Trophy, Gavel, MessageCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import TopBar from "@/components/TopBar";
@@ -423,6 +423,16 @@ export default function DetalleSubastaVendedor() {
               </>
             )}
           </Card>
+        )}
+
+        {(isPendingDecision || (isFinalized && auction.hasWinner)) && (
+          <Button
+            variant="outline"
+            className="w-full border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold rounded-xl h-11 gap-2"
+            onClick={() => navigate(`/Chat/${auction.id || auction.auctionId}`)}
+          >
+            <MessageCircle className="w-4 h-4" /> Chat con el comprador
+          </Button>
         )}
 
         {auction.canRelist && (

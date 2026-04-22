@@ -26,8 +26,7 @@ export default function DetalleSubasta() {
   const fromGanados = searchParams.get('from') === 'ganados';
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  const isRecomprador = ['recomprador', 'RECOMPRADOR'].includes(currentUser?.role);
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
   const [vehicle, setVehicle] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
@@ -87,7 +86,16 @@ export default function DetalleSubasta() {
 
     const handleAuctionEnded = ({ auctionId: id, winnerId, finalBid }) => {
       if (id !== auctionId) return;
-      setVehicle(prev => prev ? { ...prev, status: 'ENDED', winnerId, current_bid: finalBid } : prev);
+      setVehicle(prev => {
+        if (!prev) return prev;
+        if (winnerId === currentUser?.id) {
+          toast.success('🎉 ¡Ganaste la subasta!', {
+            description: `${prev.brand} ${prev.model} ${prev.year} — ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(finalBid)}`,
+            duration: 10000,
+          });
+        }
+        return { ...prev, status: 'ENDED', winnerId, current_bid: finalBid };
+      });
     };
 
     socket.on('new_bid', handleNewBid);
@@ -104,10 +112,6 @@ export default function DetalleSubasta() {
 
   useEffect(() => {
     if (!auctionId) return;
-    if (isRecomprador) {
-      setBids([]);
-      return;
-    }
     const loadBids = async () => {
       try {
         const data = await bidsApi.getByAuction(auctionId);
@@ -115,7 +119,7 @@ export default function DetalleSubasta() {
       } catch { /* ignore */ }
     };
     loadBids();
-  }, [auctionId, isRecomprador]);
+  }, [auctionId]);
 
   useEffect(() => {
     if (!auctionId || !currentUser) return;
@@ -163,7 +167,7 @@ export default function DetalleSubasta() {
   const handleSubmitBid = async (maxAmount) => {
     if (!vehicle || !currentUser) return;
     try {
-      const result = await bidsApi.place(vehicle.id, maxAmount);
+      const result = await bidsApi.place(auctionId, maxAmount);
       if (result) {
         setVehicle(prev => ({ ...prev, current_bid: result.visibleBid ?? result.current_bid ?? prev.current_bid, bids_count: result.bidsCount ?? result.bids_count ?? prev.bids_count }));
       }
@@ -250,6 +254,10 @@ export default function DetalleSubasta() {
   const inspection = vehicle.inspection || null;
   const myMaxBid = bids.find(b => b.userId === currentUser?.id)?.amount || 0;
   const isLeading = vehicle.leaderId === currentUser?.id;
+  const vStatus = (vehicle?.status || '').toUpperCase();
+  const isVehicleActive = vStatus === 'ACTIVE';
+  const isVehiclePending = vStatus === 'PENDING_DECISION';
+  const isVehicleEnded = ['ENDED', 'CLOSED'].includes(vStatus);
   const docs = vehicle.documentation || null;
   const vehSpecs = vehicle.specs || {};
 
@@ -473,45 +481,35 @@ export default function DetalleSubasta() {
         {docs && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <p className="font-bold text-foreground mb-3 flex items-center gap-2"><FileText className="w-4 h-4 text-secondary" />Documentación</p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-border">
+            <div className="divide-y divide-border">
+              {/* SOAT */}
+              <div className="flex items-center justify-between py-3">
                 <span className="text-sm text-foreground font-medium">SOAT</span>
                 <div className="text-right">
-                  <Badge className={`text-xs ${docs.soat?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{docs.soat?.status === 'vigente' ? 'Vigente' : 'Vencido'}</Badge>
-                  {docs.soat?.fecha && <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.soat.fecha}</p>}
+                  <Badge className={`text-xs ${docs.soat?.status === 'vigente' ? 'bg-emerald-100 text-emerald-700' : 'bg-destructive/10 text-destructive'}`}>
+                    {docs.soat?.status === 'vigente' ? 'Vigente' : 'Vencido'}
+                  </Badge>
+                  {(docs.soat?.fecha || docs.soat?.fechaVigencia) && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.soat.fechaVigencia ?? docs.soat.fecha}</p>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-border">
+              {/* Tecnomecánica */}
+              <div className="flex items-center justify-between py-3">
                 <span className="text-sm text-foreground font-medium">Tecnomecánica</span>
                 <div className="text-right">
-                  <Badge className={`text-xs ${docs.tecno?.status === 'vigente' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{docs.tecno?.status === 'vigente' ? 'Vigente' : 'Vencida'}</Badge>
-                  {docs.tecno?.fecha && <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.tecno.fecha}</p>}
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-foreground font-medium">Multas</span>
-                <div className="text-right">
-                  <Badge className={`text-xs ${docs.multas?.tiene === 'no' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{docs.multas?.tiene === 'no' ? 'Sin multas' : 'Con multas'}</Badge>
-                  {docs.multas?.tiene === 'si' && docs.multas?.descripcion && <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[180px] text-right">{docs.multas.descripcion}</p>}
+                  <Badge className={`text-xs ${docs.tecno?.status === 'vigente' ? 'bg-emerald-100 text-emerald-700' : 'bg-destructive/10 text-destructive'}`}>
+                    {docs.tecno?.status === 'vigente' ? 'Vigente' : 'Vencida'}
+                  </Badge>
+                  {(docs.tecno?.fecha || docs.tecno?.fechaVigencia) && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Vence: {docs.tecno.fechaVigencia ?? docs.tecno.fecha}</p>
+                  )}
                 </div>
               </div>
             </div>
           </Card>
         )}
 
-        {!isRecomprador && !isWonByMe && bids.length > 0 && (
-          <Card className="p-4 border border-border shadow-sm rounded-xl">
-            <p className="font-bold text-foreground mb-3">Últimas pujas</p>
-            <div className="space-y-2">
-              {bids.slice(0, 5).map(bid => (
-                <div key={bid.id} className="flex items-center justify-between text-sm py-1 border-b border-border last:border-0">
-                  <span className="text-muted-foreground">{bid.userName || 'Postor anónimo'}</span>
-                  <span className="font-bold text-foreground">{formatPrice(bid.amount)}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
 
         {/* Seller Contact — only for won auctions */}
         {isWonByMe && seller && (
@@ -545,7 +543,24 @@ export default function DetalleSubasta() {
           </Card>
         )}
 
-        {/* Case button: "Ir al caso" for cancelled, "Abrir caso" for in-process */}
+        {/* Chat con vendedor — coordinación de entrega y pago */}
+        {isWonByMe && isInProcess && (
+          <Card className="p-4 border border-secondary/20 shadow-sm rounded-xl bg-secondary/5">
+            <p className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4 text-secondary" />Chat con el vendedor
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Coordina entrega, método de pago y detalles del negocio directamente con el vendedor.
+            </p>
+            <Button
+              className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
+              onClick={() => navigate(`/Chat/${vehicle.auctionId || vehicle.id}`)}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />Abrir chat
+            </Button>
+          </Card>
+        )}
+        {/* Case button: "Ir al caso" for cancelled */}
         {isWonByMe && isMockCancelled && existingCase && (
           <Card className="p-4 border border-border shadow-sm rounded-xl">
             <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
@@ -600,12 +615,47 @@ export default function DetalleSubasta() {
         {!isWonByMe && <ActivityTimeline events={auditEvents} />}
       </div>
 
-      {/* Bottom action bar */}
-      {!isWonByMe && (
-        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-muted via-muted pt-4 z-50 md:static md:bg-transparent md:pt-0 md:pb-0 md:px-0">
-          <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            {isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
-          </Button>
+      {/* Bottom action bar — adapts to auction status */}
+      {isVehicleActive && !isWonByMe && (
+        <div className="fixed bottom-20 left-0 right-0 z-50 bg-gradient-to-t from-muted via-muted pt-4 pb-4 md:static md:bg-transparent md:pt-0 md:pb-0">
+          <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
+            <Button onClick={() => setBidModalOpen(true)} className="w-full h-14 rounded-xl font-bold text-lg shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90">
+              {isLeading ? (<><Trophy className="w-5 h-5 mr-2" />Aumentar puja</>) : 'Pujar ahora'}
+            </Button>
+          </div>
+        </div>
+      )}
+      {isVehiclePending && isLeading && (
+        <div className="fixed bottom-20 left-0 right-0 z-50 bg-gradient-to-t from-muted via-muted pt-4 pb-4 md:static md:bg-transparent md:pt-0 md:pb-0">
+          <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
+            <div className="w-full p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Trophy className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-emerald-800">¡Eres el líder!</p>
+                  <p className="text-xs text-emerald-600 truncate">Esperando decisión del vendedor.</p>
+                </div>
+              </div>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full flex-shrink-0" onClick={() => navigate('/Ganados')}>
+                Ver en Ganadas
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isVehicleEnded && isWonByMe && (
+        <div className="fixed bottom-20 left-0 right-0 z-50 bg-gradient-to-t from-muted via-muted pt-4 pb-4 md:static md:bg-transparent md:pt-0 md:pb-0">
+          <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
+            <div className="w-full p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <p className="text-sm font-bold text-emerald-800">¡Ganaste esta subasta!</p>
+              </div>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full flex-shrink-0" onClick={() => navigate('/Ganados')}>
+                Ver detalles
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -652,7 +702,7 @@ export default function DetalleSubasta() {
                 if (!reportText.trim() || !currentUser || !vehicle) return;
                 try {
                   await casesApi.create({
-                    auctionId: vehicle.id,
+                    auctionId: vehicle.auctionId || vehicle.id,
                     vehicleLabel: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
                     description: reportText.trim(),
                   });

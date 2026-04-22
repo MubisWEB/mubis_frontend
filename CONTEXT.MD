@@ -232,6 +232,17 @@ Reglas UI:
 - Recomprador no ve historial completo de pujas.
 - Dealer/admin comprador tampoco deberia ver informacion sensible que no le corresponde, salvo si es vendedor/admin con permiso.
 - El monto mostrado debe venir de backend luego de pujar.
+- `Ganadas` debe incluir subastas donde el usuario es `winnerId` y tambien `PENDING_DECISION` donde es `leaderId`. Dealer, recomprador, admin general y admin sucursal pueden usarla cuando compran.
+- Si una puja maxima queda pendiente por proxy delay, el backend recalcula ganador real antes de decision/aceptacion. La UI debe confiar en la respuesta de backend y no derivar ganador localmente.
+
+### Chat comprador-vendedor
+
+- Ruta: `/Chat/:auctionId`.
+- Este chat es directo entre comprador y vendedor de una subasta, para coordinar entrega/pago.
+- Solo debe abrir con `auctionId`, nunca con `vehicleId`.
+- El comprador lider en decision o ganador final puede iniciar la conversacion.
+- Si el vendedor entra antes de que el comprador inicie el chat, mostrar: "El comprador aun no ha iniciado el chat. En cuanto lo haga, podras comunicarte aqui."
+- No mezclar con Mubis Soporte: `SupportCase`/`SupportMessage` es mediacion admin/superadmin; `AuctionConversation`/`AuctionMessage` es comprador-vendedor.
 
 ### Decision del vendedor
 
@@ -316,7 +327,7 @@ La UI usa proteccion por rol, pero backend es la fuente de verdad. La UI debe ay
 Rutas comunes por rol:
 
 - Superadmin: dashboard admin, usuarios, solicitudes, soporte, empresas, sucursales, subastas, banners, partners, carga masiva, analiticas, peritajes si aplica, compra/publicacion e inventario global. **NO ve SeBusca.**
-- Admin general: `AdminGeneralDashboard`, `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, compra/publicacion segun rol. **NO ve SeBusca.**
+- Admin general: `AdminGeneralDashboard`, `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, `AdminCargaMasiva`, compra/publicacion segun rol. **NO ve SeBusca.**
 - Admin sucursal: `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, `SeBusca`, compra/publicacion segun rol. **Comparte SeBusca solo con recomprador.**
 - Dealer: `Comprar`, `MisSubastas`, `Movimientos`, `Ganadas`, `Deseados`, `Cuenta`. **NO ve SeBusca ni inventario.**
 - Recomprador: `Comprar`, `Ganadas`, `Deseados`, `Movimientos`, `SeBusca`, `Cuenta`. **NO ve inventario.**
@@ -420,6 +431,8 @@ Estas validaciones estaban verdes en la ultima pasada:
 - `src/pages/AdminCargaMasiva.jsx` permite subir `.xlsx`, `.xls` o `.csv`.
 - La plantilla descargable incluye columnas: Rol, Nombre, Email, Telefono, Ciudad, Empresa, Sucursal, NIT, Direccion.
 - Roles aceptados desde la UI/Excel: `dealer`, `perito`, `recomprador`, `admin_general`, `admin_sucursal`.
+- Superadmin puede cargar todos los roles aceptados.
+- Admin general tambien puede entrar a `AdminCargaMasiva`, pero la UI y el backend lo limitan a cargar `admin_sucursal` de su propio concesionario.
 - `admin_general` debe dejar Sucursal vacia; `admin_sucursal` debe traer una sucursal existente.
 - El backend resuelve Empresa/Sucursal contra Company/Branch para mantener scoping real de dashboards y permisos.
 - Los correos se mandan desde backend con `EMAIL_FROM=info@mubis.co` cuando el proveedor este activo; la UI no debe simular envio.

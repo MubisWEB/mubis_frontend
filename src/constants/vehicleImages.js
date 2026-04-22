@@ -430,7 +430,7 @@ export const VEHICLE_IMAGES = {
 };
 
 // Default fallback image
-export const DEFAULT_VEHICLE_IMAGE = 'https://via.placeholder.com/400x300?text=Vehicle+Image';
+export const DEFAULT_VEHICLE_IMAGE = '/placeholder.svg';
 
 /**
  * Get vehicle images by brand and model

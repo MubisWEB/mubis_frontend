@@ -28,10 +28,10 @@ export default function VehicleThumbnail({ src, alt = '', className = '', ratio,
       )}
       {/* Imagen principal centrada sin recorte */}
       <img
-        src={src}
+        src={src || '/placeholder.svg'}
         alt={alt}
         className="relative w-full h-full object-contain"
-        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
       />
       {children}
     </div>

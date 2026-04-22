@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { authApi } from '@/api/services';
 import { connectSocket, disconnectSocket, joinNotifications } from '@/api/socket';
+import socket from '@/api/socket';
 import { getRedirectForRole as getRoleRedirect, isAdminRole, normalizeRole } from '@/lib/roles';
 
 const fallbackAuthContext = {
@@ -68,6 +70,29 @@ export const AuthProvider = ({ children }) => {
 
     restore();
   }, []);
+
+  // Listener global de notificaciones push por WebSocket
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const handleNotif = (notif) => {
+      const isWinNotif = ['AUCTION_WON', 'PENDING_DECISION'].includes(notif.type);
+      if (isWinNotif) {
+        toast.success(notif.title, {
+          description: notif.body,
+          duration: 10000,
+          action: notif.auctionId
+            ? { label: 'Ver subasta', onClick: () => { window.location.assign('/Ganados'); } }
+            : undefined,
+        });
+      } else if (notif.title) {
+        toast(notif.title, { description: notif.body, duration: 6000 });
+      }
+    };
+
+    socket.on('notification_created', handleNotif);
+    return () => socket.off('notification_created', handleNotif);
+  }, [user?.id]);
 
   const login = async (email, password, tenantSlug) => {
     const raw = await authApi.login(email, password, tenantSlug);

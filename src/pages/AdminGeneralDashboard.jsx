@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Users, Car, DollarSign, CheckCircle, Building2, BarChart3, UserPlus, ArrowUpRight,
   AlertTriangle, Target, TrendingUp, Clock, Package,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -328,9 +329,21 @@ export default function AdminGeneralDashboard() {
         )}
 
         {/* Botón crear admin */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="text-base font-bold text-foreground">Sucursales</h2>
-          <CreateAdminModal branches={branches} onCreated={() => loadData(selectedCompanyId)} />
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/AdminCargaMasiva')}
+              className="rounded-full gap-2"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Carga masiva
+            </Button>
+            <CreateAdminModal branches={branches} onCreated={() => loadData(selectedCompanyId)} />
+          </div>
         </div>
 
         {/* Tabla de sucursales */}

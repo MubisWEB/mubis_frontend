@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import { useAuth } from '@/lib/AuthContext';
-import { auctionsApi, bidsApi, auditApi } from '@/api/services';
+import { auctionsApi, bidsApi, auditApi, watchlistApi } from '@/api/services';
 import socket, { joinAuction, leaveAuction, joinActivity } from '@/api/socket';
 import Skeleton from 'react-loading-skeleton';
 
@@ -48,6 +48,7 @@ export default function Comprar() {
   });
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedIds, setSavedIds] = useState(new Set());
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [bidModalOpen, setBidModalOpen] = useState(false);
   const [activityItems, setActivityItems] = useState([]);
@@ -57,7 +58,11 @@ export default function Comprar() {
   const loadAuctions = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await auctionsApi.getActive();
+      const [data, watchlist] = await Promise.all([
+        auctionsApi.getActive(),
+        user ? watchlistApi.getAll().catch(() => []) : Promise.resolve([]),
+      ]);
+      setSavedIds(new Set((watchlist || []).map(w => w.auctionId || w.id)));
       setVehicles(data.map(a => ({
         ...a,
         auction_end: a.ends_at,
@@ -335,7 +340,7 @@ export default function Comprar() {
               {/* Mobile: Always list view */}
               <div className="space-y-3 md:hidden">
                 {filteredVehicles.map((vehicle, index) => (
-                  <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
+                  <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" isFavorite={savedIds.has(vehicle.id)} />
                 ))}
               </div>
               
@@ -343,13 +348,13 @@ export default function Comprar() {
               {viewMode === 'grid' ? (
                 <div className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-4">
                   {filteredVehicles.map((vehicle, index) => (
-                    <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" />
+                    <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="grid" isFavorite={savedIds.has(vehicle.id)} />
                   ))}
                 </div>
               ) : (
                 <div className="hidden md:flex flex-col gap-4">
                   {filteredVehicles.map((vehicle, index) => (
-                    <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" />
+                    <VehicleCard key={vehicle.id} vehicle={vehicle} onBid={handleBid} index={index} variant="compact" isFavorite={savedIds.has(vehicle.id)} />
                   ))}
                 </div>
               )}

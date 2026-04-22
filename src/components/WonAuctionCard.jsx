@@ -3,7 +3,7 @@ import VehicleThumbnail from '@/components/VehicleThumbnail';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, ChevronRight, CalendarPlus } from 'lucide-react';
+import { CheckCircle, Clock, ChevronRight, MessageCircle } from 'lucide-react';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop';
 
@@ -13,34 +13,33 @@ const defaultFormatPrice = (price) => {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
 };
 
-function formatCountdown(ms) {
-  if (ms <= 0) return 'Completado';
-  const d = Math.floor(ms / (1000 * 60 * 60 * 24));
-  const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-  if (d > 0) return `${d}d ${h}h ${m}m`;
-  return `${h}h ${m}m`;
-}
-
-function StatusBadge({ isCompleted, canExtend, remaining, isCancelled }) {
-  const cls = isCompleted
-    ? 'bg-primary/80 text-primary-foreground'
-    : isCancelled
-      ? 'bg-destructive/80 text-destructive-foreground'
-      : canExtend
-        ? 'bg-destructive/80 text-destructive-foreground'
-        : 'bg-background/80 text-foreground';
-  const label = isCompleted ? 'Completado' : isCancelled ? 'Cancelado' : formatCountdown(remaining);
+function StatusBadge({ isCompleted, isCancelled }) {
+  if (isCompleted) {
+    return (
+      <div className="flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-emerald-600/80 text-white">
+        <CheckCircle className="w-3 h-3" />
+        <span className="font-semibold">Completado</span>
+      </div>
+    );
+  }
+  if (isCancelled) {
+    return (
+      <div className="flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-destructive/80 text-destructive-foreground">
+        <Clock className="w-3 h-3" />
+        <span className="font-semibold">Cancelado</span>
+      </div>
+    );
+  }
   return (
-    <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm ${cls}`}>
-      {isCompleted || isCancelled ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-      <span className="font-semibold">{label}</span>
+    <div className="flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-amber-500/80 text-white">
+      <Clock className="w-3 h-3" />
+      <span className="font-semibold">Pendiente</span>
     </div>
   );
 }
 
 /** Grid view card (vertical, single photo) */
-export function WonAuctionGridCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
+export function WonAuctionGridCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, isCancelled, onChat }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-lg transition-shadow group cursor-pointer" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <VehicleThumbnail src={auction.photos?.[0] || DEFAULT_IMAGE} alt={`${auction.brand} ${auction.model}`} ratio="4/3">
@@ -48,7 +47,7 @@ export function WonAuctionGridCard({ auction, formatPrice = defaultFormatPrice, 
           <CheckCircle className="w-3 h-3 mr-1" />Ganado
         </Badge>
         <div className="absolute top-2 right-2">
-          <StatusBadge isCompleted={isCompleted} canExtend={canExtend} remaining={remaining} isCancelled={isCancelled} />
+          <StatusBadge isCompleted={isCompleted} isCancelled={isCancelled} />
         </div>
       </VehicleThumbnail>
       <div className="p-3.5">
@@ -56,14 +55,14 @@ export function WonAuctionGridCard({ auction, formatPrice = defaultFormatPrice, 
         <p className="text-muted-foreground text-xs mt-0.5">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
         <div className="flex items-center justify-between mt-3">
           <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
-          {canExtend && !isCancelled ? (
-            <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
-              onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
-              <CalendarPlus className="w-3 h-3 mr-1" />Extensión
+          {!isCancelled && (
+            <Button variant="outline" size="sm"
+              className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-3 h-8 rounded-full text-xs"
+              onClick={(e) => { e.stopPropagation(); onChat?.(auction); }}>
+              <MessageCircle className="w-3 h-3 mr-1" />Chat
             </Button>
-          ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           )}
+          {isCancelled && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
         </div>
       </div>
     </Card>
@@ -71,7 +70,7 @@ export function WonAuctionGridCard({ auction, formatPrice = defaultFormatPrice, 
 }
 
 /** List view card (compact horizontal row) */
-export function WonAuctionListCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
+export function WonAuctionListCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, isCancelled, onChat }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.99] transition-all" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex items-center p-2.5 gap-3">
@@ -82,14 +81,12 @@ export function WonAuctionListCard({ auction, formatPrice = defaultFormatPrice, 
             <p className="text-muted-foreground text-xs truncate">{auction.year} · {Number(auction.mileage || 0).toLocaleString('es-CO')} km · {auction.city}</p>
           </div>
           <span className="font-bold text-sm text-foreground whitespace-nowrap">{formatPrice(auction.current_bid)}</span>
-          <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${isCompleted ? 'bg-primary/10 text-primary' : isCancelled ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
-            {isCompleted || isCancelled ? <CheckCircle className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
-            <span className="font-medium">{isCompleted ? 'Completado' : isCancelled ? 'Cancelado' : formatCountdown(remaining)}</span>
-          </div>
-          {canExtend && !isCancelled && (
-            <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
-              onClick={(e) => { e.stopPropagation(); onExtend?.(auction); }}>
-              <CalendarPlus className="w-3 h-3 mr-1" />Extensión
+          <StatusBadge isCompleted={isCompleted} isCancelled={isCancelled} />
+          {!isCancelled && (
+            <Button variant="outline" size="sm"
+              className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
+              onClick={(e) => { e.stopPropagation(); onChat?.(auction); }}>
+              <MessageCircle className="w-3 h-3 mr-1" />Chat
             </Button>
           )}
           <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -100,7 +97,7 @@ export function WonAuctionListCard({ auction, formatPrice = defaultFormatPrice, 
 }
 
 /** Mobile compact card (single photo) */
-export function WonAuctionMobileCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, canExtend, remaining, onExtend, isCancelled }) {
+export function WonAuctionMobileCard({ auction, formatPrice = defaultFormatPrice, navigate, isCompleted, isCancelled, onChat }) {
   return (
     <Card className="overflow-hidden bg-card border border-border/60 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/DetalleSubasta/${auction.id}?from=ganados`)}>
       <div className="flex p-3 gap-3">
@@ -116,18 +113,16 @@ export function WonAuctionMobileCard({ auction, formatPrice = defaultFormatPrice
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="font-bold text-lg text-foreground">{formatPrice(auction.current_bid)}</span>
-            <div className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${isCompleted ? 'bg-primary/10 text-primary' : isCancelled ? 'bg-destructive/10 text-destructive' : canExtend ? 'bg-destructive/10 text-destructive' : 'bg-secondary/10 text-secondary'}`}>
-              {isCompleted || isCancelled ? <CheckCircle className="w-2.5 h-2.5 flex-shrink-0" /> : <Clock className="w-2.5 h-2.5 flex-shrink-0" />}
-              <span className="font-medium">{isCompleted ? 'Completado' : isCancelled ? 'Cancelado' : formatCountdown(remaining)}</span>
-            </div>
+            <StatusBadge isCompleted={isCompleted} isCancelled={isCancelled} />
           </div>
         </div>
         <div className="flex flex-col items-end justify-between">
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          {canExtend && !isCancelled && (
-            <Button variant="outline" size="sm" className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
-              onClick={(e) => { e.stopPropagation(); onExtend(auction); }}>
-              <CalendarPlus className="w-3 h-3 mr-1" />Extensión
+          {!isCancelled && (
+            <Button variant="outline" size="sm"
+              className="border-secondary/30 text-secondary hover:bg-secondary/5 font-semibold px-2 h-7 rounded-full text-[10px]"
+              onClick={(e) => { e.stopPropagation(); onChat?.(auction); }}>
+              <MessageCircle className="w-3 h-3 mr-1" />Chat
             </Button>
           )}
         </div>

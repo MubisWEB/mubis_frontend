@@ -7,15 +7,20 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { superadminApi } from '@/api/services';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/AuthContext';
 
 const EXPECTED_COLUMNS = ['Rol', 'Nombre', 'Email', 'Telefono', 'Ciudad', 'Empresa', 'Sucursal', 'NIT (opc)', 'Direccion (opc)'];
 const ROLE_EXAMPLES = ['dealer', 'perito', 'recomprador', 'admin_general', 'admin_sucursal'];
 
 export default function AdminCargaMasiva() {
   const fileInputRef = useRef(null);
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState(null);
+  const isAdminGeneral = user?.role === 'admin_general';
+  const backTo = isAdminGeneral ? '/AdminGeneralDashboard' : '/AdminDashboard';
+  const availableRoles = isAdminGeneral ? ['admin_sucursal'] : ROLE_EXAMPLES;
 
   const handleFileSelect = (e) => {
     const selected = e.target.files?.[0];
@@ -66,11 +71,17 @@ export default function AdminCargaMasiva() {
   const handleDownloadTemplate = () => {
     const rows = [
       EXPECTED_COLUMNS.map(col => col.replace(' (opc)', '')).join(','),
-      'dealer,Juan Dealer,juan.dealer@mubis.co,3001234567,Bogota,Autoniza,Autoniza 170,900123456-1,Carrera 1 # 2-3',
-      'perito,Ana Perito,ana.perito@mubis.co,3001234568,Bogota,Autoniza,Autoniza 170,,',
-      'recomprador,Carlos Recomprador,carlos.recomprador@mubis.co,3001234569,Bogota,Autoniza,,,',
-      'admin_general,Gerente General,gerente@mubis.co,3001234570,Bogota,Autoniza,,,',
-      'admin_sucursal,Admin Sucursal,admin.sucursal@mubis.co,3001234571,Bogota,Autoniza,Autoniza 170,,',
+      ...(isAdminGeneral
+        ? [
+            `admin_sucursal,Admin Sucursal,admin.sucursal@mubis.co,3001234571,${user?.ciudad || 'Bogota'},${user?.company || 'Autoniza'},Sucursal existente,,`,
+          ]
+        : [
+            'dealer,Juan Dealer,juan.dealer@mubis.co,3001234567,Bogota,Autoniza,Autoniza 170,900123456-1,Carrera 1 # 2-3',
+            'perito,Ana Perito,ana.perito@mubis.co,3001234568,Bogota,Autoniza,Autoniza 170,,',
+            'recomprador,Carlos Recomprador,carlos.recomprador@mubis.co,3001234569,Bogota,Autoniza,,,',
+            'admin_general,Gerente General,gerente@mubis.co,3001234570,Bogota,Autoniza,,,',
+            'admin_sucursal,Admin Sucursal,admin.sucursal@mubis.co,3001234571,Bogota,Autoniza,Autoniza 170,,',
+          ]),
     ];
     const blob = new Blob([`\ufeff${rows.join('\n')}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -85,7 +96,7 @@ export default function AdminCargaMasiva() {
 
   return (
     <div className="min-h-screen bg-muted pb-28">
-      <Header title="Carga Masiva" subtitle="Registrar usuarios por Excel" backTo="/AdminDashboard" />
+      <Header title="Carga Masiva" subtitle="Registrar usuarios por Excel" backTo={backTo} />
 
       <div className="max-w-7xl mx-auto px-4 pt-4 space-y-4">
         <Card className="p-4 border border-border shadow-sm">
@@ -94,8 +105,10 @@ export default function AdminCargaMasiva() {
             Instrucciones
           </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Sube un archivo Excel (.xlsx, .xls) o CSV con los datos de los usuarios a registrar.
-            Cada usuario recibira un correo para establecer su contrasena.
+            {isAdminGeneral
+              ? 'Sube un archivo Excel (.xlsx, .xls) o CSV para registrar admins de sucursal de tu concesionario.'
+              : 'Sube un archivo Excel (.xlsx, .xls) o CSV con los datos de los usuarios a registrar.'}
+            {' '}Cada usuario recibira un correo para establecer su contrasena.
           </p>
           <Button onClick={handleDownloadTemplate} variant="outline" size="sm" className="mb-3 rounded-full gap-2">
             <Download className="w-4 h-4" />
@@ -112,12 +125,14 @@ export default function AdminCargaMasiva() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Los roles validos son: {ROLE_EXAMPLES.map((role, index) => (
+            Los roles validos son: {availableRoles.map((role, index) => (
               <React.Fragment key={role}>
-                <strong>{role}</strong>{index < ROLE_EXAMPLES.length - 1 ? ', ' : '.'}
+                <strong>{role}</strong>{index < availableRoles.length - 1 ? ', ' : '.'}
               </React.Fragment>
             ))}
-            {' '}Admin general no lleva sucursal; admin sucursal si requiere una sucursal existente.
+            {' '}{isAdminGeneral
+              ? 'Solo puedes cargar admins de sucursal de tu concesionario.'
+              : 'Admin general no lleva sucursal; admin sucursal si requiere una sucursal existente.'}
             Los usuarios se crean como verificados automaticamente.
           </p>
         </Card>

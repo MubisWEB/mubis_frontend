@@ -13,8 +13,10 @@ import VehicleThumbnail from '@/components/VehicleThumbnail';
 export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavorite: isFavoriteProp, index = 0, variant = 'compact' }) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+  const [saved, setSaved] = useState(!!isFavoriteProp);
   const { user } = useAuth();
-  const saved = isFavoriteProp !== undefined ? isFavoriteProp : false;
+
+  useEffect(() => { setSaved(!!isFavoriteProp); }, [isFavoriteProp]);
 
   useEffect(() => {
     const calculateTime = () => {
@@ -50,10 +52,13 @@ export default function VehicleCard({ vehicle, onBid, onToggleFavorite, isFavori
       return;
     }
     if (!user) return;
+    setSaved(prev => !prev); // optimistic
     try {
       const result = await watchlistApi.toggle(vehicle.id);
+      setSaved(result.saved); // reconcile
       toast.success(result.saved ? 'Agregada a guardados' : 'Eliminada de guardados');
     } catch {
+      setSaved(prev => !prev); // rollback
       toast.error('Error al actualizar guardados');
     }
   };
