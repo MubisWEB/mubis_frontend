@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Shield, Mail, Phone, MapPin, Building,
-  CheckCircle2, XCircle, Calendar, Briefcase, UserCheck, Package,
+  CheckCircle2, XCircle, Calendar, Briefcase, UserCheck, Package, Clock, Trash2,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
 import { usersApi, publicationsApi } from '@/api/services';
+import { useAuth } from '@/lib/AuthContext';
 
 const ROLE_LABELS = {
   dealer: 'Dealer',
@@ -40,6 +41,7 @@ function InfoRow({ icon: Icon, label, value }) {
 export default function AdminDealerDetalle() {
   const navigate = useNavigate();
   const { userId } = useParams();
+  const { user: currentUser } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pubBalance, setPubBalance] = useState(null);
@@ -73,13 +75,33 @@ export default function AdminDealerDetalle() {
     }
   };
 
-  const handleToggleVerification = async () => {
-    const newStatus = user.verification_status === 'VERIFIED' ? 'PENDING' : 'VERIFIED';
+  const handleVerificationStatus = async (newStatus) => {
     try {
       await usersApi.verify(userId, newStatus);
       setUser(prev => ({ ...prev, verification_status: newStatus }));
-      toast.success(newStatus === 'VERIFIED' ? 'Usuario verificado' : 'Verificación removida');
-    } catch { toast.error('Error al actualizar verificación'); }
+      const labels = {
+        VERIFIED: 'Usuario aprobado',
+        WAITLISTED: 'Usuario enviado a lista de espera',
+        REJECTED: 'Solicitud rechazada',
+        PENDING: 'Usuario marcado como pendiente',
+      };
+      toast.success(labels[newStatus] || 'Estado actualizado');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error al actualizar verificacion');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (currentUser?.role !== 'superadmin') return;
+    const ok = window.confirm(`Eliminar definitivamente a ${user.nombre}? Esta accion no se puede deshacer.`);
+    if (!ok) return;
+    try {
+      await usersApi.remove(userId);
+      toast.success('Usuario eliminado', { description: user.email });
+      navigate('/AdminDealers');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error al eliminar usuario');
+    }
   };
 
   const formatPrice = (price) => `$${(price / 1000000).toFixed(1)}M`;
@@ -244,16 +266,50 @@ export default function AdminDealerDetalle() {
               {user.verification_status}
             </Badge>
           </div>
-          <Button
-            onClick={handleToggleVerification}
-            className={`w-full rounded-full font-semibold ${isVerified
-              ? 'bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-white'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
-            variant="outline"
-          >
-            <UserCheck className="w-4 h-4 mr-2" />
-            {isVerified ? 'Remover verificación' : 'Marcar como verificado'}
-          </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <Button
+              onClick={() => handleVerificationStatus('REJECTED')}
+              className="rounded-full font-semibold text-destructive border-destructive/30 hover:bg-destructive/5"
+              variant="outline"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Rechazar
+            </Button>
+            <Button
+              onClick={() => handleVerificationStatus('WAITLISTED')}
+              className="rounded-full font-semibold text-amber-600 border-amber-500/30 hover:bg-amber-500/5"
+              variant="outline"
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              Lista de espera
+            </Button>
+            <Button
+              onClick={() => handleVerificationStatus('VERIFIED')}
+              className="rounded-full font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <UserCheck className="w-4 h-4 mr-2" />
+              Aprobar
+            </Button>
+          </div>
+          {isVerified && (
+            <Button
+              onClick={() => handleVerificationStatus('PENDING')}
+              className="w-full mt-2 rounded-full font-semibold"
+              variant="outline"
+            >
+              Volver a pendiente
+            </Button>
+          )}
+          {currentUser?.role === 'superadmin' && user.role !== 'superadmin' && (
+            <Button
+              onClick={handleDelete}
+              className="w-full mt-2 rounded-full font-semibold text-destructive border-destructive/30 hover:bg-destructive hover:text-white"
+              variant="outline"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar usuario
+            </Button>
+          )}
         </Card>
 
       </div>

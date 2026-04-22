@@ -37,6 +37,7 @@ export default function Registro() {
   const [formData, setFormData] = useState({
     role: "",
     companyId: "",
+    companyName: "",
     branch: "",
     nit: "",
     contacto: "",
@@ -56,23 +57,39 @@ export default function Registro() {
     email: formData.email,
   });
 
+  useEffect(() => {
+    if (!formData.ciudad || !['dealer', 'perito'].includes(formData.role)) {
+      setBranches([]);
+      setFormData((prev) => ({ ...prev, branchId: '' }));
+      return;
+    }
+
+    setLoadingBranches(true);
+    branchesApi.getBranchesByCity(formData.ciudad, resolvedTenantSlug)
+      .then((data) => setBranches(data))
+      .catch(() => {
+        toast.error('Error al cargar sucursales');
+        setBranches([]);
+      })
+      .finally(() => setLoadingBranches(false));
+  }, [formData.role, formData.ciudad, resolvedTenantSlug]);
+
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === 'role') {
+        next.companyId = '';
+        next.companyName = '';
+        next.branchId = '';
+        next.branch = '';
+        next.nit = '';
+        next.address = '';
+      }
+      return next;
+    });
     
-    // When city changes, load branches for that city
-    if (field === 'ciudad' && value) {
-      setLoadingBranches(true);
-      branchesApi.getBranchesByCity(value, resolvedTenantSlug)
-        .then((data) => {
-          setBranches(data);
-          // Reset branch selection when city changes
-          setFormData((prev) => ({ ...prev, branchId: '', address: '' }));
-        })
-        .catch(() => {
-          toast.error('Error al cargar sucursales');
-          setBranches([]);
-        })
-        .finally(() => setLoadingBranches(false));
+    if (field === 'ciudad') {
+      setFormData((prev) => ({ ...prev, branchId: '', address: '' }));
     }
   };
 
@@ -82,23 +99,23 @@ export default function Registro() {
       setTenantSlug(resolvedTenantSlug);
     }
     if (!formData.role) { toast.error("Selecciona tu tipo de cuenta"); return; }
-    if (!formData.nit || !formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
+    if (!formData.contacto || !formData.email || !formData.telefono || !formData.ciudad || !formData.password || !formData.password2) {
       toast.error("Por favor completa todos los campos obligatorios"); return; }
+
+    const requiresBranch = ['dealer', 'perito'].includes(formData.role);
+    const isRecomprador = formData.role === 'recomprador';
     
-    // Company validation for ALL roles
-    if (!formData.companyId) {
+    if (formData.role === 'dealer' && !formData.nit) {
+      toast.error("Ingresa el NIT del concesionario");
+      return;
+    }
+
+    if (requiresBranch && !formData.companyId) {
       toast.error("Selecciona tu empresa o concesionario");
       return;
     }
     
-    // Branch or address validation for ALL roles
-    const isIndependent = formData.companyId === 'independiente';
-    
-    if (isIndependent && !formData.address) {
-      toast.error("Ingresa tu dirección");
-      return;
-    }
-    if (!isIndependent && !formData.branchId) {
+    if (requiresBranch && !formData.branchId) {
       toast.error("Selecciona una sucursal");
       return;
     }
@@ -118,13 +135,13 @@ export default function Registro() {
         password: formData.password,
         role: formData.role,
         nombre: formData.contacto,
-        company: selectedCompany?.name || '',
+        company: requiresBranch ? selectedCompany?.name || '' : formData.companyName || '',
         branch: formData.branch,
         telefono: formData.telefono,
         ciudad: formData.ciudad,
-        nit: formData.nit,
-        branchId: isIndependent ? undefined : formData.branchId || undefined,
-        address: formData.address || undefined,
+        nit: formData.nit || undefined,
+        branchId: requiresBranch ? formData.branchId || undefined : undefined,
+        address: isRecomprador ? formData.address || undefined : undefined,
       });
       toast.success("Solicitud enviada. Te contactaremos pronto.");
       navigate("/registro-confirmacion");
@@ -182,23 +199,34 @@ export default function Registro() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {['dealer', 'perito'].includes(formData.role) ? (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Empresa / Concesionario *
+                      </label>
+                      <select 
+                        value={formData.companyId} 
+                        onChange={(e) => handleChange("companyId", e.target.value)} 
+                        disabled={loading}
+                        className="h-11 w-full rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/40">
+                        <option value="">Selecciona tu empresa</option>
+                        {companies.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Empresa compradora <span className="text-muted-foreground">(opcional)</span>
+                      </label>
+                      <Input type="text" placeholder="Nombre de tu empresa" value={formData.companyName} onChange={(e) => handleChange("companyName", e.target.value)} className={inputClass} disabled={loading} />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Empresa / Concesionario *
+                      NIT {formData.role === 'dealer' ? '*' : <span className="text-muted-foreground">(opcional)</span>}
                     </label>
-                    <select 
-                      value={formData.companyId} 
-                      onChange={(e) => handleChange("companyId", e.target.value)} 
-                      disabled={loading}
-                      className="h-11 w-full rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/40">
-                      <option value="">Selecciona tu empresa</option>
-                      {companies.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">NIT</label>
                     <Input type="text" placeholder="900.123.456-7" value={formData.nit} onChange={(e) => handleChange("nit", e.target.value)} className={inputClass} disabled={loading} />
                   </div>
                   <div className="space-y-2">
@@ -226,9 +254,9 @@ export default function Registro() {
                       <option value="Bucaramanga">Bucaramanga</option>
                     </select>
                   </div>
-                  {/* Sucursal - for ALL roles who are NOT independent */}
-                  {formData.companyId && 
-                   formData.companyId !== 'independiente' && 
+                  {/* Sucursal - solo roles ligados a concesionario/sucursal */}
+                  {['dealer', 'perito'].includes(formData.role) &&
+                   formData.companyId && 
                    formData.ciudad && (
                     <div className="space-y-2 sm:col-span-2">
                       <label className="text-sm font-medium text-foreground">
@@ -248,11 +276,11 @@ export default function Registro() {
                       </select>
                     </div>
                   )}
-                  {/* Address - show ONLY for independent users (ALL roles) */}
-                  {formData.companyId === 'independiente' && (
+                  {/* Direccion opcional para recompradores */}
+                  {formData.role === 'recomprador' && (
                     <div className="space-y-2 sm:col-span-2">
                       <label className="text-sm font-medium text-foreground">
-                        Dirección *
+                        Dirección <span className="text-muted-foreground">(opcional)</span>
                       </label>
                       <Input 
                         type="text" 

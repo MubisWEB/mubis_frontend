@@ -82,6 +82,7 @@ export const usersApi = {
   getById: async (id) => (await api.get(`/users/${id}`)).data,
   update: async (id, updates) => (await api.patch(`/users/${id}`, updates)).data,
   verify: async (id, status) => (await api.patch(`/users/${id}/verify`, { status })).data,
+  remove: async (id) => (await api.delete(`/users/${id}`)).data,
   getStats: async () => (await api.get('/users/stats')).data,
   // Filtrado automático por scope del admin (ADMIN_SUCURSAL / ADMIN_GENERAL / SUPERADMIN)
   getPending: async () => (await api.get('/users/pending')).data,

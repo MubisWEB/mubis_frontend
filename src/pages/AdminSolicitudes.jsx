@@ -3,14 +3,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, XCircle, Clock, Mail, Phone, MapPin, Building, Search } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Mail, Phone, MapPin, Building, Search, Trash2 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
 import { adminApi, usersApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 
-const ROLE_LABELS = { dealer: 'Dealer', perito: 'Perito', recomprador: 'Recomprador' };
+const ROLE_LABELS = {
+  dealer: 'Dealer',
+  perito: 'Perito',
+  recomprador: 'Recomprador',
+  admin_general: 'Admin General',
+  admin_sucursal: 'Admin Sucursal',
+};
 
 const TABS = [
   { key: 'PENDING', label: 'Pendientes' },
@@ -37,11 +43,8 @@ export default function AdminSolicitudes() {
       // usersApi.getPending filtra automáticamente por scope del admin en el backend
       const pending = await usersApi.getPending().catch(() => []);
       setRequests(pending || []);
-      // Para tabs WAITLISTED / REJECTED solo superadmin ve todos; otros ven scope propio
-      if (isSuperadmin) {
-        const users = await usersApi.getAll().catch(() => []);
-        setAllUsers(users || []);
-      }
+      const users = await usersApi.getAll().catch(() => []);
+      setAllUsers(users || []);
     } catch { /* ignore */ } finally {
       setLoading(false);
     }
@@ -70,6 +73,19 @@ export default function AdminSolicitudes() {
       loadData();
     } catch {
       toast.error('Error al procesar solicitud');
+    }
+  };
+
+  const handleDelete = async (target) => {
+    if (!isSuperadmin) return;
+    const ok = window.confirm(`Eliminar definitivamente a ${target.nombre}? Esta accion no se puede deshacer.`);
+    if (!ok) return;
+    try {
+      await usersApi.remove(target.id);
+      toast.success('Usuario eliminado', { description: target.email });
+      loadData();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error al eliminar usuario');
     }
   };
 
@@ -217,9 +233,11 @@ export default function AdminSolicitudes() {
                 </div>
 
                 <div className="space-y-1 mb-3">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Building className="w-3 h-3" />{user.company} · {user.branch}
-                  </div>
+                  {(user.company || user.branch) && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Building className="w-3 h-3" />{user.company || 'Sin empresa'}{user.branch ? ` · ${user.branch}` : ''}
+                    </div>
+                  )}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Mail className="w-3 h-3" />{user.email}
                   </div>
@@ -230,43 +248,61 @@ export default function AdminSolicitudes() {
 
                 {/* Actions */}
                 {activeTab === 'PENDING' && (
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {isSuperadmin && (
+                      <Button onClick={() => handleDelete(user)} variant="outline" size="sm"
+                        className="text-muted-foreground border-border hover:bg-muted rounded-full">
+                        <Trash2 className="w-4 h-4 mr-1" />Eliminar
+                      </Button>
+                    )}
                     <Button onClick={() => handleAction(user, 'REJECTED')} variant="outline" size="sm"
-                      className="flex-1 text-destructive border-destructive/20 hover:bg-destructive/5 rounded-full">
+                      className="text-destructive border-destructive/20 hover:bg-destructive/5 rounded-full">
                       <XCircle className="w-4 h-4 mr-1" />Rechazar
                     </Button>
                     <Button onClick={() => handleAction(user, 'WAITLISTED')} variant="outline" size="sm"
-                      className="flex-1 text-amber-600 border-amber-500/20 hover:bg-amber-500/5 rounded-full">
+                      className="text-amber-600 border-amber-500/20 hover:bg-amber-500/5 rounded-full">
                       <Clock className="w-4 h-4 mr-1" />Espera
                     </Button>
                     <Button onClick={() => handleAction(user, 'VERIFIED')} size="sm"
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
                       <CheckCircle className="w-4 h-4 mr-1" />Aprobar
                     </Button>
                   </div>
                 )}
 
                 {activeTab === 'WAITLISTED' && (
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {isSuperadmin && (
+                      <Button onClick={() => handleDelete(user)} variant="outline" size="sm"
+                        className="text-muted-foreground border-border hover:bg-muted rounded-full">
+                        <Trash2 className="w-4 h-4 mr-1" />Eliminar
+                      </Button>
+                    )}
                     <Button onClick={() => handleAction(user, 'REJECTED')} variant="outline" size="sm"
-                      className="flex-1 text-destructive border-destructive/20 hover:bg-destructive/5 rounded-full">
+                      className="text-destructive border-destructive/20 hover:bg-destructive/5 rounded-full">
                       <XCircle className="w-4 h-4 mr-1" />Rechazar
                     </Button>
                     <Button onClick={() => handleAction(user, 'VERIFIED')} size="sm"
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
                       <CheckCircle className="w-4 h-4 mr-1" />Aprobar
                     </Button>
                   </div>
                 )}
 
                 {activeTab === 'REJECTED' && (
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {isSuperadmin && (
+                      <Button onClick={() => handleDelete(user)} variant="outline" size="sm"
+                        className="text-muted-foreground border-border hover:bg-muted rounded-full">
+                        <Trash2 className="w-4 h-4 mr-1" />Eliminar
+                      </Button>
+                    )}
                     <Button onClick={() => handleAction(user, 'WAITLISTED')} variant="outline" size="sm"
-                      className="flex-1 text-amber-600 border-amber-500/20 hover:bg-amber-500/5 rounded-full">
+                      className="text-amber-600 border-amber-500/20 hover:bg-amber-500/5 rounded-full">
                       <Clock className="w-4 h-4 mr-1" />Espera
                     </Button>
                     <Button onClick={() => handleAction(user, 'VERIFIED')} size="sm"
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
                       <CheckCircle className="w-4 h-4 mr-1" />Aprobar
                     </Button>
                   </div>
