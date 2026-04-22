@@ -66,11 +66,11 @@ export default function AdminCargaMasiva() {
   const handleDownloadTemplate = () => {
     const rows = [
       EXPECTED_COLUMNS.map(col => col.replace(' (opc)', '')).join(','),
-      'dealer,Juan Dealer,juan.dealer@mubis.com,3001234567,Bogota,Autoniza,Autoniza 170,900123456-1,Carrera 1 # 2-3',
-      'perito,Ana Perito,ana.perito@mubis.com,3001234568,Bogota,Autoniza,Autoniza 170,,',
-      'recomprador,Carlos Recomprador,carlos.recomprador@mubis.com,3001234569,Bogota,Autoniza,,,',
-      'admin_general,Gerente General,gerente@mubis.com,3001234570,Bogota,Autoniza,,,',
-      'admin_sucursal,Admin Sucursal,admin.sucursal@mubis.com,3001234571,Bogota,Autoniza,Autoniza 170,,',
+      'dealer,Juan Dealer,juan.dealer@mubis.co,3001234567,Bogota,Autoniza,Autoniza 170,900123456-1,Carrera 1 # 2-3',
+      'perito,Ana Perito,ana.perito@mubis.co,3001234568,Bogota,Autoniza,Autoniza 170,,',
+      'recomprador,Carlos Recomprador,carlos.recomprador@mubis.co,3001234569,Bogota,Autoniza,,,',
+      'admin_general,Gerente General,gerente@mubis.co,3001234570,Bogota,Autoniza,,,',
+      'admin_sucursal,Admin Sucursal,admin.sucursal@mubis.co,3001234571,Bogota,Autoniza,Autoniza 170,,',
     ];
     const blob = new Blob([`\ufeff${rows.join('\n')}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

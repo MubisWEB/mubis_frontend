@@ -59,7 +59,7 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-footer-heading mb-4">Contacto</h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-secondary" /> info@mubis.com</li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-secondary" /> info@mubis.co</li>
               <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-secondary" /> +57 601 234 5678</li>
               <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-secondary" /> Bogotá, Colombia</li>
             </ul>

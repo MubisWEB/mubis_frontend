@@ -247,7 +247,7 @@ export default function AyudaSoporte() {
           <Card className="border border-border shadow-sm rounded-xl p-4">
             <div className="space-y-2.5">
               <div className="flex items-center gap-2 text-sm">
-                <Mail className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">soporte@mubis.co</span>
+                <Mail className="w-4 h-4 text-muted-foreground" /><span className="text-foreground">info@mubis.co</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Lunes a Viernes, 8:00 am – 6:00 pm</span>

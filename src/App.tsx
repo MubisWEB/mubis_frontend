@@ -61,6 +61,7 @@ import AdminSucursalDashboard from './pages/AdminSucursalDashboard';
 import AdminBanners from './pages/AdminBanners';
 import Partners from './pages/Partners';
 import AdminPartners from './pages/AdminPartners';
+import AdminAliados from './pages/AdminAliados';
 import AdminInventarioSucursal from './pages/AdminInventarioSucursal';
 import Preferencias from './pages/Preferencias';
 import Deseados from './pages/Deseados';
@@ -138,6 +139,7 @@ const App = () => (
           <Route path="/AdminCargaMasiva" element={<RequireRole roles={['superadmin']}><AdminCargaMasiva /></RequireRole>} />
           <Route path="/AdminBanners" element={<RequireRole roles={['superadmin','admin_general','admin_sucursal','dealer','perito','recomprador']}><AdminBanners /></RequireRole>} />
           <Route path="/AdminPartners" element={<RequireRole roles={['superadmin']}><AdminPartners /></RequireRole>} />
+          <Route path="/AdminAliados" element={<RequireRole roles={['superadmin']}><AdminAliados /></RequireRole>} />
           <Route path="/AdminDeseadosExpirados" element={<RequireRole roles={['superadmin']}><AdminDeseadosExpirados /></RequireRole>} />
 
           {/* Admin — Compartido: superadmin + admin_general + admin_sucursal */}

@@ -42,7 +42,7 @@ const faqs = [
   },
   {
     q: "¿Cómo puedo contactar a Mubis?",
-    a: "Puedes escribirnos a info@mubis.com o llamarnos al +57 601 234 5678."
+    a: "Puedes escribirnos a info@mubis.co o llamarnos al +57 601 234 5678."
   },
 ];
 

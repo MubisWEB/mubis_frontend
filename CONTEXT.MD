@@ -315,9 +315,9 @@ La UI usa proteccion por rol, pero backend es la fuente de verdad. La UI debe ay
 
 Rutas comunes por rol:
 
-- Superadmin: dashboard admin, usuarios, solicitudes, soporte, empresas, sucursales, subastas, banners, partners, carga masiva, analiticas, peritajes si aplica. **NO ve SeBusca ni inventario.**
-- Admin general: `AdminGeneralDashboard`, `AdminAnaliticas`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, compra/publicacion segun rol. **NO ve SeBusca ni inventario.**
-- Admin sucursal: `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, `SeBusca`, compra/publicacion segun rol. **Único rol con acceso a inventario. Comparte SeBusca solo con recomprador.**
+- Superadmin: dashboard admin, usuarios, solicitudes, soporte, empresas, sucursales, subastas, banners, partners, carga masiva, analiticas, peritajes si aplica, compra/publicacion e inventario global. **NO ve SeBusca.**
+- Admin general: `AdminGeneralDashboard`, `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, compra/publicacion segun rol. **NO ve SeBusca.**
+- Admin sucursal: `AdminSucursalDashboard`, `AdminAnaliticas`, `AdminInventario`, `AdminMovimientos`, `AdminSolicitudes`, `AdminSubastas`, `SeBusca`, compra/publicacion segun rol. **Comparte SeBusca solo con recomprador.**
 - Dealer: `Comprar`, `MisSubastas`, `Movimientos`, `Ganadas`, `Deseados`, `Cuenta`. **NO ve SeBusca ni inventario.**
 - Recomprador: `Comprar`, `Ganadas`, `Deseados`, `Movimientos`, `SeBusca`, `Cuenta`. **NO ve inventario.**
 - Perito: `PeritajesPendientes`, `HistorialPeritajes`, `Cuenta`.
@@ -422,7 +422,8 @@ Estas validaciones estaban verdes en la ultima pasada:
 - Roles aceptados desde la UI/Excel: `dealer`, `perito`, `recomprador`, `admin_general`, `admin_sucursal`.
 - `admin_general` debe dejar Sucursal vacia; `admin_sucursal` debe traer una sucursal existente.
 - El backend resuelve Empresa/Sucursal contra Company/Branch para mantener scoping real de dashboards y permisos.
-- Los correos se mandan desde backend con `EMAIL_FROM=info@mubis.com` cuando el proveedor este activo; la UI no debe simular envio.
+- Los correos se mandan desde backend con `EMAIL_FROM=info@mubis.co` cuando el proveedor este activo; la UI no debe simular envio.
+- Correo visible para soporte/contacto/legal: `info@mubis.co`. Cuenta tecnica para integraciones/proveedores: `api@mubis.co`.
 - WhatsApp automatizado aun no debe prometer envio real si no hay cuenta Meta/Twilio configurada; backend queda en modo disabled/log.
 - Produccion esperada: `VITE_API_URL=https://api.mubis.co/api` y `VITE_WS_URL=https://api.mubis.co`.
 

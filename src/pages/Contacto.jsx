@@ -10,7 +10,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 const contactInfo = [
-  { icon: Mail, label: "Email", value: "info@mubis.com", href: "mailto:info@mubis.com" },
+  { icon: Mail, label: "Email", value: "info@mubis.co", href: "mailto:info@mubis.co" },
   { icon: Phone, label: "Teléfono", value: "+57 601 234 5678", href: "tel:+576012345678" },
   { icon: MapPin, label: "Ubicación", value: "Bogotá, Colombia", href: null },
   { icon: Clock, label: "Horario", value: "Lun - Vie: 8am - 6pm", href: null },

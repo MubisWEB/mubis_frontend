@@ -18,9 +18,9 @@ const KEYS = {
 
 // ── Admin whitelist ──
 export const ADMIN_EMAILS = [
-  'admin@mubis.com',
-  'admin2@mubis.com',
-  'superadmin@mubis.com',
+  'admin@mubis.co',
+  'admin2@mubis.co',
+  'superadmin@mubis.co',
 ];
 
 // ── Photo URLs for demo ──
@@ -41,7 +41,7 @@ const PHOTOS = [
 
 // ── Seed data ──
 const SEED_USERS = [
-  { id: 'u-admin-1', email: 'admin@mubis.com', password: 'admin123', role: 'superadmin', nombre: 'SuperAdmin Mubis', company: 'Mubis', branch: 'Principal', telefono: '3000000000', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
+  { id: 'u-admin-1', email: 'admin@mubis.co', password: 'admin123', role: 'superadmin', nombre: 'SuperAdmin Mubis', company: 'Mubis', branch: 'Principal', telefono: '3000000000', ciudad: 'Bogotá', nit: '', verification_status: 'VERIFIED' },
   { id: 'u-dealer-1', email: 'dealer@test.com', password: 'dealer123', role: 'dealer', nombre: 'Autonal Colombia', company: 'Autonal', branch: 'Bogotá Norte', telefono: '3001112233', ciudad: 'Bogotá', nit: '900123456-7', verification_status: 'VERIFIED' },
   { id: 'u-dealer-2', email: 'dealer2@test.com', password: 'dealer123', role: 'dealer', nombre: 'Los Coches', company: 'Los Coches', branch: 'Medellín Centro', telefono: '3159998877', ciudad: 'Medellín', nit: '900234567-8', verification_status: 'VERIFIED' },
   { id: 'u-dealer-3', email: 'dealer3@test.com', password: 'dealer123', role: 'dealer', nombre: 'Motor Uno', company: 'Motor Uno', branch: 'Bogotá Norte', telefono: '3201234000', ciudad: 'Bogotá', nit: '900444555-1', verification_status: 'VERIFIED' },

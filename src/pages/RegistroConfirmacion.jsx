@@ -88,7 +88,7 @@ export default function RegistroConfirmacion() {
       <footer className="bg-footer text-footer-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm">
           <Mail className="w-4 h-4 text-secondary" />
-          <span>info@mubis.com</span>
+          <span>info@mubis.co</span>
         </div>
       </footer>
     </div>

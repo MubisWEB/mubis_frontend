@@ -16,7 +16,7 @@ export default function AvisoLegal() {
             <li><strong>Razón social:</strong> Mubis Colombia S.A.S.</li>
             <li><strong>NIT:</strong> 9018366670</li>
             <li><strong>Domicilio:</strong> Calle 170 # 69-80, Bogotá D.C., Colombia</li>
-            <li><strong>Correo electrónico:</strong> <a href="mailto:info@mubis.com" className="text-secondary hover:underline">info@mubis.com</a></li>
+            <li><strong>Correo electrónico:</strong> <a href="mailto:info@mubis.co" className="text-secondary hover:underline">info@mubis.co</a></li>
             <li><strong>Teléfono:</strong> +34 670 03 30 99</li>
           </ul>
 

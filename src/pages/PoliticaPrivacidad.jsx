@@ -15,7 +15,7 @@ export default function PoliticaPrivacidad() {
           </p>
           <p>Para todos los efectos relacionados con el tratamiento de datos personales, consultas, reclamos o solicitudes, los titulares podrán comunicarse con:</p>
           <p>
-            <strong>Correo electrónico:</strong> <a href="mailto:info@mubis.com" className="text-secondary hover:underline">info@mubis.com</a><br />
+            <strong>Correo electrónico:</strong> <a href="mailto:info@mubis.co" className="text-secondary hover:underline">info@mubis.co</a><br />
             <strong>Teléfono:</strong> +34 670 03 30 99
           </p>
           <p>El propósito de esta política es informar a los titulares de los datos personales sobre los derechos que les asisten, así como los mecanismos establecidos por <strong>Mubis Colombia S.A.S.</strong> para garantizar su protección.</p>
@@ -93,7 +93,7 @@ export default function PoliticaPrivacidad() {
 
           <h2 className="text-2xl font-bold text-foreground">5. Procedimiento para Consultas y Reclamos</h2>
           <p>Los titulares podrán presentar consultas o reclamos enviando su solicitud a:</p>
-          <p><strong>Correo electrónico:</strong> <a href="mailto:info@mubis.com" className="text-secondary hover:underline">info@mubis.com</a></p>
+          <p><strong>Correo electrónico:</strong> <a href="mailto:info@mubis.co" className="text-secondary hover:underline">info@mubis.co</a></p>
           <p>La solicitud deberá contener:</p>
           <ul className="space-y-1">
             <li>Nombre del titular</li>
@@ -113,7 +113,7 @@ export default function PoliticaPrivacidad() {
             <li>hayan dejado de ser necesarios</li>
             <li>se haya cumplido la finalidad para la cual fueron recolectados</li>
           </ul>
-          <p>La solicitud podrá realizarse mediante el correo: <a href="mailto:info@mubis.com" className="text-secondary hover:underline">info@mubis.com</a></p>
+          <p>La solicitud podrá realizarse mediante el correo: <a href="mailto:info@mubis.co" className="text-secondary hover:underline">info@mubis.co</a></p>
 
           <hr className="border-border" />
 

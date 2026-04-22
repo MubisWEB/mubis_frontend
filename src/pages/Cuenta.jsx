@@ -227,8 +227,8 @@ export default function Cuenta() {
 
   if (role === 'superadmin') {
     menuItems.splice(0, 0,
-      
       { icon: ImagePlus, label: 'Gestionar Banners', action: () => navigate('/AdminBanners') },
+      { icon: Users, label: 'Gestionar Aliados', action: () => navigate('/AdminAliados') },
       { icon: Handshake, label: 'Gestión de Partners', action: () => navigate('/AdminPartners') },
     );
   }
