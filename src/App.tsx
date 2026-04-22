@@ -66,6 +66,7 @@ import AdminInventarioSucursal from './pages/AdminInventarioSucursal';
 import Preferencias from './pages/Preferencias';
 import Deseados from './pages/Deseados';
 import AdminDeseadosExpirados from './pages/AdminDeseadosExpirados';
+import SeoMeta from './components/SeoMeta';
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <SeoMeta />
         <AuthProvider>
         <Routes>
           {/* Public */}

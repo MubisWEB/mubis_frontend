@@ -427,6 +427,14 @@ Estas validaciones estaban verdes en la ultima pasada:
 - WhatsApp automatizado aun no debe prometer envio real si no hay cuenta Meta/Twilio configurada; backend queda en modo disabled/log.
 - Produccion esperada: `VITE_API_URL=https://api.mubis.co/api` y `VITE_WS_URL=https://api.mubis.co`.
 
+### SEO tecnico (2026-04-22)
+- `index.html` tiene metadatos base para `https://mubis.co`: title, description, canonical, Open Graph, Twitter card y JSON-LD Organization.
+- `src/components/SeoMeta.tsx` actualiza title/description/canonical/robots por ruta publica usando React Router.
+- Rutas publicas indexables: `/`, `/como-funciona`, `/para-dealers`, `/contacto`, `/preguntas-frecuentes`, `/terminos-y-condiciones`, `/politica-de-privacidad`, `/aviso-legal`.
+- Rutas privadas y de auth quedan con `noindex` en runtime; `public/robots.txt` tambien bloquea rutas internas/admin/subastas/cuenta.
+- `public/sitemap.xml` lista solo rutas publicas y usa `https://mubis.co`.
+- No volver a poner imagenes externas de Lovable/R2 para preview social; usar assets propios bajo `https://mubis.co`.
+
 ### Catálogo Chevrolet (2026-04-20)
 - `src/constants/vehicleData.js`: Chevrolet expandido a 23 modelos (Onix, Onix Plus, Spark, Beat, Sail, Sonic, Cruze, Groove, Tracker, Trax, Trailblazer, Captiva, Equinox, Blazer, Traverse, Camaro, Malibu, Tahoe, Suburban, S10, Montana, Colorado, Silverado).
 - `src/constants/vehicleImages.js`: imágenes para onix, onixplus, groove, trailblazer, captiva, s10.
