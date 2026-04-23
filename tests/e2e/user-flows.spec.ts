@@ -67,6 +67,17 @@ async function writeUploadFixtures(testInfo) {
 }
 
 test.describe('business user flows', () => {
+  test('registration as recomprador does not ask for company or branch', async ({ page }) => {
+    await page.goto('/registro', { waitUntil: 'domcontentloaded' });
+
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: /Recomprador/i }).click();
+
+    await expect(page.getByText(/Empresa \/ Concesionario/i)).toHaveCount(0);
+    await expect(page.getByText(/^Sucursal \*$/i)).toHaveCount(0);
+    await expect(page.getByText(/^NIT/i)).toHaveCount(0);
+  });
+
   test('dealer publishes a vehicle from the UI and sends it to inspection', async ({ page, request }) => {
     await loginAs(page, request, USERS.dealer);
 
@@ -488,5 +499,312 @@ test.describe('business user flows', () => {
     await expect.poll(() => accepted).toBe(true);
     await expect(page.getByText(/Subasta finalizada con ganador/i)).toBeVisible();
     await expect(page.getByText(/Comprador Demo/i)).toBeVisible();
+  });
+
+  test('recomprador moves a SeBusca match into Ganadas from the UI', async ({ page, request }) => {
+    await loginAs(page, request, USERS.recomprador);
+    let createdInterestRequest = false;
+
+    await page.route('**/api/branch-inventory/search**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'branch-vehicle-sebusca-ui',
+            brand: 'Mazda',
+            model: 'CX-30',
+            version: 'Grand Touring LX AWD',
+            year: 2023,
+            km: 22000,
+            daysInInventory: 47,
+            branch: {
+              name: 'Sucursal Demo Norte',
+              city: 'Medellin',
+              phone: '3001112233',
+            },
+          },
+        ]),
+      });
+    });
+
+    await page.route('**/api/interest-requests', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+
+      createdInterestRequest = true;
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: 'interest-ui-flow',
+          status: 'EN_NEGOCIACION',
+        }),
+      });
+    });
+
+    await page.route('**/api/auctions/won', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+
+    await page.route('**/api/interest-requests/mine', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'interest-ui-flow',
+            status: 'EN_NEGOCIACION',
+            vehicleLabel: 'Mazda CX-30 Grand Touring LX AWD',
+            deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+            vehicleDetails: {
+              year: 2023,
+              km: 22000,
+            },
+            branch: {
+              name: 'Sucursal Demo Norte',
+              city: 'Medellin',
+              phone: '3001112233',
+            },
+            dealer: {
+              telefono: '3019998877',
+            },
+          },
+        ]),
+      });
+    });
+
+    await page.goto('/SeBusca', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: /^Buscar$/i }).click();
+
+    await expect(page.getByText(/Mazda CX-30/i)).toBeVisible();
+    await page.getByText(/Mazda CX-30/i).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(/Contacto bloqueado/i)).toBeVisible();
+    await expect(dialog.getByText(/desbloquear el contacto/i)).toBeVisible();
+    await dialog.getByRole('button', { name: /Me interesa/i }).click();
+
+    await expect.poll(() => createdInterestRequest).toBe(true);
+    await expect(page).toHaveURL(/\/Ganados/i);
+    await expect(page.getByRole('heading', { name: 'Ganadas' })).toBeVisible();
+    await expect(page.getByText(/Mazda CX-30 Grand Touring LX AWD/i)).toBeVisible();
+    await expect(page.getByText(/Expira en/i)).toBeVisible();
+  });
+
+  test('dealer resolves incoming SeBusca requests from Deseados UI', async ({ page, request }) => {
+    await loginAs(page, request, USERS.dealer);
+
+    let incomingLoaded = false;
+    let incoming = [
+      {
+        id: 'incoming-interest-accept',
+        status: 'EN_NEGOCIACION',
+        vehicleLabel: 'Toyota Corolla Cross XEI',
+        deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        vehicleDetails: {
+          year: 2023,
+          km: 19000,
+          branchCity: 'Bogota',
+          version: 'XEI',
+        },
+        branch: { name: 'Autoniza 170', city: 'Bogota' },
+        requester: { nombre: 'Comprador Uno', telefono: '3001111111' },
+      },
+      {
+        id: 'incoming-interest-reject',
+        status: 'EN_NEGOCIACION',
+        vehicleLabel: 'Mazda CX-5 Grand Touring',
+        deadline: new Date(Date.now() + 30 * 60 * 60 * 1000).toISOString(),
+        vehicleDetails: {
+          year: 2022,
+          km: 28000,
+          branchCity: 'Bogota',
+          version: 'Grand Touring',
+        },
+        branch: { name: 'Autoniza 170', city: 'Bogota' },
+        requester: { nombre: 'Comprador Dos', telefono: '3002222222' },
+      },
+    ];
+
+    await page.route('**/api/interest-requests/incoming', async (route) => {
+      incomingLoaded = true;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(incoming),
+      });
+    });
+
+    await page.route('**/api/interest-requests/*/accept', async (route) => {
+      const match = route.request().url().match(/interest-requests\/([^/]+)\/accept/);
+      const id = match?.[1];
+      incoming = incoming.map((item) => (
+        item.id === id ? { ...item, status: 'ACEPTADO' } : item
+      ));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(incoming.find((item) => item.id === id)),
+      });
+    });
+
+    await page.route('**/api/interest-requests/*/reject', async (route) => {
+      const match = route.request().url().match(/interest-requests\/([^/]+)\/reject/);
+      const id = match?.[1];
+      incoming = incoming.map((item) => (
+        item.id === id ? { ...item, status: 'RECHAZADO' } : item
+      ));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(incoming.find((item) => item.id === id)),
+      });
+    });
+
+    await page.goto('/Deseados', { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => incomingLoaded).toBe(true);
+    await expect(page.getByText('Toyota Corolla Cross XEI')).toBeVisible();
+    await expect(page.getByText('Mazda CX-5 Grand Touring')).toBeVisible();
+
+    const acceptCard = page.locator('div.rounded-xl.border').filter({ hasText: 'Toyota Corolla Cross XEI' }).first();
+    const rejectCard = page.locator('div.rounded-xl.border').filter({ hasText: 'Mazda CX-5 Grand Touring' }).first();
+
+    await expect(acceptCard).toContainText(/Comprador Uno/i);
+    await expect(rejectCard).toContainText(/Comprador Dos/i);
+
+    await acceptCard.getByRole('button', { name: /Aceptar/i }).click();
+    await expect(acceptCard).toHaveCount(0);
+
+    await rejectCard.getByRole('button', { name: /Rechazar/i }).click();
+    await expect(rejectCard).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Resueltos/i }).click();
+    await expect(page.getByText('Toyota Corolla Cross XEI')).toBeVisible();
+    await expect(page.getByText('Mazda CX-5 Grand Touring')).toBeVisible();
+    await expect(page.getByText(/Aceptado/i)).toBeVisible();
+    await expect(page.getByText(/Rechazado/i)).toBeVisible();
+  });
+
+  test('buyer opens a support case from a won auction and lands on case detail', async ({ page, request }) => {
+    const login = await loginAs(page, request, USERS.recomprador);
+    let createdPayload: any = null;
+
+    const supportCase = {
+      id: 'support-case-ui',
+      status: 'OPEN',
+      auctionId: 'auction-support-ui',
+      vehicleLabel: 'Mazda CX-30 2023',
+      createdAt: new Date().toISOString(),
+      buyerName: 'Comprador Demo',
+      sellerName: 'Dealer Demo',
+      messages: [
+        {
+          id: 'support-msg-1',
+          senderId: login.user.id,
+          senderRole: 'comprador',
+          senderName: 'Comprador Demo',
+          text: 'El vehículo no llegó como estaba publicado.',
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    };
+
+    const auction = {
+      id: 'auction-support-ui',
+      auctionId: 'auction-support-ui',
+      vehicleId: 'vehicle-support-ui',
+      status: 'ENDED',
+      winnerId: login.user.id,
+      mockWonStatus: 'en_proceso',
+      brand: 'Mazda',
+      model: 'CX-30',
+      year: 2023,
+      city: 'Bogota',
+      mileage: 15000,
+      km: 15000,
+      current_bid: 54000000,
+      bids_count: 2,
+      leaderId: 'buyer-ui',
+      ends_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      photos: ['https://picsum.photos/seed/support-ui/900/600'],
+      dealer: {
+        nombre: 'Dealer Demo',
+        email: 'dealer.demo@mubis.co',
+        telefono: '3003334444',
+        company: 'Autoniza',
+        branch: 'Autoniza 170',
+      },
+      specs: { transmission: 'Automatica' },
+      documentation: {},
+      inspection: { scores: { motor: 9, carroceria: 8, interior: 8 } },
+    };
+
+    await page.route('**/api/auctions/auction-support-ui/view', async (route) => {
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+    });
+    await page.route('**/api/auctions/auction-support-ui', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(auction) });
+    });
+    await page.route('**/api/audit/entity/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+    await page.route('**/api/pronto-pago/auction/auction-support-ui', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(null) });
+    });
+    await page.route('**/api/support/cases/mine', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+    await page.route('**/api/watchlist/auction-support-ui/check', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ inWatchlist: false }) });
+    });
+    await page.route('**/api/bids/auction/auction-support-ui', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+    await page.route('**/api/support/cases', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+
+      createdPayload = route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(supportCase),
+      });
+    });
+    await page.route('**/api/support/cases/support-case-ui', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(supportCase),
+      });
+    });
+
+    await page.goto('/DetalleSubasta/auction-support-ui?from=ganados', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('button', { name: /Abrir caso/i })).toBeVisible();
+    await page.getByRole('button', { name: /Abrir caso/i }).click();
+
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder(/Describe el problema/i).fill('El vehículo no llegó como estaba publicado.');
+    await dialog.getByRole('button', { name: /^Abrir caso$/i }).click();
+
+    await expect.poll(() => createdPayload).not.toBeNull();
+    expect(createdPayload).toMatchObject({
+      auctionId: 'auction-support-ui',
+      vehicleLabel: 'Mazda CX-30 2023',
+      initialMessage: 'El vehículo no llegó como estaba publicado.',
+    });
+
+    await expect(page).toHaveURL(/\/SoporteCasos\/support-case-ui/i);
+    await expect(page.getByText(/Caso de soporte/i)).toBeVisible();
+    await expect(page.getByText(/El vehículo no llegó como estaba publicado\./i)).toBeVisible();
   });
 });

@@ -96,7 +96,9 @@ export default function AdminAliados() {
       closeForm();
       loadAllies();
     } catch (err) {
-      toast.error('Error al guardar aliado');
+      console.error('[AdminAliados] Error al guardar:', err?.response?.data ?? err);
+      const msg = err?.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg.join(' · ') : (msg || 'Error al guardar aliado'));
     } finally {
       setSaving(false);
     }

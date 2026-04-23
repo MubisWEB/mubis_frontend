@@ -12,6 +12,7 @@ import {
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { analyticsApi, usersApi } from '@/api/services';
+import { formatCompactCOP } from '@/lib/formatters';
 
 const MONTHS_LABELS = (() => {
   const now = new Date();
@@ -44,7 +45,7 @@ function SectionTitle({ color = 'bg-secondary', children, sub }) {
   );
 }
 
-const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
+const COP = formatCompactCOP;
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
 const PIPELINE_COLORS = ['#6366f1', '#ef4444', '#3b82f6', '#f59e0b', '#06b6d4', '#10b981'];
 

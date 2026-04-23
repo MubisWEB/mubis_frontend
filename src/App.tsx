@@ -123,7 +123,7 @@ const App = () => (
           <Route path="/AyudaSoporte" element={<RequireAuth><AyudaSoporte /></RequireAuth>} />
           <Route path="/SoporteCasos" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><SoporteCasos /></RequireRole>} />
           <Route path="/SoporteCasos/:caseId" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><SoporteCasoDetalle /></RequireRole>} />
-          <Route path="/Partners" element={<RequireRole roles={['dealer','recomprador','admin_general','admin_sucursal']}><Partners /></RequireRole>} />
+          <Route path="/Partners" element={<RequireRole roles={['superadmin']}><Partners /></RequireRole>} />
 
           {/* Perito */}
           <Route path="/PeritajesPendientes" element={<RequireRole roles={['perito']}><PeritajesPendientes /></RequireRole>} />

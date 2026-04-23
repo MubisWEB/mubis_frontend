@@ -62,8 +62,11 @@ export default function SeBusca() {
     setContacting(true);
     try {
       await interestRequestsApi.create(vehicleId);
-      toast.success('Solicitud de interés enviada');
+      toast.success('Contacto desbloqueado', {
+        description: 'La negociacion quedo en Ganadas > En proceso.',
+      });
       setSelected(null);
+      navigate('/Ganados');
     } catch (err) {
       const msg = err?.response?.data?.message || 'Error al enviar solicitud';
       toast.error(msg);
@@ -122,16 +125,16 @@ export default function SeBusca() {
       <Header />
 
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-5 pb-3">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
           <Megaphone className="w-6 h-6 text-secondary" />
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold text-foreground">Se Busca</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Busca vehículos en inventario y gestiona anuncios</p>
           </div>
           <Button
             onClick={() => navigate('/Deseados')}
             variant="outline"
-            className="rounded-full font-semibold h-9 px-4 border-secondary/30 text-secondary hover:bg-secondary/10"
+            className="rounded-full font-semibold h-9 px-4 border-secondary/30 text-secondary hover:bg-secondary/10 shrink-0"
           >
             <Heart className="w-4 h-4 mr-1" />
             Deseados
@@ -287,10 +290,10 @@ export default function SeBusca() {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm">
+                        <p className="font-semibold text-foreground text-sm break-words">
                           {v.brand} {v.model}
                         </p>
-                        <p className="text-xs text-muted-foreground">{v.version}</p>
+                        <p className="text-xs text-muted-foreground break-words">{v.version}</p>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" /> {v.year}
@@ -327,7 +330,7 @@ export default function SeBusca() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Car className="w-5 h-5 text-primary" />
-                  <h3 className="font-bold text-lg text-foreground">{selected.brand} {selected.model}</h3>
+                  <h3 className="font-bold text-lg text-foreground break-words">{selected.brand} {selected.model}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">{selected.version}</p>
                 <div className="grid grid-cols-2 gap-3 mt-3">
@@ -351,35 +354,21 @@ export default function SeBusca() {
                 <div className="border-t border-border pt-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-secondary" />
-                    <h4 className="font-bold text-foreground">Información de contacto</h4>
+                    <h4 className="font-bold text-foreground">Contacto bloqueado</h4>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-start gap-2">
-                      <Building2 className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-foreground">{selected.branch.name}</p>
-                        {selected.branch.company && (
-                          <p className="text-muted-foreground text-xs">{selected.branch.company}</p>
-                        )}
-                      </div>
+                  <div className="space-y-2 text-sm rounded-xl border border-dashed border-border bg-muted/40 p-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span>{selected.branch.city}</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-foreground">{selected.branch.city}</p>
-                        {selected.branch.address && (
-                          <p className="text-muted-foreground text-xs">{selected.branch.address}</p>
-                        )}
-                      </div>
+                    <div className="space-y-2 blur-sm select-none pointer-events-none" aria-hidden="true">
+                      <div className="h-4 w-44 max-w-full rounded bg-foreground/25" />
+                      <div className="h-4 w-36 max-w-full rounded bg-foreground/20" />
+                      <div className="h-4 w-28 max-w-full rounded bg-foreground/20" />
                     </div>
-                    {selected.branch.phone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        <a href={`tel:${selected.branch.phone}`} className="text-primary font-medium hover:underline">
-                          {selected.branch.phone}
-                        </a>
-                      </div>
-                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Da click en Me interesa para desbloquear el contacto e iniciar el contador de negociacion.
+                    </p>
                   </div>
                 </div>
               )}
@@ -393,10 +382,10 @@ export default function SeBusca() {
                     className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold h-11 rounded-full"
                   >
                     {contacting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                    Contactar
+                    Me interesa
                   </Button>
                   <p className="text-xs text-muted-foreground text-center mt-2">
-                    Enviarás una solicitud de interés al dealer
+                    Desbloquea el contacto y crea una negociacion en Ganadas
                   </p>
                 </div>
               )}

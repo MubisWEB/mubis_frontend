@@ -19,6 +19,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
+import { formatCompactCOP } from '@/lib/formatters';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
@@ -179,7 +180,7 @@ const [loading, setLoading] = useState(true);
     }
   };
 
-  const formatPrice = (price) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
+  const formatPrice = (price) => formatCompactCOP(price);
   const formatCountdown48 = (ms) => {
     if (ms <= 0) return 'Completado';
     const h = Math.floor(ms / (1000 * 60 * 60));
@@ -333,7 +334,7 @@ const [loading, setLoading] = useState(true);
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-muted-foreground text-xs mb-1">{isWonByMe ? 'Precio final' : 'Puja actual'}</p>
-                <p className="text-2xl font-bold text-foreground">{formatPrice(vehicle.current_bid || 0)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight break-all">{formatPrice(vehicle.current_bid || 0)}</p>
               </div>
               {!isWonByMe && (
                 <div className="text-right space-y-1">
@@ -701,14 +702,18 @@ const [loading, setLoading] = useState(true);
               onClick={async () => {
                 if (!reportText.trim() || !currentUser || !vehicle) return;
                 try {
-                  await casesApi.create({
+                  const createdCase = await casesApi.create({
                     auctionId: vehicle.auctionId || vehicle.id,
                     vehicleLabel: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
-                    description: reportText.trim(),
+                    initialMessage: reportText.trim(),
                   });
+                  setExistingCase(createdCase || null);
                   setReportOpen(false);
                   setReportText('');
                   toast.success('Caso abierto exitosamente', { description: 'Puedes verlo en Mubis Soporte - Casos' });
+                  if (createdCase?.id) {
+                    navigate(`/SoporteCasos/${createdCase.id}`);
+                  }
                 } catch (err) {
                   toast.error('Error al abrir el caso');
                 }

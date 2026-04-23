@@ -291,15 +291,6 @@ export default function AdminDealerDetalle() {
               Aprobar
             </Button>
           </div>
-          {isVerified && (
-            <Button
-              onClick={() => handleVerificationStatus('PENDING')}
-              className="w-full mt-2 rounded-full font-semibold"
-              variant="outline"
-            >
-              Volver a pendiente
-            </Button>
-          )}
           {currentUser?.role === 'superadmin' && user.role !== 'superadmin' && (
             <Button
               onClick={handleDelete}

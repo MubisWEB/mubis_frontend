@@ -478,6 +478,25 @@ Estas validaciones estaban verdes en la ultima pasada:
 - `src/api/services.js`: `transactionsApi.export(queryString)` para descarga de archivo.
 - `src/pages/Cuenta.jsx`: eliminado link "Subastas Ganadas" de todos los roles. La pagina /Ganados sigue existiendo accesible desde el bottom nav de /Comprar.
 
+### Se Busca, Partners y Ganadas (2026-04-22)
+- BottomNav de `admin_sucursal` no muestra "Sucursal"; el panel de sucursal queda dentro de `/Cuenta`.
+- `/Cuenta` muestra `Ganadas` para roles compradores/vendedores y ya no muestra `Subastas Guardadas`.
+- Partners queda restringido a superadmin: `/Partners` y `/AdminPartners` no deben estar disponibles para dealer, recomprador, admin general ni admin sucursal.
+- `/SeBusca` no muestra telefono, direccion ni contacto antes de la accion del usuario. El detalle muestra contacto bloqueado.
+- El boton de monetizacion es `Me interesa`; crea `InterestRequest`, desbloquea contacto via la operacion en `/Ganados` y arranca el countdown existente de interes.
+- `/Ganados` unifica visualmente subastas ganadas e intereses de Se Busca:
+  - `EN_NEGOCIACION` -> En proceso.
+  - `ACEPTADO` -> Finalizado.
+  - `RECHAZADO`/`EXPIRADO` -> Rechazado.
+- `/Deseados` tiene dos comportamientos:
+  - recomprador: ve sus solicitudes en `En negociacion` y `Finalizados`;
+  - dealer/admin vendedor: ve solicitudes entrantes en `Pendientes` y `Resueltos`.
+  La pestaña `Resueltos` depende de que backend entregue tambien `ACEPTADO`, `RECHAZADO` y `EXPIRADO`, no solo `EN_NEGOCIACION`.
+- Cuando Se Busca se cierra correctamente, ahora genera `Transaction` e `InventoryRecord` reales; la UI de `Ganados`, `Movimientos`, dashboards e inventario debe asumir que ya no es solo una solicitud visual.
+- El inventario de sucursal cerrado por Se Busca ya no se borra: se vuelve inactivo en backend. La UI de inventario/listados activos no debe volver a mostrarlo.
+- Valores monetarios grandes en dashboards/movimientos usan abreviacion compacta (`$2.3B`, `$1.2M`) para evitar overflow mobile.
+- `AdminDealerDetalle` ya no debe ofrecer "Volver a pendiente" en verificacion. Los flujos validos de revision son aprobar, lista de espera, rechazar y eliminar usuario (solo superadmin).
+
 ## Cuidado antes de cambiar
 
 - No reintroducir datos `SIM_*` en dashboards ya conectados.

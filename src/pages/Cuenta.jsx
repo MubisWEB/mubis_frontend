@@ -216,12 +216,11 @@ export default function Cuenta() {
       { icon: SlidersHorizontal, label: 'Preferencias', action: () => navigate('/Preferencias') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
       ...(role === 'dealer' ? [{ icon: Receipt, label: 'Historial de recargas', action: () => navigate('/MisRecargas') }] : []),
+      { icon: Trophy, label: 'Ganadas', action: () => navigate('/Ganados') },
       { icon: TrendingUp, label: 'Analítica', action: () => navigate('/MiRendimiento') },
       { icon: Target, label: 'Mis Metas', action: () => navigate('/MisMetas') },
-      { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
       { icon: Heart, label: 'Deseados', action: () => navigate('/Deseados') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
-      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
 
@@ -237,10 +236,9 @@ export default function Cuenta() {
     menuItems.splice(1, 0,
       { icon: FileText, label: 'Solicitudes', action: () => navigate('/AdminSolicitudes') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
-      { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
+      { icon: Trophy, label: 'Ganadas', action: () => navigate('/Ganados') },
       { icon: Heart, label: 'Deseados', action: () => navigate('/Deseados') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
-      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
   if (role === 'admin_sucursal') {
@@ -249,10 +247,9 @@ export default function Cuenta() {
       { icon: Warehouse, label: 'Inventario', action: () => navigate('/AdminInventarioSucursal') },
       { icon: FileText, label: 'Solicitudes', action: () => navigate('/AdminSolicitudes') },
       { icon: DollarSign, label: 'Mis Movimientos', action: () => navigate('/Movimientos') },
-      { icon: Bookmark, label: 'Subastas Guardadas', action: () => navigate('/Guardadas') },
+      { icon: Trophy, label: 'Ganadas', action: () => navigate('/Ganados') },
       { icon: Heart, label: 'Deseados', action: () => navigate('/Deseados') },
       { icon: MessageCircle, label: 'Mubis Soporte - Casos', action: () => navigate('/SoporteCasos') },
-      { icon: Users, label: 'Partners', action: () => navigate('/Partners') },
     );
   }
 

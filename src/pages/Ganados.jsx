@@ -1,20 +1,48 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import {
+  ArrowLeft,
+  Building2,
+  Calendar,
+  Clock,
+  Gauge,
+  MapPin,
+  Search,
+  Trophy,
+} from 'lucide-react';
 import Skeleton from 'react-loading-skeleton';
 import { useNavigate } from 'react-router-dom';
-import { auctionsApi } from '@/api/services';
+import { auctionsApi, interestRequestsApi } from '@/api/services';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { WonAuctionGridCard, WonAuctionMobileCard } from '@/components/WonAuctionCard';
 import { normalizeWonAuction } from '@/lib/auctions';
+import { useAuth } from '@/lib/AuthContext';
+import { normalizeRole } from '@/lib/roles';
 
 const TABS = [
   { key: 'in_progress', label: 'En proceso' },
-  { key: 'rejected', label: 'Rechazada' },
+  { key: 'rejected', label: 'Rechazado' },
   { key: 'completed', label: 'Finalizado' },
 ];
+
+const EMPTY_MESSAGES = {
+  in_progress: {
+    title: 'No hay operaciones en proceso',
+    subtitle: 'Cuando ganes una subasta o contactes desde Se Busca, aparecera aqui',
+  },
+  rejected: {
+    title: 'No hay operaciones rechazadas',
+    subtitle: 'Las subastas canceladas y solicitudes rechazadas apareceran aqui',
+  },
+  completed: {
+    title: 'No hay operaciones finalizadas',
+    subtitle: 'Las subastas y solicitudes completadas apareceran aqui',
+  },
+};
 
 const WonCardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -30,7 +58,8 @@ const WonCardSkeleton = () => (
 
 const formatPrice = (price) => {
   const n = Number(price) || 0;
-  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -39,15 +68,103 @@ const formatPrice = (price) => {
   }).format(n);
 };
 
-const EMPTY_MESSAGES = {
-  in_progress: { title: 'No hay subastas en proceso', subtitle: 'Cuando ganes una subasta que esté en trámite, aparecerá aquí' },
-  rejected: { title: 'No hay subastas rechazadas', subtitle: 'Las subastas canceladas aparecerán aquí' },
-  completed: { title: 'No hay subastas finalizadas', subtitle: 'Las subastas completadas aparecerán aquí' },
-};
+function formatCountdown(deadline) {
+  const remaining = new Date(deadline).getTime() - Date.now();
+  if (remaining <= 0) return 'Expirado';
+  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  if (days > 0) return `${days}d ${hours}h`;
+  const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}h ${minutes}m`;
+}
+
+function normalizeInterestRequest(item) {
+  const group = item.status === 'EN_NEGOCIACION'
+    ? 'in_progress'
+    : item.status === 'ACEPTADO'
+      ? 'completed'
+      : 'rejected';
+
+  return {
+    id: `interest-${item.id}`,
+    type: 'interest',
+    group,
+    status: item.status,
+    title: item.vehicleLabel,
+    details: item.vehicleDetails || {},
+    branch: item.branch,
+    dealer: item.dealer,
+    deadline: item.deadline,
+  };
+}
+
+function InterestCard({ item }) {
+  return (
+    <Card className="overflow-hidden border border-border rounded-2xl p-4">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0">
+          <Search className="w-5 h-5 text-secondary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-bold text-foreground text-sm truncate">{item.title}</p>
+              <p className="text-xs text-muted-foreground">Se Busca</p>
+            </div>
+            <Badge className="text-xs bg-secondary/10 text-secondary border border-secondary/20 flex-shrink-0">
+              {item.group === 'in_progress' ? 'En proceso' : item.group === 'completed' ? 'Finalizado' : 'Rechazado'}
+            </Badge>
+          </div>
+
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
+            {item.details?.year && (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {item.details.year}
+              </span>
+            )}
+            {item.details?.km && (
+              <span className="flex items-center gap-1">
+                <Gauge className="w-3 h-3" />
+                {Number(item.details.km).toLocaleString('es-CO')} km
+              </span>
+            )}
+            {item.branch?.city && (
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {item.branch.city}
+              </span>
+            )}
+          </div>
+
+          {item.branch && (
+            <div className="mt-2 text-xs text-muted-foreground break-words">
+              <p className="flex items-center gap-1">
+                <Building2 className="w-3 h-3 flex-shrink-0" />
+                <span className="min-w-0">{item.branch.name}</span>
+              </p>
+              {item.branch.phone && <p className="mt-1">Tel: {item.branch.phone}</p>}
+              {item.dealer?.telefono && <p className="mt-1">Contacto: {item.dealer.telefono}</p>}
+            </div>
+          )}
+
+          {item.group === 'in_progress' && (
+            <div className="mt-2 flex items-center gap-1 text-xs text-amber-600">
+              <Clock className="w-3 h-3" />
+              <span>Expira en {formatCountdown(item.deadline)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function Ganados() {
   const navigate = useNavigate();
-  const [wonAuctions, setWonAuctions] = useState([]);
+  const { user } = useAuth();
+  const role = normalizeRole(user?.role);
+  const [wonItems, setWonItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('in_progress');
 
@@ -55,26 +172,40 @@ export default function Ganados() {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await auctionsApi.getWon();
-        setWonAuctions((data || []).map(normalizeWonAuction));
+        const [auctions, interests] = await Promise.all([
+          auctionsApi.getWon().catch(() => []),
+          role === 'recomprador'
+            ? interestRequestsApi.getMine().catch(() => [])
+            : interestRequestsApi.getIncoming().catch(() => []),
+        ]);
+
+        setWonItems([
+          ...(auctions || []).map((auction) => ({
+            ...normalizeWonAuction(auction),
+            type: 'auction',
+          })),
+          ...(interests || []).map(normalizeInterestRequest),
+        ]);
       } catch (err) {
-        console.error('Error loading won auctions:', err);
+        console.error('Error loading won items:', err);
       } finally {
         setLoading(false);
       }
     };
-    load();
-  }, []);
+
+    if (role) load();
+  }, [role]);
 
   const grouped = useMemo(() => {
     const groups = { in_progress: [], rejected: [], completed: [] };
-    for (const a of wonAuctions) {
-      if (a.isCancelled) groups.rejected.push(a);
-      else if (a.isCompleted) groups.completed.push(a);
-      else groups.in_progress.push(a);
+    for (const item of wonItems) {
+      if (item.type === 'interest') groups[item.group].push(item);
+      else if (item.isCancelled) groups.rejected.push(item);
+      else if (item.isCompleted) groups.completed.push(item);
+      else groups.in_progress.push(item);
     }
     return groups;
-  }, [wonAuctions]);
+  }, [wonItems]);
 
   const currentList = grouped[activeTab] || [];
 
@@ -93,9 +224,7 @@ export default function Ganados() {
       onChat: handleChat,
     };
 
-    if (window.innerWidth < 768) {
-      return <WonAuctionMobileCard {...cardProps} />;
-    }
+    if (window.innerWidth < 768) return <WonAuctionMobileCard {...cardProps} />;
     return <WonAuctionGridCard {...cardProps} />;
   };
 
@@ -113,19 +242,18 @@ export default function Ganados() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-amber-500" />
-            <h1 className="text-2xl font-bold text-foreground">Subastas Ganadas</h1>
+          <div className="flex items-center gap-2 min-w-0">
+            <Trophy className="w-5 h-5 text-amber-500 flex-shrink-0" />
+            <h1 className="text-2xl font-bold text-foreground truncate">Ganadas</h1>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          {wonAuctions.length === 0
-            ? 'Aún no has ganado ninguna subasta'
-            : `${wonAuctions.length} ${wonAuctions.length === 1 ? 'subasta ganada' : 'subastas ganadas'}`}
+          {wonItems.length === 0
+            ? 'Aun no tienes operaciones ganadas'
+            : `${wonItems.length} ${wonItems.length === 1 ? 'operacion' : 'operaciones'}`}
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="px-4 md:px-8 pt-4 pb-2">
         <div className="flex rounded-xl bg-muted p-1 gap-1">
           {TABS.map((tab) => {
@@ -135,13 +263,13 @@ export default function Ganados() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 text-center py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                className={`flex-1 text-center py-2 px-2 rounded-lg text-sm font-medium transition-all min-w-0 ${
                   isActive
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab.label}
+                <span className="truncate inline-block max-w-full">{tab.label}</span>
                 {count > 0 && (
                   <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
                     isActive ? 'bg-primary/10 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'
@@ -155,13 +283,10 @@ export default function Ganados() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="px-4 md:px-8 py-4">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <WonCardSkeleton key={i} />
-            ))}
+            {[...Array(3)].map((_, i) => <WonCardSkeleton key={i} />)}
           </div>
         ) : currentList.length === 0 ? (
           <div className="text-center py-16">
@@ -189,7 +314,11 @@ export default function Ganados() {
             transition={{ duration: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
           >
-            {currentList.map(renderAuctionCard)}
+            {currentList.map((item) => (
+              item.type === 'interest'
+                ? <InterestCard key={item.id} item={item} />
+                : renderAuctionCard(item)
+            ))}
           </motion.div>
         )}
       </div>

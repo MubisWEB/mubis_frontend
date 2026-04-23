@@ -17,8 +17,9 @@ import {
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { superadminApi, companiesApi, casesApi, adminApi, branchesApi } from '@/api/services';
+import { formatCompactCOP } from '@/lib/formatters';
 
-const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
+const COP = formatCompactCOP;
 const NUM = (n) => new Intl.NumberFormat('es-CO').format(n || 0);
 
 const CHART_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];

@@ -271,22 +271,6 @@ export default function Registro() {
                       </select>
                     </div>
                   )}
-                  {/* Direccion opcional para recompradores */}
-                  {formData.role === 'recomprador' && (
-                    <div className="space-y-2 sm:col-span-2">
-                      <label className="text-sm font-medium text-foreground">
-                        Dirección <span className="text-muted-foreground">(opcional)</span>
-                      </label>
-                      <Input 
-                        type="text" 
-                        placeholder="Carrera 15 #123-45" 
-                        value={formData.address} 
-                        onChange={(e) => handleChange("address", e.target.value)} 
-                        className={inputClass} 
-                        disabled={loading} 
-                      />
-                    </div>
-                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Contraseña *</label>
                     <div className="relative">

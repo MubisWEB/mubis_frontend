@@ -1,8 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Bookmark,
-  Building2,
   ClipboardCheck,
   FileText,
   Heart,
@@ -49,10 +47,9 @@ const NAV_CONFIGS = {
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
   admin_sucursal: [
-    { icon: Building2, label: 'Sucursal', path: '/AdminSucursalDashboard' },
     { icon: Search, label: 'Comprar', path: '/Comprar' },
     { icon: Heart, label: 'Vender', path: '/MisSubastas' },
-    { icon: Bookmark, label: 'Se Busca', path: '/SeBusca' },
+    { icon: Search, label: 'Se Busca', path: '/SeBusca' },
     { icon: User, label: 'Cuenta', path: '/Cuenta' },
   ],
 };

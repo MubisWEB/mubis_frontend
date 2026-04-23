@@ -49,9 +49,11 @@ function RequestCard({ item, isIncoming, onAccept, onReject, acting }) {
           <Car className="w-5 h-5 text-muted-foreground/50" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-foreground text-sm">{item.vehicleLabel}</h3>
-            <StatusBadge status={item.status} />
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold text-foreground text-sm break-words min-w-0">{item.vehicleLabel}</h3>
+            <div className="flex-shrink-0">
+              <StatusBadge status={item.status} />
+            </div>
           </div>
           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
             {details.year && <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{details.year}</span>}
@@ -61,7 +63,7 @@ function RequestCard({ item, isIncoming, onAccept, onReject, acting }) {
           </div>
 
           {item.branch && (
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 break-words">
               <Building2 className="w-3 h-3" /> {item.branch.name}
             </p>
           )}
@@ -92,7 +94,7 @@ function RequestCard({ item, isIncoming, onAccept, onReject, acting }) {
 
           {/* Accept/Reject buttons — solo para incoming */}
           {isIncoming && item.status === 'EN_NEGOCIACION' && (
-            <div className="flex gap-2 mt-3">
+            <div className="flex flex-col sm:flex-row gap-2 mt-3">
               <Button
                 size="sm"
                 onClick={() => onAccept(item.id)}

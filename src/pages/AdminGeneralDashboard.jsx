@@ -20,6 +20,7 @@ import Header from '@/components/Header';
 import { toast } from 'sonner';
 import { analyticsApi, usersApi, branchesApi, companiesApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
+import { formatCompactCOP } from '@/lib/formatters';
 
 const MONTHS_LABELS = (() => {
   const now = new Date();
@@ -41,7 +42,7 @@ const EMPTY_PIPELINE = [
 const EMPTY_GOALS = { objetivo: 0, actual: 0 };
 const EMPTY_ALERTS = { sinLeer: 0, peritajesSinAsignar: 0, rechazadas: 0 };
 
-const COP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
+const COP = formatCompactCOP;
 
 function SectionTitle({ color = 'bg-secondary', children, sub }) {
   return (

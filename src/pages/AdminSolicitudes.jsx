@@ -7,7 +7,7 @@ import { CheckCircle, XCircle, Clock, Mail, Phone, MapPin, Building, Search, Tra
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
-import { adminApi, usersApi } from '@/api/services';
+import { usersApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 
 const ROLE_LABELS = {
@@ -212,20 +212,20 @@ export default function AdminSolicitudes() {
           <div className="space-y-3">
             {filteredList.map(user => (
               <Card key={user.id} className="p-4 border border-border shadow-sm">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-bold text-foreground mb-1">{user.nombre}</h3>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-foreground mb-1 break-words">{user.nombre}</h3>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                       <MapPin className="w-3 h-3" />{user.ciudad}
                     </div>
                     {user.nit && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground break-words">
                         <Building className="w-3 h-3" />NIT: {user.nit}
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge className="bg-secondary/10 text-secondary text-xs">
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <Badge className="bg-secondary/10 text-secondary text-xs max-w-[9rem] text-center whitespace-normal break-words">
                       {ROLE_LABELS[user.role] || user.role}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">{formatDate(user.createdAt)}</span>
@@ -234,14 +234,14 @@ export default function AdminSolicitudes() {
 
                 <div className="space-y-1 mb-3">
                   {(user.company || user.branch) && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-start gap-1 text-xs text-muted-foreground">
                       <Building className="w-3 h-3" />{user.company || 'Sin empresa'}{user.branch ? ` · ${user.branch}` : ''}
                     </div>
                   )}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-1 text-xs text-muted-foreground break-all">
                     <Mail className="w-3 h-3" />{user.email}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-1 text-xs text-muted-foreground break-all">
                     <Phone className="w-3 h-3" />{user.telefono}
                   </div>
                 </div>

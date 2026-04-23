@@ -8,6 +8,7 @@ import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { transactionsApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
+import { formatCompactCOP } from '@/lib/formatters';
 import { toast } from 'sonner';
 
 const STATUS_LABELS = {
@@ -24,12 +25,7 @@ const STATUS_CLASSES = {
   CANCELLED: 'bg-red-100 text-red-800 border-red-200',
 };
 
-const COP = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(Number(n || 0));
+const COP = formatCompactCOP;
 
 const formatDate = (date) =>
   date
