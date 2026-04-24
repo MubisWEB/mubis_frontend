@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 const auctions = [
 {
   id: "MUB-20394",
-  title: "Mazda 3 Sedán 2023",
+  title: "Renault Logan 2026",
   details: "12,400 km · Automático · Bogotá",
   image: auctionCar,
   bid: "$78.500.000",
@@ -18,7 +18,7 @@ const auctions = [
 },
 {
   id: "MUB-20412",
-  title: "Toyota Corolla 2022",
+  title: "Toyota Fortuner 2023",
   details: "28,100 km · Automático · Medellín",
   image: auctionCar2,
   bid: "$65.200.000",
@@ -28,7 +28,7 @@ const auctions = [
 },
 {
   id: "MUB-20455",
-  title: "Chevrolet Tracker 2024",
+  title: "Chevrolet Tracker 2026",
   details: "3,200 km · Automático · Cali",
   image: auctionCar3,
   bid: "$52.800.000",
