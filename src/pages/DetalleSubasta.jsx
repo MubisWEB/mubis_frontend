@@ -261,6 +261,10 @@ const [loading, setLoading] = useState(true);
   const isVehicleEnded = ['ENDED', 'CLOSED'].includes(vStatus);
   const docs = vehicle.documentation || null;
   const vehSpecs = vehicle.specs || {};
+  const transmissionLabel = vehicle.transmision || vehicle.transmission || vehSpecs.transmission || '';
+  const bodyTypeLabel = vehSpecs.body_type || vehicle.bodyType || '';
+  const motorLabel = String(vehSpecs.motor_label || '').replace(/Â·/g, '·').trim()
+    || [vehicle.model, vehicle.cilindraje, vehSpecs.power, vehicle.combustible].filter(Boolean).join(' · ');
 
   // Build full specs list — first 6 always visible, rest behind "Ver más"
   const allSpecs = [
@@ -284,9 +288,37 @@ const [loading, setLoading] = useState(true);
     { icon: MapPin, label: 'Ubicación', value: vehicle.city || vehicle.ubicacion || vehicle.dealerBranch || '' },
   ].filter(s => s.value); // Only show specs that have values
 
-  const INITIAL_SPECS_COUNT = 6;
-  const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
-  const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
+  const normalizeSpecLabel = (label) => String(label)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  const takeSpec = (matcher) => allSpecs.find((spec) => matcher(normalizeSpecLabel(spec.label)));
+  const specKey = (spec) => `${normalizeSpecLabel(spec.label)}:${String(spec.value)}`;
+  const prioritizedSpecs = [
+    takeSpec((label) => label === 'marca'),
+    takeSpec((label) => label === 'modelo'),
+    takeSpec((label) => label === 'ano'),
+    takeSpec((label) => label === 'kilometraje'),
+    takeSpec((label) => label === 'combustible'),
+    transmissionLabel ? { icon: Settings2, label: 'Transmisión', value: transmissionLabel } : takeSpec((label) => label.includes('transmision')),
+    motorLabel ? { icon: Settings2, label: 'Motor', value: motorLabel } : null,
+    bodyTypeLabel ? { icon: Car, label: 'Carrocería', value: bodyTypeLabel } : takeSpec((label) => label.includes('carroceria')),
+    vehSpecs.doors ? { icon: Settings2, label: 'Puertas', value: vehSpecs.doors } : takeSpec((label) => label === 'puertas'),
+    vehSpecs.passengers ? { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers } : takeSpec((label) => label === 'pasajeros'),
+    vehSpecs.steering ? { icon: Settings2, label: 'Dirección', value: vehSpecs.steering } : takeSpec((label) => label.includes('direccion')),
+    vehSpecs.air_conditioning != null
+      ? { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning ? 'Sí' : 'No' }
+      : takeSpec((label) => label.includes('aire acondicionado')),
+  ].filter(Boolean);
+  const prioritizedKeys = new Set(prioritizedSpecs.map(specKey));
+  const orderedSpecs = [
+    ...prioritizedSpecs,
+    ...allSpecs.filter((spec) => !prioritizedKeys.has(specKey(spec))),
+  ];
+
+  const INITIAL_SPECS_COUNT = 8;
+  const visibleSpecs = showAllSpecs ? orderedSpecs : orderedSpecs.slice(0, INITIAL_SPECS_COUNT);
+  const hasMoreSpecs = orderedSpecs.length > INITIAL_SPECS_COUNT;
 
   const seller = isWonByMe ? (vehicle.dealer || vehicle.seller || null) : null;
   const uniqueBidders = vehicle.uniqueBidders || bids.length || 0;

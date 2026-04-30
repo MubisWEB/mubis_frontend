@@ -208,6 +208,10 @@ export default function DetalleSubastaVendedor() {
   const docs = auction.documentation || null;
 
   const vehSpecs = auction.specs || {};
+  const transmissionLabel = auction.transmision || auction.transmission || vehSpecs.transmission || '';
+  const bodyTypeLabel = vehSpecs.body_type || auction.bodyType || '';
+  const motorLabel = String(vehSpecs.motor_label || '').replace(/Â·/g, '·').trim()
+    || [auction.model, auction.cilindraje, vehSpecs.power, auction.combustible].filter(Boolean).join(' · ');
   const allSpecs = [
     // Top 6 (always visible)
     { icon: Car, label: 'Marca', value: auction.brand },
@@ -229,9 +233,37 @@ export default function DetalleSubastaVendedor() {
     { icon: MapPin, label: 'Ubicación', value: auction.city || auction.ubicacion || auction.dealerBranch || '' },
   ].filter(s => s.value);
 
-  const INITIAL_SPECS_COUNT = 6;
-  const visibleSpecs = showAllSpecs ? allSpecs : allSpecs.slice(0, INITIAL_SPECS_COUNT);
-  const hasMoreSpecs = allSpecs.length > INITIAL_SPECS_COUNT;
+  const normalizeSpecLabel = (label) => String(label)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  const takeSpec = (matcher) => allSpecs.find((spec) => matcher(normalizeSpecLabel(spec.label)));
+  const specKey = (spec) => `${normalizeSpecLabel(spec.label)}:${String(spec.value)}`;
+  const prioritizedSpecs = [
+    takeSpec((label) => label === 'marca'),
+    takeSpec((label) => label === 'modelo'),
+    takeSpec((label) => label === 'ano'),
+    takeSpec((label) => label === 'kilometraje'),
+    takeSpec((label) => label === 'combustible'),
+    transmissionLabel ? { icon: Settings2, label: 'Transmisión', value: transmissionLabel } : takeSpec((label) => label.includes('transmision')),
+    motorLabel ? { icon: Settings2, label: 'Motor', value: motorLabel } : null,
+    bodyTypeLabel ? { icon: Car, label: 'Carrocería', value: bodyTypeLabel } : takeSpec((label) => label.includes('carroceria')),
+    vehSpecs.doors ? { icon: Settings2, label: 'Puertas', value: vehSpecs.doors } : takeSpec((label) => label === 'puertas'),
+    vehSpecs.passengers ? { icon: Users, label: 'Pasajeros', value: vehSpecs.passengers } : takeSpec((label) => label === 'pasajeros'),
+    vehSpecs.steering ? { icon: Settings2, label: 'Dirección', value: vehSpecs.steering } : takeSpec((label) => label.includes('direccion')),
+    vehSpecs.air_conditioning != null
+      ? { icon: Wind, label: 'Aire acondicionado', value: vehSpecs.air_conditioning ? 'Sí' : 'No' }
+      : takeSpec((label) => label.includes('aire acondicionado')),
+  ].filter(Boolean);
+  const prioritizedKeys = new Set(prioritizedSpecs.map(specKey));
+  const orderedSpecs = [
+    ...prioritizedSpecs,
+    ...allSpecs.filter((spec) => !prioritizedKeys.has(specKey(spec))),
+  ];
+
+  const INITIAL_SPECS_COUNT = 8;
+  const visibleSpecs = showAllSpecs ? orderedSpecs : orderedSpecs.slice(0, INITIAL_SPECS_COUNT);
+  const hasMoreSpecs = orderedSpecs.length > INITIAL_SPECS_COUNT;
 
   return (
     <div className="min-h-screen bg-muted pb-28">

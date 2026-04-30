@@ -30,17 +30,44 @@ const PASSENGERS = ['2', '4', '5', '7'];
 const STEERINGS = ['Hidráulica', 'Eléctrica'];
 const AC_OPTIONS = ['Sí', 'No'];
 
+const AUTOLOOKUP_FIELDS = [
+  { key: 'brand', label: 'Marca' },
+  { key: 'model', label: 'Modelo' },
+  { key: 'year', label: 'A\u00f1o' },
+  { key: 'color', label: 'Color' },
+  { key: 'cilindraje', label: 'Cilindraje' },
+  { key: 'power', label: 'Potencia (HP)' },
+  { key: 'combustible', label: 'Combustible' },
+  { key: 'transmision', label: 'Transmisi\u00f3n' },
+  { key: 'body_type', label: 'Carrocer\u00eda' },
+  { key: 'doors', label: 'Puertas' },
+  { key: 'passengers', label: 'Pasajeros' },
+  { key: 'steering', label: 'Direcci\u00f3n' },
+  { key: 'air_conditioning', label: 'Aire acondicionado' },
+];
+
+if (!BODY_TYPES.includes('Cabrio')) BODY_TYPES.push('Cabrio');
+
 const initialForm = {
   placa: '', brand: '', model: '', year: '', km: '', color: '',
-  cilindraje: '', combustible: '', city: '',
+  motor: '', cilindraje: '', power: '', combustible: '', city: '',
   transmision: '', body_type: '', doors: '', passengers: '', steering: '', air_conditioning: '',
   cedula: '', nombre_completo: '', email: '', telefono: '',
 };
 
 function matchFromList(value, list) {
   if (!value) return '';
-  const lower = value.toLowerCase();
-  return list.find(item => item.toLowerCase() === lower) ?? '';
+  const normalize = (text) => String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+  const lower = normalize(value);
+  return list.find(item => normalize(item) === lower) ?? '';
+}
+
+function buildSpecSummary({ motor, cilindraje, power, combustible }) {
+  return [motor, cilindraje, power, combustible].filter(Boolean).join(' - ');
 }
 
 export default function PublicarCarroDialog({ open, onOpenChange, onPublished, initialPrefill }) {
@@ -49,11 +76,14 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
   const [submitting, setSubmitting] = useState(false);
   const [lookingUpPlate, setLookingUpPlate] = useState(false);
   const [plateFound, setPlateFound] = useState(false);
+  const bodyTypeRef = React.useRef(null);
   const [marketPrice, setMarketPrice] = useState(null);
   const [marketPriceMin, setMarketPriceMin] = useState(null);
   const [marketPriceMax, setMarketPriceMax] = useState(null);
   const [marketPriceComparables, setMarketPriceComparables] = useState(0);
   const [loadingMarketPrice, setLoadingMarketPrice] = useState(false);
+  const [autofilledKeys, setAutofilledKeys] = useState([]);
+  const skipNextAutoPriceRefreshRef = React.useRef(false);
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
 
@@ -69,6 +99,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
     }
     if (initialPrefill.model) updates.model = initialPrefill.model;
     if (initialPrefill.year) updates.year = String(initialPrefill.year);
+    if (initialPrefill.km) updates.km = String(initialPrefill.km);
     if (initialPrefill.color) updates.color = initialPrefill.color;
     if (initialPrefill.combustible) {
       const matched = matchFromList(initialPrefill.combustible, FUELS);
@@ -97,22 +128,32 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       const matched = matchFromList(initialPrefill.steering, STEERINGS);
       if (matched) updates.steering = matched;
     }
+    if (initialPrefill.motor) updates.motor = initialPrefill.motor;
     if (initialPrefill.cilindraje) updates.cilindraje = initialPrefill.cilindraje;
+    if (initialPrefill.power) updates.power = initialPrefill.power;
+    bodyTypeRef.current = initialPrefill.bodyType ?? null;
     setForm(JSON.parse(JSON.stringify({ ...initialForm, ...updates })));
+    setAutofilledKeys(AUTOLOOKUP_FIELDS.map((field) => field.key).filter((key) => updates[key] !== undefined && updates[key] !== ''));
     setErrors({});
     setPlateFound(true);
-    if (updates.brand && updates.model && updates.year) {
-      fetchMarketPrice(updates.brand, updates.model, updates.year, '', '', '', initialPrefill?.placa);
+    if (initialPrefill.marketEstimate) {
+      setMarketPrice(initialPrefill.marketEstimate.marketPrice ?? null);
+      setMarketPriceMin(initialPrefill.marketEstimate.minPrice ?? null);
+      setMarketPriceMax(initialPrefill.marketEstimate.maxPrice ?? null);
+      setMarketPriceComparables(initialPrefill.marketEstimate.comparablesCount ?? 0);
+      skipNextAutoPriceRefreshRef.current = true;
+    } else if (updates.brand && updates.model && updates.year) {
+      fetchMarketPrice(updates.brand, updates.model, updates.year, updates.km ?? '', updates.transmision, updates.combustible, initialPrefill?.placa, initialPrefill?.bodyType);
     }
   }, [open, initialPrefill]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBack = () => onOpenChange(false);
 
-  const fetchMarketPrice = (brand, model, year, km, transmision, combustible, plate) => {
+  const fetchMarketPrice = (brand, model, year, km, transmision, combustible, plate, bodyType) => {
     if (!brand || !model || !year) return;
     setLoadingMarketPrice(true);
     setMarketPrice(null);
-    vehiclesApi.getMarketEstimate(brand, model, parseInt(year, 10), km || undefined, transmision || undefined, combustible || undefined, plate || undefined)
+    vehiclesApi.getMarketEstimate(brand, model, parseInt(year, 10), km || undefined, transmision || undefined, combustible || undefined, plate || undefined, bodyType || undefined)
       .then(res => {
         setMarketPrice(res?.marketPrice ?? null);
         setMarketPriceMin(res?.minPrice ?? null);
@@ -128,8 +169,12 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
   // Auto-refresh market price when relevant fields change (debounced 900ms)
   useEffect(() => {
     if (!plateFound || !form.brand || !form.model || !form.year) return;
+    if (skipNextAutoPriceRefreshRef.current) {
+      skipNextAutoPriceRefreshRef.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
-      fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa);
+      fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa, bodyTypeRef.current);
     }, 900);
     return () => clearTimeout(timer);
   }, [form.brand, form.model, form.year, form.km, form.transmision, form.combustible, plateFound]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -169,6 +214,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       if (data.model) updates.model = data.model;
       if (data.year) updates.year = String(data.year);
       if (data.cilindraje) updates.cilindraje = data.cilindraje;
+      if (data.power) updates.power = data.power;
       if (data.combustible) {
         const matched = matchFromList(data.combustible, FUELS);
         if (matched) updates.combustible = matched;
@@ -199,6 +245,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       }
 
       setForm(prev => ({ ...prev, ...updates }));
+      setAutofilledKeys(AUTOLOOKUP_FIELDS.map((field) => field.key).filter((key) => updates[key] !== undefined && updates[key] !== ''));
       setPlateFound(true);
       toast.success('Datos encontrados', {
         description: `${data.brand ?? ''} ${data.model ?? ''} ${data.year ?? ''}`.trim(),
@@ -207,7 +254,10 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       const brand = updates.brand ?? data.brand;
       const model = updates.model ?? data.model;
       const year = updates.year ?? (data.year ? String(data.year) : null);
-      fetchMarketPrice(brand, model, year, form.km, form.transmision, form.combustible, form.placa);
+      const transmission = updates.transmision ?? form.transmision;
+      const fuel = updates.combustible ?? form.combustible;
+      if (data.bodyType) bodyTypeRef.current = data.bodyType;
+      fetchMarketPrice(brand, model, year, form.km, transmission, fuel, form.placa, bodyTypeRef.current);
     } catch (err) {
       const code = err?.response?.data?.code;
       if (code === 'VERIFIK_NO_CREDITS') {
@@ -234,7 +284,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
 
   const validateStep = () => {
     const e = {};
-    ['placa', 'brand', 'model', 'year', 'km', 'color', 'cilindraje', 'combustible', 'city', 'transmision'].forEach(k => {
+    ['placa', 'brand', 'model', 'year', 'km', 'color', 'cilindraje', 'power', 'combustible', 'city', 'transmision'].forEach(k => {
       if (!form[k]) e[k] = 'Obligatorio';
     });
     if (form.year && (isNaN(form.year) || +form.year < 1980 || +form.year > currentYear + 1)) e.year = 'Año inválido';
@@ -262,6 +312,9 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       if (form.passengers) specs.passengers = parseInt(form.passengers);
       if (form.steering) specs.steering = form.steering;
       if (form.air_conditioning) specs.air_conditioning = form.air_conditioning === 'Sí';
+      if (form.motor) specs.motor = form.motor;
+      if (form.power) specs.power = form.power;
+      specs.motor_label = buildSpecSummary(form);
       specs.seller = {
         cedula: form.cedula,
         nombre: form.nombre_completo,
@@ -311,6 +364,9 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
       <AlertCircle className="w-3 h-3" />{errors[key]}
     </span>
   ) : null;
+
+  const autofilledLabels = AUTOLOOKUP_FIELDS.filter((field) => autofilledKeys.includes(field.key));
+  const manualLabels = AUTOLOOKUP_FIELDS.filter((field) => !autofilledKeys.includes(field.key));
 
   const SectionTitle = ({ children }) => (
     <p className="text-sm font-semibold text-foreground border-b border-border/40 pb-2 mb-3">{children}</p>
@@ -397,6 +453,33 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
 
           {/* ── Precio de mercado ── */}
           <div>
+            {plateFound && (
+              <div className="rounded-xl border border-border/60 bg-background/80 p-3 space-y-2 mb-4">
+                <div>
+                  <p className="text-[11px] font-semibold text-foreground mb-1">Autollenado por placa</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {autofilledLabels.map((field) => (
+                      <span key={field.key} className="text-[11px] px-2 py-1 rounded-full bg-primary/10 text-primary">
+                        {field.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold text-foreground mb-1">Completar manualmente</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {manualLabels.map((field) => (
+                      <span key={field.key} className="text-[11px] px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                        {field.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  El serial de motor que trae RUNT (`noMotor`) se conserva solo como dato t\u00e9cnico interno. El campo <span className="font-medium text-foreground">Motor</span> es comercial y opcional; la <span className="font-medium text-foreground">Potencia (HP)</span> s\u00ed es obligatoria.
+                </p>
+              </div>
+            )}
             <SectionTitle>Precio de mercado</SectionTitle>
             {loadingMarketPrice ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -419,7 +502,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
                   variant="ghost"
                   size="icon"
                   className="rounded-full h-8 w-8 shrink-0"
-                  onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa)}
+                  onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa, bodyTypeRef.current)}
                   title="Recalcular precio"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -436,7 +519,7 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
                     variant="outline"
                     size="sm"
                     className="rounded-xl text-xs shrink-0"
-                    onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa)}
+                    onClick={() => fetchMarketPrice(form.brand, form.model, form.year, form.km, form.transmision, form.combustible, form.placa, bodyTypeRef.current)}
                   >
                     Buscar precio
                   </Button>
@@ -495,6 +578,15 @@ export default function PublicarCarroDialog({ open, onOpenChange, onPublished, i
                 <Label className="text-xs font-medium">Cilindraje *</Label>
                 <Input className="mt-1 rounded-xl" placeholder="Ej: 2000cc" value={form.cilindraje} onChange={e => set('cilindraje', e.target.value)} />
                 {fieldError('cilindraje')}
+              </div>
+              <div>
+                <Label className="text-xs font-medium">Motor</Label>
+                <Input className="mt-1 rounded-xl" placeholder="Ej: V8 / 2.0 TFSI / 3.0 biturbo" value={form.motor} onChange={e => set('motor', e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs font-medium">Potencia (HP) *</Label>
+                <Input className="mt-1 rounded-xl" placeholder="Ej: 150HP" value={form.power} onChange={e => set('power', e.target.value)} />
+                {fieldError('power')}
               </div>
               <div>
                 <Label className="text-xs font-medium">Combustible *</Label>

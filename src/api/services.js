@@ -99,8 +99,8 @@ export const vehiclesApi = {
   update: async (id, updates) => (await api.patch(`/vehicles/${id}`, updates)).data,
   lookupPlate: async (placa, documentType, documentNumber) =>
     (await api.get(`/vehicles/lookup-plate/${placa}`, { params: { documentType, documentNumber } })).data,
-  getMarketEstimate: async (brand, model, year, km, transmision, combustible, plate) =>
-    (await api.get('/vehicles/market-estimate', { params: { brand, model, year, ...(km ? { km } : {}), ...(transmision ? { transmision } : {}), ...(combustible ? { combustible } : {}), ...(plate ? { plate } : {}) } })).data,
+  getMarketEstimate: async (brand, model, year, km, transmision, combustible, plate, bodyType) =>
+    (await api.get('/vehicles/market-estimate', { params: { brand, model, year, ...(km ? { km } : {}), ...(transmision ? { transmision } : {}), ...(combustible ? { combustible } : {}), ...(plate ? { plate } : {}), ...(bodyType ? { bodyType } : {}) } })).data,
 };
 
 // ── INSPECTIONS ───────────────────────────────────────────────────────────────

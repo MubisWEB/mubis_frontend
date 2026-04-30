@@ -43,9 +43,10 @@ export default function MarketPlacaSearch({ onAdvance }) {
             vehicleData.model,
             vehicleData.year,
             undefined,
-            undefined,
-            undefined,
+            vehicleData.transmision,
+            vehicleData.combustible,
             placa.trim(),
+            vehicleData.bodyType,
           );
         } catch { /* sin precio de mercado — ok */ }
       }
@@ -73,14 +74,18 @@ export default function MarketPlacaSearch({ onAdvance }) {
       model: result.vehicleData.model,
       year: result.vehicleData.year ? String(result.vehicleData.year) : '',
       color: result.vehicleData.color ?? '',
+      km: '',
       combustible: result.vehicleData.combustible ?? '',
       bodyType: result.vehicleData.bodyType ?? '',
       passengers: result.vehicleData.passengers ?? null,
+      motor: '',
       cilindraje: result.vehicleData.cilindraje ?? '',
+      power: result.vehicleData.power ?? '',
       transmision: result.vehicleData.transmision ?? '',
       doors: result.vehicleData.doors ?? null,
       airConditioning: result.vehicleData.airConditioning ?? null,
       steering: result.vehicleData.steering ?? '',
+      marketEstimate: result.marketData ?? null,
     });
   };
 

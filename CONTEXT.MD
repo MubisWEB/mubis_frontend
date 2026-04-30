@@ -2,6 +2,27 @@
 
 Este documento es el contexto base de Mubis frontend para cualquier conversacion nueva con Codex, Claude u otro agente. Leerlo antes de tocar rutas, pantallas, permisos, dashboards, publicacion, pujas, peritajes o postventa.
 
+## Update 2026-04-28 — Pricing Hibrido
+
+La estimacion de precio en frontend ya no debe asumirse como "solo Fasecolda":
+
+- Verifik sigue identificando el vehiculo por placa.
+- `vehiclesApi.getMarketEstimate(...)` ahora puede devolver:
+  - `source: fasecolda`
+  - `source: hybrid_fasecolda_ai`
+  - `source: ai_market_live`
+  - `source: internal_fallback`
+- Tambien puede incluir:
+  - `priceSource`
+  - `codeFasecolda`
+  - `aiSummary`
+  - `aiSources`
+
+Si se toca `PublicarCarroDialog` o cualquier UI de pricing:
+- no asumir que `confidence=high` solo significa Fasecolda
+- no ocultar `aiSummary` si luego se decide mostrar una explicacion al usuario
+- no romper el fallback interno cuando IA no este habilitada
+
 ## Que es Mubis
 
 Mubis es una plataforma de subastas de carros. La web tiene UI distinta por rol y debe reflejar reglas de negocio reales del backend. No es solo un marketplace: cada publicacion pasa por peritaje, luego por subasta, luego por decision del vendedor, y si se acepta, termina en transaccion e inventario/postventa.

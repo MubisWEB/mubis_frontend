@@ -122,6 +122,7 @@ test.describe('business user flows', () => {
     await dialog.getByPlaceholder('45000').fill('22000');
     await dialog.getByPlaceholder('Negro').fill('Rojo');
     await dialog.getByPlaceholder(/2000cc/i).fill('2000cc');
+    await dialog.getByPlaceholder(/150HP/i).fill('186HP');
     await selectDialogCombobox(page, /Combustible/i, 'Gasolina');
     await selectDialogCombobox(page, /Transmisi/i, /Manual/i);
     await selectDialogCombobox(page, /Ciudad/i, /Bogot/i);
