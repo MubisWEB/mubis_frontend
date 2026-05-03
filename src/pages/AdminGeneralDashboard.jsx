@@ -476,20 +476,9 @@ export default function AdminGeneralDashboard() {
         </Card>
 
         {/* ── Tasadores + Inspectores ───────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <Card className="p-4 border border-border rounded-2xl shadow-sm">
-            <SectionTitle color="bg-cyan-500">Rendimiento Tasadores</SectionTitle>
-            <PerfTable
-              headers={['Nombre', 'T. Respuesta', 'Tasa Cierre']}
-              rows={inspectorPerformance.map(t => [
-                t.nombre,
-                <span className="flex items-center gap-1 justify-end"><Clock className="w-3 h-3" />{t.tiempoPeritaje || '-'}</span>,
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${(t.llenado || 0) >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{t.llenado || 0}%</span>,
-              ])}
-            />
-          </Card>
-          <Card className="p-4 border border-border rounded-2xl shadow-sm">
-            <SectionTitle color="bg-purple-500">Rendimiento Inspectores</SectionTitle>
+            <SectionTitle color="bg-purple-500">Rendimiento Peritos</SectionTitle>
             <PerfTable
               headers={['Nombre', 'T. Peritaje', 'Llenado', 'Costo Rep.']}
               rows={inspectorPerformance.map(ins => [
@@ -506,17 +495,23 @@ export default function AdminGeneralDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="p-4 border border-border rounded-2xl shadow-sm">
             <SectionTitle color="bg-primary">Metas Mensuales</SectionTitle>
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Ventas del mes</span>
-              </div>
-              <span className="text-sm font-bold text-foreground">{goalActual} / {goalTarget}</span>
-            </div>
-            <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${goalPct}%` }} />
-            </div>
-            <p className="text-xs text-muted-foreground text-right">{goalPct}% completado</p>
+            {!goalsSummary?.hasConfiguredGoal ? (
+              <div className="text-sm text-muted-foreground">Sin meta configurada</div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">Ventas del mes</span>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">{goalActual} / {goalTarget}</span>
+                </div>
+                <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
+                  <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${goalPct}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground text-right">{goalPct}% completado</p>
+              </>
+            )}
           </Card>
           <Card className="p-4 border border-border rounded-2xl shadow-sm">
             <SectionTitle color="bg-orange-500">Modelos más Solicitados</SectionTitle>

@@ -63,7 +63,7 @@ const EMPTY_PIPELINE = [
   { etapa: 'Postventa', count: 0, color: '#06b6d4' },
   { etapa: 'Sin ganador', count: 0, color: '#10b981' },
 ];
-const EMPTY_API_STATS = { consumed: 0, limit: 0, cost: 0, errorRate: 0 };
+const EMPTY_API_STATS = { consumed: 0, limit: null, cost: 0, errorRate: 0, noDataRate: 0, breakdown: [] };
 const EMPTY_ALERTS = { sinLeer: 0, peritajesSinAsignar: 0, dealsPendientes: 0 };
 const EMPTY_SUMMARY = { concesionariosActivos: 0, adminsCreados: 0, partnersAsociados: 0 };
 
@@ -562,12 +562,9 @@ export default function AdminDashboard() {
                     <Globe className="w-4 h-4 text-blue-500" />
                     <p className="text-sm font-semibold text-foreground">Consumo API</p>
                   </div>
-                  <p className="text-sm font-bold text-foreground">{NUM(apiStats.consumed)} / {NUM(apiStats.limit)}</p>
+                  <p className="text-sm font-bold text-foreground">{NUM(apiStats.consumed)}</p>
                 </div>
-                <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
-                  <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${apiStats.limit ? Math.round(apiStats.consumed / apiStats.limit * 100) : 0}%` }} />
-                </div>
-                <p className="text-xs text-muted-foreground text-right">{apiStats.limit ? Math.round(apiStats.consumed / apiStats.limit * 100) : 0}% utilizado</p>
+                <p className="text-xs text-muted-foreground text-right">Consultas reales de Verifik/Fasecolda - ultimos 30 dias</p>
               </Card>
               <div className="grid grid-cols-2 gap-3">
                 <Card className="p-4 border border-emerald-200 bg-emerald-50 rounded-2xl shadow-sm">
@@ -579,6 +576,18 @@ export default function AdminDashboard() {
                   <Activity className="w-4 h-4 text-red-500 mb-2" />
                   <p className="text-xl font-bold text-red-600">{apiStats.errorRate}%</p>
                   <p className="text-[10px] text-red-500 font-semibold mt-0.5">Tasa de error</p>
+                </Card>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <Card className="p-4 border border-amber-200 bg-amber-50 rounded-2xl shadow-sm">
+                  <Activity className="w-4 h-4 text-amber-500 mb-2" />
+                  <p className="text-xl font-bold text-amber-600">{apiStats.noDataRate || 0}%</p>
+                  <p className="text-[10px] text-amber-500 font-semibold mt-0.5">Sin datos</p>
+                </Card>
+                <Card className="p-4 border border-border rounded-2xl shadow-sm bg-card">
+                  <p className="text-xs font-semibold text-foreground mb-1">Endpoint principal</p>
+                  <p className="text-sm font-bold text-foreground">{apiStats.breakdown?.[0]?.endpoint || 'Sin consumo'}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{NUM(apiStats.breakdown?.[0]?.consumed || 0)} consultas</p>
                 </Card>
               </div>
             </div>

@@ -427,6 +427,71 @@ test.describe('business user flows', () => {
     await expect(dialog.getByText(/Lideras la puja/i)).toBeVisible();
   });
 
+  test('buyer reopens bid modal and sees current max bid plus direct bid warning', async ({ page, request }) => {
+    await loginAs(page, request, USERS.recomprador);
+
+    const auction = {
+      id: 'auction-max-ui',
+      auctionId: 'auction-max-ui',
+      vehicleId: 'vehicle-max-ui',
+      status: 'ACTIVE',
+      pipelineStatus: 'active',
+      brand: 'Mazda',
+      model: 'CX-5',
+      year: 2023,
+      placa: 'MAX123',
+      mileage: 15000,
+      km: 15000,
+      city: 'Bogota',
+      current_bid: 53000000,
+      starting_price: 50000000,
+      bids_count: 3,
+      leaderId: 'other-buyer',
+      myMaxBid: 58000000,
+      myBidMode: 'MAX_PROXY',
+      hasActiveBidStrategy: true,
+      ends_at: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+      photos: ['https://picsum.photos/seed/max-ui/900/600'],
+      specs: { transmission: 'Automatica' },
+      documentation: {},
+      inspection: { scores: { motor: 9, carroceria: 8, interior: 9 } },
+    };
+
+    await page.route('**/api/auctions/auction-max-ui/view', async (route) => {
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+    });
+    await page.route('**/api/auctions/auction-max-ui', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(auction) });
+    });
+    await page.route('**/api/audit/entity/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+    await page.route('**/api/pronto-pago/auction/auction-max-ui', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(null) });
+    });
+    await page.route('**/api/support/cases/mine', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+    await page.route('**/api/watchlist/auction-max-ui/check', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ inWatchlist: false }) });
+    });
+    await page.route('**/api/bids/auction/auction-max-ui', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+
+    await page.goto('/DetalleSubasta/auction-max-ui', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: /Pujar ahora|Aumentar puja/i }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(/Mi puja maxima actual/i)).toBeVisible();
+    await expect(dialog.getByText(/\$58\.000\.000/i)).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /Actualizar puja maxima/i })).toBeVisible();
+
+    await dialog.getByRole('button', { name: /Puja directa/i }).click();
+    await expect(dialog.getByText(/puja maxima activa/i)).toBeVisible();
+    await expect(dialog.getByText(/se desactivara/i)).toBeVisible();
+  });
+
   test('seller accepts the winning bid from decision UI', async ({ page, request }) => {
     await loginAs(page, request, USERS.dealer);
     let accepted = false;

@@ -31,8 +31,8 @@ const EMPTY_PIPELINE = [
   { etapa: 'Postventa', count: 0, color: '#06b6d4' },
   { etapa: 'Sin ganador', count: 0, color: '#10b981' },
 ];
-const EMPTY_INVENTORY = { enStock: 0, reservadas: 0, vendidasMes: 0, vestido: 0, patio: 0, metaMes: 0, gap: 0 };
-const EMPTY_GOALS = { capacidadPatio: 0, comprasActual: 0, metaCompras: 0, objetivo: 0, actual: 0 };
+const EMPTY_INVENTORY = { enStock: 0, reservadas: 0, vendidasMes: 0, stockBajo: false };
+const EMPTY_GOALS = { capacidadPatio: 0, comprasActual: 0, metaCompras: 0, objetivo: 0, actual: 0, hasConfiguredGoal: false };
 const EMPTY_ALERTS = { sinLeer: 0, peritajesSinAsignar: 0, stockBajo: false };
 
 function SectionTitle({ color = 'bg-secondary', children, sub }) {
@@ -119,7 +119,6 @@ export default function AdminSucursalDashboard() {
   const inventory = widgets.inventory || EMPTY_INVENTORY;
   const goalsSummary = widgets.goalsSummary || EMPTY_GOALS;
   const alerts = widgets.alerts || EMPTY_ALERTS;
-  const inventoryRetail = widgets.inventory || EMPTY_INVENTORY;
   const goalActual = goalsSummary.actual ?? EMPTY_GOALS.actual;
   const goalTarget = goalsSummary.objetivo || EMPTY_GOALS.objetivo;
   const goalPct = Math.min(100, Math.round((goalActual / Math.max(goalTarget, 1)) * 100));
@@ -272,25 +271,20 @@ export default function AdminSucursalDashboard() {
             </div>
 
             <Card className="p-4 border border-border rounded-2xl shadow-sm">
-              <SectionTitle color="bg-teal-500">Objetivo Retail</SectionTitle>
+              <SectionTitle color="bg-teal-500">Estado Retail</SectionTitle>
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div className="p-3 bg-muted/40 rounded-xl">
-                  <p className="text-xs text-muted-foreground font-medium">Vestido</p>
-                  <p className="text-xl font-bold text-foreground">{inventoryRetail.vestido}</p>
+                  <p className="text-xs text-muted-foreground font-medium">En stock</p>
+                  <p className="text-xl font-bold text-foreground">{inventory.enStock}</p>
                 </div>
                 <div className="p-3 bg-muted/40 rounded-xl">
-                  <p className="text-xs text-muted-foreground font-medium">Patio</p>
-                  <p className="text-xl font-bold text-foreground">{inventoryRetail.patio}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Reservadas</p>
+                  <p className="text-xl font-bold text-foreground">{inventory.reservadas}</p>
                 </div>
               </div>
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-sm font-medium text-foreground">Meta del mes</span>
-                <span className="text-sm font-bold text-foreground">{(inventoryRetail.vestido || 0) + (inventoryRetail.patio || 0)} / {inventoryRetail.metaMes}</span>
-              </div>
-              <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
-                <div className="h-full rounded-full bg-teal-500" style={{ width: `${Math.round(((inventoryRetail.vestido || 0) + (inventoryRetail.patio || 0)) / Math.max(inventoryRetail.metaMes || 1, 1) * 100)}%` }} />
-              </div>
-              <p className="text-xs text-amber-600 font-medium">Gap: {inventoryRetail.gap} vehículos para la meta</p>
+              <p className="text-xs text-muted-foreground">
+                {inventory.stockBajo ? 'Stock bajo detectado en la sucursal.' : 'Inventario conectado a stock y ventas reales.'}
+              </p>
             </Card>
           </div>
         </div>
@@ -317,11 +311,15 @@ export default function AdminSucursalDashboard() {
                   <Car className="w-4 h-4 text-secondary" />
                   <span className="text-sm font-medium text-foreground">Compras vs Meta</span>
                 </div>
-                <span className="text-sm font-bold text-foreground">{goalActual} / {goalTarget}</span>
+                <span className="text-sm font-bold text-foreground">{goalsSummary?.hasConfiguredGoal ? `${goalActual} / ${goalTarget}` : 'Sin meta'}</span>
               </div>
-              <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-secondary" style={{ width: `${goalPct}%` }} />
-              </div>
+              {goalsSummary?.hasConfiguredGoal ? (
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-secondary" style={{ width: `${goalPct}%` }} />
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sin meta configurada</p>
+              )}
             </div>
           </div>
         </Card>
