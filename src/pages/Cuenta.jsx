@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { ROLE_BADGE_CLASS, ROLE_LABELS } from '@/lib/roles';
 import { notificationsApi, publicationsApi, authApi } from '@/api/services';
+import { subscriptionsApi } from '../lib/subscriptionsApi';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
 
@@ -56,6 +57,14 @@ export default function Cuenta() {
   const [rechargeQty, setRechargeQty] = useState(50);
   const [rechargeOpen, setRechargeOpen] = useState(false);
   const canManagePublications = ['dealer', 'admin_general', 'admin_sucursal'].includes(role);
+  const isRecomprador = user?.role === 'recomprador';
+  const [subInfo, setSubInfo] = useState(null);
+
+  useEffect(() => {
+    if (isRecomprador) {
+      subscriptionsApi.getMySubscription().then(setSubInfo).catch(() => {});
+    }
+  }, [isRecomprador]);
 
   useEffect(() => {
     if (user) {
@@ -351,6 +360,84 @@ export default function Cuenta() {
                 </div>
               )}
             </Card>
+          </motion.div>
+        )}
+
+        {/* Subscription card — recompradores only */}
+        {isRecomprador && (
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Mi suscripción</h3>
+
+              {!subInfo || !subInfo.status || subInfo.status === 'PAYMENT_FAILED' ? (
+                <div>
+                  <p className="text-sm text-gray-500 mb-4">No tienes una suscripción activa.</p>
+                  <button
+                    onClick={() => navigate('/Suscripcion')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"
+                  >
+                    Suscribirme a Mubis
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Estado</span>
+                    <span className={`text-sm font-semibold ${
+                      subInfo.status === 'ACTIVE' ? 'text-green-600' :
+                      subInfo.status === 'GRACE_PERIOD' ? 'text-amber-600' : 'text-red-500'
+                    }`}>
+                      {subInfo.status === 'ACTIVE' ? 'Activa' :
+                       subInfo.status === 'GRACE_PERIOD' ? 'Período de gracia' :
+                       subInfo.status === 'EXPIRED' ? 'Vencida' :
+                       subInfo.status === 'CANCELLED' ? 'Cancelada' : subInfo.status}
+                    </span>
+                  </div>
+                  {subInfo.plan && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">Plan</span>
+                      <span className="text-sm font-medium">
+                        {subInfo.plan === 'MONTHLY' ? '1 mes' :
+                         subInfo.plan === 'BIANNUAL' ? '6 meses' : '12 meses'}
+                      </span>
+                    </div>
+                  )}
+                  {subInfo.endAt && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">Vence</span>
+                      <span className="text-sm">
+                        {new Date(subInfo.endAt).toLocaleDateString('es-CO')}
+                      </span>
+                    </div>
+                  )}
+                  {subInfo.gracePeriodEndsAt && (
+                    <div className="mt-2 p-3 bg-amber-50 rounded-lg">
+                      <p className="text-xs text-amber-700 font-medium">
+                        Tienes un negocio abierto. Renueva antes del{' '}
+                        {new Date(subInfo.gracePeriodEndsAt).toLocaleDateString('es-CO')}{' '}
+                        para evitar el cierre automático.
+                      </p>
+                    </div>
+                  )}
+                  {(subInfo.status === 'EXPIRED' || subInfo.status === 'GRACE_PERIOD' || subInfo.status === 'CANCELLED') && (
+                    <button
+                      onClick={() => navigate('/Suscripcion')}
+                      className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"
+                    >
+                      Renueva tu suscripción
+                    </button>
+                  )}
+                  {subInfo.status === 'ACTIVE' && (
+                    <button
+                      onClick={() => navigate('/Suscripcion')}
+                      className="mt-3 w-full border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-semibold px-4 py-2 rounded-lg"
+                    >
+                      Renovar anticipadamente
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
 

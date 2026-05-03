@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from 'sonner';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const REQUESTER_TABS = [
   { key: 'en_negociacion', label: 'En negociación' },
@@ -241,6 +242,7 @@ export default function Deseados() {
         </p>
       </div>
 
+      <SubscriptionGate>
       {/* Tabs */}
       <div className="px-4 md:px-8 pt-4 pb-2">
         <div className="flex rounded-xl bg-muted p-1 gap-1">
@@ -316,6 +318,8 @@ export default function Deseados() {
           </motion.div>
         )}
       </div>
+
+      </SubscriptionGate>
 
       <BottomNav />
     </div>

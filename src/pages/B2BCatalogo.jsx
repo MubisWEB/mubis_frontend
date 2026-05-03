@@ -16,6 +16,7 @@ import { b2bApi } from '@/api/services';
 import VehicleThumbnail from '@/components/VehicleThumbnail';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const formatPrice = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
@@ -97,6 +98,7 @@ export default function B2BCatalogo() {
     <div className="min-h-screen bg-background pb-28">
       <Header title="Catálogo B2B" showBack />
 
+      <SubscriptionGate>
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-6">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{catalog.length} vehículos disponibles</p>
@@ -237,6 +239,8 @@ export default function B2BCatalogo() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      </SubscriptionGate>
 
       <BottomNav />
     </div>

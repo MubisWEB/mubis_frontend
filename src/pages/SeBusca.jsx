@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { normalizeRole } from '@/lib/roles';
 import { ALL_BRANDS, getModelsForBrand } from '@/constants/vehicleData';
 import { toast } from 'sonner';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -124,6 +125,7 @@ export default function SeBusca() {
     <div className="min-h-screen bg-background pb-32">
       <Header />
 
+      <SubscriptionGate>
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 pt-5 pb-3">
         <div className="flex flex-wrap items-center gap-3 mb-2">
           <Megaphone className="w-6 h-6 text-secondary" />
@@ -393,6 +395,8 @@ export default function SeBusca() {
           )}
         </DialogContent>
       </Dialog>
+
+      </SubscriptionGate>
 
       <BottomNav />
     </div>

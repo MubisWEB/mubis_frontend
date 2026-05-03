@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
 import { formatCompactCOP } from '@/lib/formatters';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 export default function DetalleSubasta() {
   const { auctionId } = useParams();
@@ -165,12 +166,21 @@ const [loading, setLoading] = useState(true);
     return () => clearInterval(interval);
   }, [vehicle?.ends_at]);
 
-  const handleSubmitBid = async (maxAmount) => {
+  const handleSubmitBid = async (maxAmount, isDirect = false) => {
     if (!vehicle || !currentUser) return;
     try {
-      const result = await bidsApi.place(auctionId, maxAmount);
+      const result = await bidsApi.place(auctionId, maxAmount, isDirect);
       if (result) {
-        setVehicle(prev => ({ ...prev, current_bid: result.visibleBid ?? result.current_bid ?? prev.current_bid, bids_count: result.bidsCount ?? result.bids_count ?? prev.bids_count }));
+        setVehicle(prev => ({
+          ...prev,
+          current_bid: result.visibleBid ?? result.current_bid ?? prev.current_bid,
+          bids_count: result.bidsCount ?? result.bids_count ?? prev.bids_count,
+          leaderId: result.leaderId ?? prev.leaderId,
+          myMaxBid: maxAmount,
+          myBidMode: result.myBidMode,
+          hasActiveBidStrategy: result.hasActiveBidStrategy,
+          isLeading: result.leaderId === currentUser.id,
+        }));
       }
       return result;
     } catch (err) {
@@ -253,8 +263,8 @@ const [loading, setLoading] = useState(true);
 
   const images = vehicle.photos || [];
   const inspection = vehicle.inspection || null;
-  const myMaxBid = bids.find(b => b.userId === currentUser?.id)?.amount || 0;
-  const isLeading = vehicle.leaderId === currentUser?.id;
+  const myMaxBid = Number(vehicle?.myMaxBid || 0);
+  const isLeading = vehicle?.leaderId === currentUser?.id;
   const vStatus = (vehicle?.status || '').toUpperCase();
   const isVehicleActive = vStatus === 'ACTIVE';
   const isVehiclePending = vStatus === 'PENDING_DECISION';
@@ -326,6 +336,7 @@ const [loading, setLoading] = useState(true);
   return (
     <div className={`min-h-screen bg-muted ${isWonByMe ? 'pb-28' : 'pb-40'}`}>
       <TopBar />
+      <SubscriptionGate>
       <div className="relative mt-3 md:mt-5">
           <PhotoGallery
             photos={images}
@@ -691,6 +702,8 @@ const [loading, setLoading] = useState(true);
           </div>
         </div>
       )}
+
+      </SubscriptionGate>
 
       <BidModal vehicle={vehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
       <ProntoPagoModal open={prontoPagoModalOpen} onClose={() => setProntoPagoModalOpen(false)} auction={vehicle} userId={currentUser?.id} onComplete={() => { setProntoPagoRefresh(k => k + 1); setProntoPagoModalOpen(false); }} />

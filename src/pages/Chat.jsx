@@ -8,6 +8,7 @@ import BottomNav from '@/components/BottomNav';
 import { chatApi } from '@/api/services';
 import socket, { joinChat, leaveChat } from '@/api/socket';
 import { useAuth } from '@/lib/AuthContext';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 function timeStr(dateStr) {
   return new Date(dateStr).toLocaleTimeString('es-CO', {
@@ -127,6 +128,7 @@ export default function Chat() {
         </div>
       </div>
 
+      <SubscriptionGate>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 pb-32">
         {loading && (
           <div className="flex justify-center py-16">
@@ -202,6 +204,8 @@ export default function Chat() {
           </Button>
         </form>
       </div>
+
+      </SubscriptionGate>
 
       <BottomNav />
     </div>

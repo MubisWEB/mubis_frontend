@@ -22,6 +22,7 @@ import { WonAuctionGridCard, WonAuctionMobileCard } from '@/components/WonAuctio
 import { normalizeWonAuction } from '@/lib/auctions';
 import { useAuth } from '@/lib/AuthContext';
 import { normalizeRole } from '@/lib/roles';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const TABS = [
   { key: 'in_progress', label: 'En proceso' },
@@ -254,6 +255,7 @@ export default function Ganados() {
         </p>
       </div>
 
+      <SubscriptionGate>
       <div className="px-4 md:px-8 pt-4 pb-2">
         <div className="flex rounded-xl bg-muted p-1 gap-1">
           {TABS.map((tab) => {
@@ -322,6 +324,8 @@ export default function Ganados() {
           </motion.div>
         )}
       </div>
+
+      </SubscriptionGate>
 
       <BottomNav />
     </div>

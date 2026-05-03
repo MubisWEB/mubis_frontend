@@ -9,6 +9,7 @@ import { watchlistApi, bidsApi } from '@/api/services';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
 import Skeleton from 'react-loading-skeleton';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const CardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -79,6 +80,7 @@ export default function Guardadas() {
   return (
     <div className="min-h-screen flex flex-col bg-background pb-32">
       <Header />
+      <SubscriptionGate>
       <div className="px-4 md:px-8 pt-4 pb-4">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => navigate('/Comprar')} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -118,6 +120,8 @@ export default function Guardadas() {
           </>
         )}
       </div>
+      </SubscriptionGate>
+
       <BidModal vehicle={selectedVehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
       <BottomNav />
     </div>

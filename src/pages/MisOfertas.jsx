@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import { b2bApi } from '@/api/services';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const formatPrice = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
@@ -153,6 +154,7 @@ export default function MisOfertas() {
     <div className="min-h-screen bg-background pb-28">
       <Header title="Mis Ofertas B2B" showBack />
 
+      <SubscriptionGate>
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6 space-y-6">
         {/* Resumen */}
         {offers.length > 0 && (
@@ -201,6 +203,8 @@ export default function MisOfertas() {
           </div>
         )}
       </div>
+
+      </SubscriptionGate>
 
       <BottomNav />
     </div>

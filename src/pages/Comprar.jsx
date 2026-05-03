@@ -18,6 +18,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { auctionsApi, bidsApi, auditApi, watchlistApi } from '@/api/services';
 import socket, { joinAuction, leaveAuction, joinActivity } from '@/api/socket';
 import Skeleton from 'react-loading-skeleton';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const AuctionCardSkeleton = () => (
   <div className="rounded-2xl border border-border overflow-hidden bg-card">
@@ -67,7 +68,6 @@ export default function Comprar() {
         ...a,
         auction_end: a.ends_at,
         isLeading: user ? a.leaderId === user.id : false,
-        myMaxBid: 0,
       })));
     } catch { /* ignore */ } finally {
       setLoading(false);
@@ -133,7 +133,9 @@ export default function Comprar() {
               current_bid: result.currentBid,
               bids_count: result.bidsCount,
               isLeading: result.leaderId === user.id,
-              myMaxBid: maxAmount 
+              myMaxBid: maxAmount,
+              myBidMode: result.myBidMode,
+              hasActiveBidStrategy: result.hasActiveBidStrategy,
             }
           : v
       ));
@@ -143,7 +145,10 @@ export default function Comprar() {
         ...prev,
         current_bid: result.currentBid,
         bids_count: result.bidsCount,
-        isLeading: result.leaderId === user.id
+        isLeading: result.leaderId === user.id,
+        myMaxBid: maxAmount,
+        myBidMode: result.myBidMode,
+        hasActiveBidStrategy: result.hasActiveBidStrategy,
       }));
       
       loadActivity();
@@ -293,6 +298,7 @@ export default function Comprar() {
       </div>
 
       {/* Main content */}
+      <SubscriptionGate>
       <div className="px-4 md:px-8 pt-2 pb-4 md:flex gap-6">
         <aside className="hidden md:block w-64 flex-shrink-0">
           <FilterPanel 
@@ -362,6 +368,8 @@ export default function Comprar() {
           )}
         </div>
       </div>
+
+      </SubscriptionGate>
 
       <BidModal vehicle={selectedVehicle} open={bidModalOpen} onClose={() => setBidModalOpen(false)} onSubmit={handleSubmitBid} />
       <BottomNav />
