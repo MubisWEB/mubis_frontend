@@ -26,6 +26,10 @@ export default function Login() {
 
   useEffect(() => {
     if (!isLoadingAuth && isAuthenticated && user) {
+      if (user.role === 'recomprador' && user.subscriptionStatus !== 'ACTIVE') {
+        navigate("/Suscripcion", { replace: true });
+        return;
+      }
       navigate(getRedirectForRole(user.role, user.id), { replace: true });
     }
   }, [isLoadingAuth, isAuthenticated, user, navigate]);
@@ -67,6 +71,12 @@ export default function Login() {
       if (!isAdminRole(loggedUser.role) && loggedUser.verification_status !== "VERIFIED") {
         toast.warning("Tu cuenta aún no está verificada");
         navigate("/PendienteVerificacion", { replace: true });
+        return;
+      }
+
+      if (loggedUser.role === 'recomprador' && loggedUser.subscriptionStatus !== 'ACTIVE') {
+        toast.success("Bienvenido de nuevo");
+        navigate("/Suscripcion", { replace: true });
         return;
       }
 

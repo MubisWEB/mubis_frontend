@@ -54,6 +54,7 @@ import MisMetas from './pages/MisMetas';
 import SeBusca from './pages/SeBusca';
 import B2BCatalogo from './pages/B2BCatalogo';
 import MisOfertas from './pages/MisOfertas';
+import Suscripcion from './pages/Suscripcion';
 import SetPassword from './pages/SetPassword';
 import AdminEmpresas from './pages/AdminEmpresas';
 import AdminCargaMasiva from './pages/AdminCargaMasiva';
@@ -166,6 +167,7 @@ const App = () => (
           {/* Recomprador */}
           <Route path="/B2BCatalogo" element={<RequireRole roles={['recomprador']}><B2BCatalogo /></RequireRole>} />
           <Route path="/MisOfertas" element={<RequireRole roles={['recomprador']}><MisOfertas /></RequireRole>} />
+          <Route path="/Suscripcion" element={<RequireRole roles={['recomprador','superadmin']}><Suscripcion /></RequireRole>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
