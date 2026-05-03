@@ -127,6 +127,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         refreshUser,
+        isSubscriptionActive: user?.role === 'recomprador' && user?.subscriptionStatus === 'ACTIVE',
       }}
     >
       {children}
