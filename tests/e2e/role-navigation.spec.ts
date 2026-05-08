@@ -73,20 +73,16 @@ async function loginAs(page, request, role: Role) {
       body: JSON.stringify(payload.user),
     });
   });
-  await page.addInitScript(({ accessToken, refreshToken }) => {
+  await page.addInitScript(({ accessToken }) => {
     window.localStorage.setItem('accessToken', accessToken);
-    window.localStorage.setItem('refreshToken', refreshToken);
   }, {
     accessToken: payload.accessToken,
-    refreshToken: payload.refreshToken,
   });
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(({ accessToken, refreshToken }) => {
+  await page.evaluate(({ accessToken }) => {
     window.localStorage.setItem('accessToken', accessToken);
-    window.localStorage.setItem('refreshToken', refreshToken);
   }, {
     accessToken: payload.accessToken,
-    refreshToken: payload.refreshToken,
   });
 }
 

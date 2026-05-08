@@ -33,7 +33,6 @@ export default function AdminDealers() {
   const [companies, setCompanies] = useState([]);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('VERIFIED');
   const [companyFilter, setCompanyFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name'); // name, sold, bought, brokerage
 
@@ -57,8 +56,8 @@ export default function AdminDealers() {
 
   const filtered = users
     .filter(u => {
+      if (u.verification_status !== 'VERIFIED') return false;
       if (roleFilter !== 'all' && u.role?.toLowerCase() !== roleFilter) return false;
-      if (statusFilter !== 'all' && u.verification_status !== statusFilter) return false;
       if (companyFilter !== 'all' && u.company !== companyFilter) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -106,6 +105,18 @@ export default function AdminDealers() {
 
         {/* Filters row */}
         <div className="flex gap-2 flex-wrap">
+          <select
+            value={roleFilter}
+            onChange={e => setRoleFilter(e.target.value)}
+            className="h-9 px-3 pr-8 rounded-lg border border-border bg-card text-xs text-foreground shadow-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary/30"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+          >
+            <option value="all">Todos los roles</option>
+            <option value="dealer">Dealers</option>
+            <option value="perito">Peritos</option>
+            <option value="recomprador">Recompradores</option>
+          </select>
+
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
             <SelectTrigger className="flex-1 min-w-[140px] h-9 text-xs rounded-lg border-border">
               <SelectValue placeholder="Empresa" />
@@ -127,28 +138,6 @@ export default function AdminDealers() {
               <SelectItem value="brokerage">Mayor corretaje</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        {/* Role tabs */}
-        <div className="flex gap-2 overflow-x-auto">
-          {[{ key: 'all', label: 'Todos' }, { key: 'dealer', label: 'Dealers' }, { key: 'perito', label: 'Peritos' }, { key: 'recomprador', label: 'Recompradores' }].map(tab => (
-            <Button key={tab.key} variant={roleFilter === tab.key ? 'default' : 'outline'} size="sm"
-              onClick={() => setRoleFilter(tab.key)} className="rounded-full text-xs flex-shrink-0">{tab.label}</Button>
-          ))}
-        </div>
-
-        {/* Status tabs */}
-        <div className="flex gap-2 overflow-x-auto">
-          {[
-            { key: 'all', label: 'Todos' },
-            { key: 'VERIFIED', label: 'Verificados' },
-            { key: 'PENDING', label: 'Pendientes' },
-            { key: 'WAITLISTED', label: 'En espera' },
-            { key: 'REJECTED', label: 'Rechazados' },
-          ].map(tab => (
-            <Button key={tab.key} variant={statusFilter === tab.key ? 'secondary' : 'ghost'} size="sm"
-              onClick={() => setStatusFilter(tab.key)} className="rounded-full text-xs flex-shrink-0">{tab.label}</Button>
-          ))}
         </div>
 
         {/* Company summary (when filtering by company) */}
@@ -206,18 +195,15 @@ export default function AdminDealers() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-bold text-foreground">{user.nombre}</h3>
-                        {user.verification_status === 'VERIFIED' && <Shield className="w-4 h-4 text-primary" />}
+                        <Shield className="w-4 h-4 text-primary" />
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="w-3 h-3" />{user.ciudad}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge className={si.cls + ' text-xs'}>{si.label}</Badge>
-                      <Badge className="bg-secondary/10 text-secondary text-xs">
-                        {ROLE_LABELS[user.role] || user.role}
-                      </Badge>
-                    </div>
+                    <Badge className="bg-secondary/10 text-secondary text-xs">
+                      {ROLE_LABELS[user.role] || user.role}
+                    </Badge>
                   </div>
 
                   <div className="space-y-1 mb-2">

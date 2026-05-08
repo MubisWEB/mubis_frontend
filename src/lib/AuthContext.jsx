@@ -62,7 +62,6 @@ export const AuthProvider = ({ children }) => {
       } catch {
         disconnectSocket();
         localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
       } finally {
         setIsLoadingAuth(false);
       }
@@ -128,6 +127,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         refreshUser,
         isSubscriptionActive: user?.role === 'recomprador' && user?.subscriptionStatus === 'ACTIVE',
+        subscriptionCancelAtPeriodEnd: user?.subscriptionCancelAtPeriodEnd ?? false,
       }}
     >
       {children}

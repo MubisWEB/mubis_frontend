@@ -71,7 +71,7 @@ Cliente (React SPA)
         └── WebSocket ──► Socket.io server (subastas en tiempo real)
 ```
 
-La autenticación usa un par `accessToken` / `refreshToken` almacenado en `localStorage`. El cliente de Axios adjunta el token en cada petición y renueva el access token de forma transparente cuando expira.
+La autenticación usa `accessToken` en `localStorage` y `refreshToken` en cookie `httpOnly`. El cliente de Axios adjunta el access token en cada petición y renueva la sesión de forma transparente usando `withCredentials` cuando expira.
 
 ---
 

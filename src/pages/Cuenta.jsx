@@ -18,6 +18,270 @@ import { notificationsApi, publicationsApi, authApi } from '@/api/services';
 import { subscriptionsApi } from '../lib/subscriptionsApi';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
+import { CreditCard, CalendarDays, RefreshCw, XCircle, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+
+// ─── Subscription management component ───────────────────────────────────────
+
+const PLAN_LABELS   = { MONTHLY: '1 mes', BIANNUAL: '6 meses', ANNUAL: '12 meses' };
+const PLAN_PRICES   = { MONTHLY: 1_000_000, BIANNUAL: 5_700_000, ANNUAL: 10_560_000 };
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function StatusBadge({ status, cancelAtPeriodEnd }) {
+  if (status === 'ACTIVE' && cancelAtPeriodEnd) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
+        <Clock className="w-3 h-3" /> Activa · se cancela al vencer
+      </span>
+    );
+  }
+  const map = {
+    ACTIVE:       { cls: 'bg-green-100 text-green-700',  Icon: CheckCircle2, label: 'Activa'            },
+    GRACE_PERIOD: { cls: 'bg-amber-100 text-amber-700',  Icon: AlertTriangle, label: 'Período de gracia' },
+    EXPIRED:      { cls: 'bg-red-100 text-red-600',      Icon: XCircle,      label: 'Vencida'            },
+    CANCELLED:    { cls: 'bg-gray-100 text-gray-500',    Icon: XCircle,      label: 'Cancelada'          },
+    PAYMENT_FAILED:{ cls: 'bg-red-100 text-red-600',    Icon: XCircle,      label: 'Pago fallido'       },
+  };
+  const cfg = map[status] ?? { cls: 'bg-gray-100 text-gray-500', Icon: Clock, label: status };
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.cls}`}>
+      <cfg.Icon className="w-3 h-3" /> {cfg.label}
+    </span>
+  );
+}
+
+function SubscriptionManagement({ subInfo, setSubInfo, user, navigate, refreshUser }) {
+  const [cancelDialogOpen, setCancelDialogOpen]     = React.useState(false);
+  const [cancelling, setCancelling]                 = React.useState(false);
+  const [reactivating, setReactivating]             = React.useState(false);
+
+  const status            = subInfo?.status;
+  const cancelAtPeriodEnd = user?.subscriptionCancelAtPeriodEnd ?? subInfo?.cancelAtPeriodEnd ?? false;
+  const isActive          = status === 'ACTIVE';
+  const isExpiredOrGone   = status === 'EXPIRED' || status === 'GRACE_PERIOD' || status === 'CANCELLED';
+  const hasNoSub          = !status || status === 'PAYMENT_FAILED';
+
+  async function handleCancel() {
+    setCancelling(true);
+    try {
+      const res = await subscriptionsApi.cancel();
+      toast.success('Suscripción cancelada', {
+        description: `Tu acceso continúa activo hasta el ${fmtDate(res.accessUntil)}.`,
+      });
+      setCancelDialogOpen(false);
+      await refreshUser();
+      const fresh = await subscriptionsApi.getMySubscription().catch(() => null);
+      if (fresh) setSubInfo(fresh);
+    } catch (e) {
+      toast.error(e.message ?? 'Error al cancelar la suscripción');
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  async function handleReactivate() {
+    setReactivating(true);
+    try {
+      await subscriptionsApi.reactivate();
+      toast.success('Suscripción reactivada', { description: 'Tu acceso continúa normalmente.' });
+      await refreshUser();
+      const fresh = await subscriptionsApi.getMySubscription().catch(() => null);
+      if (fresh) setSubInfo(fresh);
+    } catch (e) {
+      toast.error(e.message ?? 'Error al reactivar la suscripción');
+    } finally {
+      setReactivating(false);
+    }
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
+      <Card className="border border-border shadow-sm rounded-2xl overflow-hidden">
+        {/* Header */}
+        <div
+          className="px-5 py-4 flex items-center justify-between"
+          style={{ background: 'var(--gradient-purple)' }}
+        >
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-white/80" />
+            <span className="text-sm font-semibold text-white">Administrar Suscripción</span>
+          </div>
+          {status && <StatusBadge status={status} cancelAtPeriodEnd={cancelAtPeriodEnd} />}
+        </div>
+
+        <div className="p-5 space-y-4">
+
+          {/* ── No subscription ── */}
+          {hasNoSub && (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                No tienes una suscripción activa. Activa tu plan para operar en Mubis.
+              </p>
+              <Button
+                onClick={() => navigate('/Suscripcion')}
+                className="w-full text-white font-semibold rounded-xl"
+                style={{ background: 'var(--gradient-purple)' }}
+              >
+                Ver planes y suscribirme
+              </Button>
+            </div>
+          )}
+
+          {/* ── Active subscription ── */}
+          {isActive && (
+            <>
+              {/* Plan + dates */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Plan</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {PLAN_LABELS[subInfo.plan] ?? subInfo.plan}
+                    {subInfo.plan && (
+                      <span className="ml-2 text-muted-foreground font-normal">
+                        · {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(PLAN_PRICES[subInfo.plan] ?? 0)}
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <CalendarDays className="w-3.5 h-3.5" />
+                    {cancelAtPeriodEnd ? 'Acceso activo hasta' : 'Renueva el'}
+                  </span>
+                  <span className="text-sm font-medium text-foreground">
+                    {fmtDate(subInfo.endAt)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Cancellation notice */}
+              {cancelAtPeriodEnd && (
+                <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Tu suscripción <strong>no se renovará</strong>. El acceso permanece activo hasta el{' '}
+                    <strong>{fmtDate(subInfo.endAt)}</strong>, fecha en que se cancelará automáticamente.
+                  </p>
+                </div>
+              )}
+
+              {/* Grace period notice */}
+              {subInfo.gracePeriodEndsAt && (
+                <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Tienes un negocio abierto. Renueva antes del{' '}
+                    <strong>{fmtDate(subInfo.gracePeriodEndsAt)}</strong> para evitar el cierre automático.
+                  </p>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex flex-col gap-2 pt-1">
+                {/* Change plan */}
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/Suscripcion')}
+                  className="w-full rounded-xl text-secondary border-secondary hover:bg-secondary/5 font-semibold"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Cambiar de plan
+                </Button>
+
+                {/* Cancel / Reactivate */}
+                {cancelAtPeriodEnd ? (
+                  <Button
+                    variant="outline"
+                    onClick={handleReactivate}
+                    disabled={reactivating}
+                    className="w-full rounded-xl font-semibold border-primary text-primary hover:bg-primary/5"
+                  >
+                    {reactivating ? 'Reactivando...' : '↩ Mantener suscripción'}
+                  </Button>
+                ) : (
+                  <button
+                    onClick={() => setCancelDialogOpen(true)}
+                    className="text-xs text-muted-foreground hover:text-destructive transition-colors text-center py-1"
+                  >
+                    Cancelar suscripción
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ── Expired / grace / cancelled ── */}
+          {isExpiredOrGone && (
+            <div className="space-y-3">
+              {subInfo.endAt && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Venció el</span>
+                  <span className="text-sm text-foreground">{fmtDate(subInfo.endAt)}</span>
+                </div>
+              )}
+              {subInfo.gracePeriodEndsAt && (
+                <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Tienes un negocio abierto en riesgo. Renueva antes del{' '}
+                    <strong>{fmtDate(subInfo.gracePeriodEndsAt)}</strong>.
+                  </p>
+                </div>
+              )}
+              <Button
+                onClick={() => navigate('/Suscripcion')}
+                className="w-full text-white font-semibold rounded-xl"
+                style={{ background: 'var(--gradient-purple)' }}
+              >
+                Renovar suscripción
+              </Button>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* ── Cancel confirmation dialog ── */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-destructive" />
+              Cancelar suscripción
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Al cancelar, <strong>mantienes el acceso completo hasta el{' '}
+              {fmtDate(subInfo?.endAt)}</strong>. Después de esa fecha tu cuenta quedará inactiva y no se hará ningún cobro adicional.
+            </p>
+            <div className="p-3 bg-muted rounded-xl space-y-1">
+              <p className="text-xs text-muted-foreground">✓ Acceso activo hasta el {fmtDate(subInfo?.endAt)}</p>
+              <p className="text-xs text-muted-foreground">✓ Sin cobros adicionales</p>
+              <p className="text-xs text-muted-foreground">✓ Puedes reactivar antes de esa fecha</p>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setCancelDialogOpen(false)} className="flex-1 rounded-xl">
+              Mantener plan
+            </Button>
+            <Button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="flex-1 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              {cancelling ? 'Cancelando...' : 'Sí, cancelar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
+  );
+}
+
+// ─── End subscription management ─────────────────────────────────────────────
 
 const TYPE_ICONS = {
   auction_published: Car,
@@ -363,82 +627,15 @@ export default function Cuenta() {
           </motion.div>
         )}
 
-        {/* Subscription card — recompradores only */}
+        {/* ── Administrar Suscripción — recompradores only ── */}
         {isRecomprador && (
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Mi suscripción</h3>
-
-              {!subInfo || !subInfo.status || subInfo.status === 'PAYMENT_FAILED' ? (
-                <div>
-                  <p className="text-sm text-gray-500 mb-4">No tienes una suscripción activa.</p>
-                  <button
-                    onClick={() => navigate('/Suscripcion')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"
-                  >
-                    Suscribirme a Mubis
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Estado</span>
-                    <span className={`text-sm font-semibold ${
-                      subInfo.status === 'ACTIVE' ? 'text-green-600' :
-                      subInfo.status === 'GRACE_PERIOD' ? 'text-amber-600' : 'text-red-500'
-                    }`}>
-                      {subInfo.status === 'ACTIVE' ? 'Activa' :
-                       subInfo.status === 'GRACE_PERIOD' ? 'Período de gracia' :
-                       subInfo.status === 'EXPIRED' ? 'Vencida' :
-                       subInfo.status === 'CANCELLED' ? 'Cancelada' : subInfo.status}
-                    </span>
-                  </div>
-                  {subInfo.plan && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Plan</span>
-                      <span className="text-sm font-medium">
-                        {subInfo.plan === 'MONTHLY' ? '1 mes' :
-                         subInfo.plan === 'BIANNUAL' ? '6 meses' : '12 meses'}
-                      </span>
-                    </div>
-                  )}
-                  {subInfo.endAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Vence</span>
-                      <span className="text-sm">
-                        {new Date(subInfo.endAt).toLocaleDateString('es-CO')}
-                      </span>
-                    </div>
-                  )}
-                  {subInfo.gracePeriodEndsAt && (
-                    <div className="mt-2 p-3 bg-amber-50 rounded-lg">
-                      <p className="text-xs text-amber-700 font-medium">
-                        Tienes un negocio abierto. Renueva antes del{' '}
-                        {new Date(subInfo.gracePeriodEndsAt).toLocaleDateString('es-CO')}{' '}
-                        para evitar el cierre automático.
-                      </p>
-                    </div>
-                  )}
-                  {(subInfo.status === 'EXPIRED' || subInfo.status === 'GRACE_PERIOD' || subInfo.status === 'CANCELLED') && (
-                    <button
-                      onClick={() => navigate('/Suscripcion')}
-                      className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"
-                    >
-                      Renueva tu suscripción
-                    </button>
-                  )}
-                  {subInfo.status === 'ACTIVE' && (
-                    <button
-                      onClick={() => navigate('/Suscripcion')}
-                      className="mt-3 w-full border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-semibold px-4 py-2 rounded-lg"
-                    >
-                      Renovar anticipadamente
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </motion.div>
+          <SubscriptionManagement
+            subInfo={subInfo}
+            setSubInfo={setSubInfo}
+            user={user}
+            navigate={navigate}
+            refreshUser={refreshUser}
+          />
         )}
 
         {/* Menu */}

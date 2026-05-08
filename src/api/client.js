@@ -4,12 +4,14 @@ export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/ap
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 // Public axios instance — no auth header, no refresh interceptor.
 // Use for endpoints that don't require authentication (login, register, etc.)
 export const publicApi = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -31,29 +33,24 @@ api.interceptors.response.use(
     // Guard: only attempt refresh once per request to prevent infinite loops
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        if (!_refreshing) {
-          _refreshing = axios.post(
-            `${API_URL}/auth/refresh`,
-            {},
-            { headers: { Authorization: `Bearer ${refreshToken}` } }
-          ).then(({ data }) => {
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
-            return data.accessToken;
-          }).catch(() => {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/login';
-            return null;
-          }).finally(() => { _refreshing = null; });
-        }
-        const newToken = await _refreshing;
-        if (newToken) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return api.request(originalRequest);
-        }
+      if (!_refreshing) {
+        _refreshing = axios.post(
+          `${API_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        ).then(({ data }) => {
+          localStorage.setItem('accessToken', data.accessToken);
+          return data.accessToken;
+        }).catch(() => {
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login';
+          return null;
+        }).finally(() => { _refreshing = null; });
+      }
+      const newToken = await _refreshing;
+      if (newToken) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api.request(originalRequest);
       }
     }
     return Promise.reject(error);

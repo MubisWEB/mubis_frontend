@@ -24,7 +24,6 @@ export const authApi = {
     if (tenantSlug) payload.tenantSlug = tenantSlug;
     const { data } = await publicApi.post('/auth/login', payload);
     localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
     return data.user;
   },
 
@@ -48,7 +47,6 @@ export const authApi = {
   logout: async () => {
     try { await api.post('/auth/logout'); } catch { /* ignore */ }
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
   },
 
   updateProfile: async (nombre, currentPassword) => {

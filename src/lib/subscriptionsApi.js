@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 function authHeaders() {
   const token = localStorage.getItem('accessToken');
@@ -29,4 +29,10 @@ export const subscriptionsApi = {
 
   getMyHistory: () =>
     fetch(`${BASE}/subscriptions/my-history`, { headers: authHeaders() }).then(handleResponse),
+
+  cancel: () =>
+    fetch(`${BASE}/subscriptions/cancel`, { method: 'POST', headers: authHeaders() }).then(handleResponse),
+
+  reactivate: () =>
+    fetch(`${BASE}/subscriptions/reactivate`, { method: 'POST', headers: authHeaders() }).then(handleResponse),
 };
