@@ -21,6 +21,8 @@ function normalizeBanner(banner, index) {
     subtitle: banner?.subtitle || banner?.description || banner?.text || '',
     linkUrl: banner?.linkUrl || banner?.link_url || banner?.href || '',
     active: isBannerActive(banner),
+    focalX: banner?.focalX ?? 50,
+    focalY: banner?.focalY ?? 50,
   };
 }
 
@@ -96,7 +98,7 @@ export default function SponsorBanner() {
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 my-4">
-      <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md" style={{ aspectRatio: '970 / 150' }}>
+      <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md aspect-[3/1] sm:aspect-[970/200]">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeBanner.id}
@@ -119,6 +121,7 @@ export default function SponsorBanner() {
                 src={activeBanner.imageUrl}
                 alt={activeBanner.title || 'Banner'}
                 className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: `${activeBanner.focalX}% ${activeBanner.focalY}%` }}
               />
               {(activeBanner.title || activeBanner.subtitle) && (
                 <div className="relative z-10 max-w-2xl">

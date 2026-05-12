@@ -92,9 +92,9 @@ export default function AdminDealers() {
 
   return (
     <div className="min-h-screen bg-muted pb-28">
-      <Header title="Usuarios" subtitle={`${filtered.length} usuarios`} backTo="/AdminDashboard" />
+      <Header title="Usuarios" subtitle={`${filtered.length} usuarios`} />
 
-      <div className="max-w-7xl mx-auto px-4 pt-4 space-y-3">
+      <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-3">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

@@ -266,30 +266,47 @@ export default function AdminDealerDetalle() {
               {user.verification_status}
             </Badge>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <Button
-              onClick={() => handleVerificationStatus('REJECTED')}
-              className="rounded-full font-semibold text-destructive border-destructive/30 hover:bg-destructive/5"
-              variant="outline"
-            >
-              <XCircle className="w-4 h-4 mr-2" />
-              Rechazar
-            </Button>
-            <Button
-              onClick={() => handleVerificationStatus('WAITLISTED')}
-              className="rounded-full font-semibold text-amber-600 border-amber-500/30 hover:bg-amber-500/5"
-              variant="outline"
-            >
-              <Clock className="w-4 h-4 mr-2" />
-              Lista de espera
-            </Button>
-            <Button
-              onClick={() => handleVerificationStatus('VERIFIED')}
-              className="rounded-full font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <UserCheck className="w-4 h-4 mr-2" />
-              Aprobar
-            </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {user.verification_status === 'VERIFIED' ? (
+              <Button
+                onClick={() => handleVerificationStatus('PENDING')}
+                className="sm:col-span-2 rounded-full font-semibold text-amber-600 border-amber-500/30 hover:bg-amber-500/5"
+                variant="outline"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Cancelar verificación
+              </Button>
+            ) : (
+              <>
+                {user.verification_status !== 'REJECTED' && (
+                  <Button
+                    onClick={() => handleVerificationStatus('REJECTED')}
+                    className="rounded-full font-semibold text-destructive border-destructive/30 hover:bg-destructive/5"
+                    variant="outline"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Rechazar
+                  </Button>
+                )}
+                {user.verification_status === 'PENDING' && (
+                  <Button
+                    onClick={() => handleVerificationStatus('WAITLISTED')}
+                    className="rounded-full font-semibold text-amber-600 border-amber-500/30 hover:bg-amber-500/5"
+                    variant="outline"
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Lista de espera
+                  </Button>
+                )}
+                <Button
+                  onClick={() => handleVerificationStatus('VERIFIED')}
+                  className={`rounded-full font-semibold bg-primary text-primary-foreground hover:bg-primary/90 ${user.verification_status === 'REJECTED' ? 'sm:col-span-2' : ''}`}
+                >
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  Aprobar
+                </Button>
+              </>
+            )}
           </div>
           {currentUser?.role === 'superadmin' && user.role !== 'superadmin' && (
             <Button

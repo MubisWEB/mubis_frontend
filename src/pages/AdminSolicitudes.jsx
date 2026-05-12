@@ -342,10 +342,10 @@ export default function AdminSolicitudes() {
       <Header
         title="Solicitudes de acceso"
         subtitle={`${counts.PENDING} pendientes · ${counts.WAITLISTED} en espera`}
-        backTo={backTo}
+
       />
 
-      <div className="max-w-5xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-10 pt-4 space-y-4">
 
         {/* ── Tabs ── */}
         <div className="grid grid-cols-4 gap-2">
@@ -399,7 +399,7 @@ export default function AdminSolicitudes() {
 
         {/* ── List ── */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[0, 1, 2, 4].map(i => (
               <div key={i} className="bg-card border border-border rounded-2xl p-4 animate-pulse">
                 <div className="flex items-start gap-3 mb-3">
@@ -440,7 +440,7 @@ export default function AdminSolicitudes() {
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredList.map(u => (
                 <UserCard
                   key={u.id}
