@@ -98,7 +98,7 @@ export default function SponsorBanner() {
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 my-4">
-      <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md aspect-[3/1] sm:aspect-[970/200]">
+      <div className="relative w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md" style={{ aspectRatio: '970 / 200' }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeBanner.id}
